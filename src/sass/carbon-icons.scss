@@ -1,0 +1,46 @@
+// ============================================================================
+// Carbon Design System Icon Toggle Support
+// ============================================================================
+// Provides CSS-based icon swapping for toggle buttons when using the
+// django-zooy carbon_icon template tag with toggle_to parameter.
+//
+// Example usage in Django template:
+//   {% carbon_icon "favorite" 16 slot="icon" toggle_to="favorite--filled" %}
+//
+// This renders two icons wrapped in .icon-toggle-wrapper, and this CSS
+// controls which icon is visible based on the is-selected attribute.
+// ============================================================================
+
+cds-icon-button {
+  // Icon toggle wrapper - makes container invisible to layout
+  .icon-toggle-wrapper {
+    display: contents;
+  }
+
+  // Icon swap visibility controls (only for toggle_to mode)
+  .off-icon {
+    display: inline;
+  }
+
+  .on-icon {
+    display: none;
+  }
+
+  // When button is selected, swap icon visibility
+  // Note: The attribute is 'isselected' (no hyphen) in the actual DOM
+  &[isselected] {
+    // Icon-swap mode: toggle visibility
+    .off-icon {
+      display: none;
+    }
+
+    .on-icon {
+      display: inline;
+    }
+
+    // Optional: Color swap on selection (opt-in via data-toggle-color)
+    &[data-toggle-color] svg {
+      fill: var(--cds-icon-primary, #0f62fe);
+    }
+  }
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Component</title>
+    <style>
+        div {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+<div id="root" style="background-color: chartreuse; width: 300px; height: 300px; display: flex"></div>
+
+<div style="
+    position: absolute;
+    top:300px;
+    right: 600px;
+    width: 500px;
+    height:500px;
+    background-color: grey">
+    <div style="
+        position: relative;
+        width: 30px;
+        margin-top: 50%;
+        height: 30px;
+        margin-left: 50%;
+        background-color: red">
+
+    </div>
+</div>
+
+<button id="button">TESTME</button>
+<script type="module">
+    import zooy from '../../dist/zooy.es.js';
+
+    const button = document.querySelector('#button');
+    const root = document.querySelector('#root');
+
+    const makeBlock = colour => () => {
+      const el = document.createElement('div');
+      el.style.backgroundColor = colour;
+      return el;
+    };
+
+    let a = new zooy.Component();
+    a.domFunc = makeBlock('slateblue');
+
+    let b = new zooy.Component();
+    b.domFunc = makeBlock('lightgrey');
+
+    let c = new zooy.Component();
+    c.domFunc = makeBlock('limegreen');
+
+    let ev = zooy.EVT.makeEvent('hello', [123,456]);
+
+    a.target = root;
+    a.render();
+    b.render(root);
+    c.render(root);
+
+
+    // a.listen(b, 'hello', e => console.log('A got hello', e));
+    // b.listen(c, 'hello', e => console.log('B got hello', e));
+    //
+    // b.listen(a, 'hello', e => console.log('B got hello', e));
+    // c.listen(a, 'hello', e => console.log('C got hello', e));
+    //
+    // a.listen(button, 'click', _ => console.log('click - click'));
+    // a.listen(root, 'mouseenter', e => console.log(e.type));
+    //
+    // console.log('A is dispatching');
+    // a.dispatchEvent(ev);
+    // b.listen(a, zooy.Component.compEventCode(), e => {
+    //   console.log('B got', zooy.Component.compEventCode(), e);
+    //   console.log('Value is', e.detail.getValue());
+    //   console.log('Data is', e.detail.getData());
+    // });
+    // [1,2,3,4,5,6,7,8,9,0].forEach(n => a.dispatchCompEvent(n, {v:n}));
+    // a.dispatchCompEvent('hello', {here: 'is some data'});
+    //
+    // console.log('B removes all listeners');
+    // b.removeAllListener();
+    //
+    // console.log('A is dispatching');
+    // a.dispatchEvent(ev);
+    //
+    // console.log('Dispose A');
+    // a.disposeInternal();
+    //
+    // console.log('C is dispatching');
+    // c.dispatchEvent(ev);
+    //
+    // console.log('B unlisten from C');
+    // b.stopListeningTo(c);
+    //
+    // console.log('C is dispatching');
+    // c.dispatchEvent(ev);
+    //
+    // console.log('A is dispatching');
+    // a.dispatchEvent(ev);
+    //
+    // console.log('Disposing C');
+    // c.disposeInternal();
+    //
+    // console.log('A is dispatching');
+    // a.dispatchEvent(ev);
+</script>
+
+</body>
+</html>

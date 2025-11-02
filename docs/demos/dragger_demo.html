@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Component</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    <style>
+        .left {
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            background-color: #f7f7f7;
+            height: 50%;
+            width: calc(35% - 7%);
+        }
+    </style>
+</head>
+<body>
+<div id="root" class="left" ></div>
+<script type="module">
+    import zooy from '../../dist/zooy.es.js';
+
+    const root = document.querySelector('#root');
+
+    const makeBlock = colour => () => {
+      const el = document.createElement('div');
+      el.style.backgroundColor = colour;
+      return el;
+    };
+
+    const makeDraggableBlock = name => () => {
+      const el = document.createElement('div');
+      el.style.cssText = "background-color: rgba(123, 123, 123, 0.5); border: 1px solid black; z-index: 2;";
+      el.setAttribute('id', name);
+        el.style.left = '28px';
+        el.style.top = '34px';
+
+      el.style.padding = '15px';
+      el.style.position = 'absolute';
+      el.classList.add('noselect');
+      el.textContent = name;
+      return el;
+    };
+
+    let DRAG_A = new zooy.Dragger('xy');
+    DRAG_A.domFunc = makeDraggableBlock('FullFreedom');
+    DRAG_A.render(root);
+
+    let DRAG_X = new  zooy.Dragger('ew');
+    DRAG_X.domFunc = makeDraggableBlock('X_Only');
+    DRAG_X.render(root);
+    console.log(DRAG_X.getElement());
+
+    let DRAG_Y = new  zooy.Dragger('y');
+    DRAG_Y.domFunc = makeDraggableBlock('Y_Only');
+    DRAG_Y.render(root);
+
+    let a = new  zooy.Component();
+    a.domFunc = makeBlock('slateblue');
+    a.render(root);
+    a.listen(DRAG_A,  zooy.Component.compEventCode(), (function(e) {
+      if (e.detail.getValue() === zooy.UiEventType.COMP_DRAG_MOVE) {
+        const data = e.detail.getData();
+        this.getElement().textContent = `${data.deltaX}, ${data.deltaY}`;
+      }
+    }).bind(a));
+
+    let b = new  zooy.Component();
+    b.domFunc = makeBlock('limegreen');
+    b.render(root);
+    b.listen(DRAG_X,  zooy.Component.compEventCode(), (function(e) {
+      if (e.detail.getValue() === zooy.UiEventType.COMP_DRAG_MOVE) {
+        const data = e.detail.getData();
+        this.getElement().textContent = `${data.deltaX}, ${data.deltaY}`;
+      }
+    }).bind(b));
+
+    let c = new  zooy.Component();
+    c.domFunc = makeBlock('lightgrey');
+    c.render(root);
+    c.listen(DRAG_Y,  zooy.Component.compEventCode(), (function(e) {
+      if (e.detail.getValue() === zooy.UiEventType.COMP_DRAG_MOVE) {
+        const data = e.detail.getData();
+        this.getElement().textContent = `${data.deltaX}, ${data.deltaY}`;
+      }
+    }).bind(c));
+
+    window.DRAG_A = DRAG_A;
+
+
+</script>
+
+</body>
+</html>

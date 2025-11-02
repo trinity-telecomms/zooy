@@ -1,0 +1,12 @@
+# Dependency directory
+node_modules
+
+# Build artifacts
+dist/
+
+# IDE Settings files
+.idea
+.claude
+
+# Husky internals (auto-generated)
+.husky/_

@@ -1,0 +1,154 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<style>
+        .zoo__flex-container {
+            display: flex;
+            flex-flow: column nowrap;
+        }
+
+        .zoo__flex-item {
+            flex: 1;
+            order: 1;
+        }
+
+        .zoo__panel_a {
+            position: relative;
+            margin-left: 20px;
+            margin-right: 20px;
+            width: calc(100% - 40px);
+            height: 100%;
+        }
+
+        .zoo__content > .zoo__panel_a {
+            /*position: absolute;*/
+            /*height: auto;*/
+            /*top: 0;*/
+            /*bottom: 0;*/
+            flex-grow: 1;
+            width: 100%;
+            margin: 0;
+        }
+
+        .zoo__toolbar {
+            /*background: rgba(141, 229, 146, 0.36);*/
+        }
+
+        .zoo__tabbar {
+            /*background: rgba(24, 42, 255, 0.47);*/
+            overflow: hidden;
+        }
+
+        .zoo__content {
+            position: relative;
+            /*background-color: rgba(128, 76, 140, 0.36);*/
+            flex: 999999 !important;
+        }
+
+        .zoo__actionbar {
+            background: white
+        }
+
+        .zoo__button {
+            height: 50px;
+            position: relative;
+            float: left;
+            padding: 0 5px;
+            margin: 5px;
+            /*background-color: #ff71f8;*/
+            line-height: 56px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .zoo__tabbar > .zoo__button {
+            font-size: 18px;
+            height: 35px;
+            float: left;
+            margin: 5px;
+            /*background-color: #5b6aff;*/
+            line-height: 38px;
+        }
+
+        .zoo__toolbar > .zoo__button {
+            height: 28px;
+            /*float: left;*/
+            margin: 5px;
+            /*background-color: #9bff4f;*/
+            line-height: 28px;
+        }
+
+        .scrolly_content {
+            position: absolute;
+            height: auto;
+            left:0;
+            right:0;
+            top: 0;
+            bottom: 0;
+            overflow: auto;
+        }
+    </style>
+
+<div class="zoo__panel_a zoo__flex-container">
+    <div class="zoo__toolbar zoo__flex-item"></div>
+    <div class="zoo__tabbar">
+        <nav class="mdc-tab-bar" data-mdc-auto-init="MDCTabBar" style="margin-left: 0">
+            <div class="mdc-tab mdc-tab--active">Home</div>
+            <div class="mdc-tab">Merchandise</div>
+            <div class="mdc-tab">About Us</div>
+            <span class="mdc-tab-bar__indicator"></span>
+        </nav>
+    </div>
+
+
+
+    <div class="zoo__content zoo__flex-item">
+
+
+        <div class="zoo__panel_a zoo__flex-container">
+            <div class="zoo__toolbar zoo__flex-item">
+                    <a class="mdc-toolbar__icon material-icons mdc-ripple-surface"
+                       data-mdc-auto-init="MDCRipple"
+                       data-mdc-ripple-is-unbounded>face</a>
+                    <a class="mdc-toolbar__icon material-icons mdc-ripple-surface"
+                       data-mdc-auto-init="MDCRipple"
+                       data-mdc-ripple-is-unbounded>directions_boat</a>
+                    <a class="mdc-toolbar__icon material-icons mdc-ripple-surface"
+                       data-mdc-auto-init="MDCRipple"
+                       data-mdc-ripple-is-unbounded>poll</a>
+            </div>
+            <div class="zoo__tabbar zoo__flex-item"></div>
+            <div class="zoo__content zoo__flex-item">
+                <div class="scrolly_content mdc-typography--body1">
+
+                    <h5 class="mdc-typography--headline5">Utamur qualisque</h5>
+                    <p >Ei pri possim vocent, ad quo nibh facete. Mea ex graeco quaeque honestatis, in persius nostrud salutatus mei. Ne eos habeo malorum concludaturque, has et inermis voluptaria. Legere intellegat argumentum est ne, ne nostro debitis vim. Erant dicant signiferumque in sit, cu dicit ullamcorper duo.
+                    </p>
+
+                    <h5 class="mdc-typography--headline5">Erant dicant</h5>
+                    <p class="mdc-typography--body2">Pro deserunt expetenda at, an sea gloriatur dissentiet, clita labores no eos. Has agam conceptam eu, quando regione nam at. Mei ex dolor veritus consequuntur, mea nobis latine placerat cu, nec dolore mollis in. Ad pri epicurei abhorreant mediocritatem, ius ut graece latine. Falli legimus consequuntur eum ei. Qui at quando maiorum expetenda, pri ea errem eruditi corpora.
+                    </p>
+
+                    <h5 class="mdc-typography--headline5">Ut graece</h5>
+                    <p>Et quem appellantur eum, id sit eruditi docendi definiebas, ut eam nulla deseruisse. At est putant perfecto qualisque, dicam incorrupte scripserit id sit, indoctum mediocrem honestatis cum an. Graecis appellantur cum ad, mel in iudico electram expetenda, natum cetero comprehensam eam an. Utroque definiebas disputando qui an, torquatos adversarium eos id. Sed dico meis lucilius at, nec cibo dicta percipitur ad. At erant legimus his, id mea diceret sententiae, in pro viris audiam erroribus.
+                    </p>
+
+                    <h5 class="mdc-typography--headline5">Democritum reformidans</h5>
+                    <p>Vidit decore ea pri, sea congue lucilius te. Porro splendide ei eum, eu quo scaevola aliquando intellegam. Graece partiendo moderatius mei no. Elit postulant vim ea, cum ne adversarium intellegebat. Eam et mundi appellantur, dolor admodum vel id. Vis an oblique labitur fabellas, mel an lucilius vulputate.
+                    </p>
+
+                    <h1>Vis an oblique</h1>
+                    <p>Ad offendit salutandi prodesset pro, nibh simul disputando id qui. Nam cu quas veniam constituam, eu everti utamur cotidieque sea. Essent saperet omittantur in usu. An per latine reformidans definitionem. Appetere mandamus cu vel, ferri sensibus quo no. An paulo choro officiis sit, modo detraxit deseruisse pri ad.
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="zoo__actionbar zoo__flex-item mdc-card__actions">
+        <button data-mdc-auto-init="MDCRipple" class="mdc-button">Submit</button>
+        <button data-mdc-auto-init="MDCRipple" class="mdc-button">Cancel</button>
+        <button data-mdc-auto-init="MDCRipple" class="mdc-button">Delete</button>
+    </div>
+</div>

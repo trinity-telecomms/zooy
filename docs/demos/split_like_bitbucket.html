@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BITBUCKET Split</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    <style>
+        .nest {
+            background-color: white;
+            border: none !important;
+        }
+        .menu {
+            background-color: rgb(244, 245, 247);
+            color: rgb(66, 82, 110);
+            display: flex;
+            flex-direction: column;
+            padding-top: 16px;
+        }
+        .bluebar {
+            color: rgb(222, 235, 255);
+            background-color: rgb(7, 71, 166);
+        }
+        .gKJLsR {
+            background-color: rgb(244, 245, 247);
+            user-select: none;
+        }
+        .dragger {
+            transition: ease-in-out opacity 200ms;
+        }
+        .grabber {
+            background: rgb(76, 154, 255);
+            border: none;
+            border-radius: 1px;
+            flex-basis: 100%;
+            min-width: 3px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="root" style="
+    position: absolute; top: 0; left: 0;
+    background-color: lightgrey;
+    height: 100%;
+    width: 100%;
+    ">
+</div>
+<script type="module">
+    import zooy from '../../dist/zooy.es.js';
+    const s = new zooy.Split(30);
+    s.domFunc = () => document.getElementById('root');
+    s.render();
+
+    s.addSplit(undefined, 'EW', [80], [0]);
+    s.closeAndLock('C', undefined, true);
+    s.lock('A');
+    s.addSplit(s.getNest('B'), 'EW', [300], [330]);
+
+    // Styles
+    s.getNest('A').classList.add('bluebar');
+    s.getNest('BA').classList.add('menu');
+    s.getNest('BC').classList.add('gKJLsR');
+</script>
+
+</body>
+</html>

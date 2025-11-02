@@ -1,0 +1,57 @@
+{
+  "name": "zooy",
+  "description": "UI Building Blocks",
+  "version": "1.0.0",
+  "main": "./dist/zooy.cjs.js",
+  "module": "./dist/zooy.es.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/zooy.es.js",
+      "require": "./dist/zooy.cjs.js"
+    },
+    "./sass": "./src/sass/main.scss"
+  },
+  "files": [
+    "dist",
+    "src/sass"
+  ],
+  "author": {
+    "name": "Jan Badenhorst",
+    "email": "janhendrik.badenhorst@gmail.com"
+  },
+  "contributors": [
+    "Andries Niemandt <andries.niemandt91@gmail.com> (https://github.com/andriesniemandt)"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build_css": "sass --load-path=node_modules --style=compressed src/sass/main.scss src/css/main.css",
+    "build": "npm run clean && vite build",
+    "dev_watch_sass": "sass --watch --load-path=node_modules --style=compressed src/sass/main.scss src/css/main.css",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "dev": "vite",
+    "prepare": "husky"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trinity-telecomms/zooy.git"
+  },
+  "dependencies": {
+    "@carbon/icons": "^11.70.0",
+    "@carbon/web-components": "^2.41.0",
+    "@ibm/plex": "^6.4.1",
+    "badu": "^8.6.0",
+    "material-components-web": "^14.0.0",
+    "timeago.js": "^4.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^9.38.0",
+    "esm": "^3.2.25",
+    "husky": "^9.1.7",
+    "ramda": "^0.32.0",
+    "sass": "^1.93.2",
+    "vite": "^7.1.12"
+  }
+}

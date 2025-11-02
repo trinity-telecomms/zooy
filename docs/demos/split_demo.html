@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Slit DEMO</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    <style>
+        html {
+            box-sizing: border-box;
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        .zoo_nest {
+            background-color: transparent;
+        }
+
+        #right {
+            position: absolute;
+            top: 15%;
+            height: 70%;
+            left: 15%;
+            right: 15%;
+        }
+
+        .bg_red {
+            background: tomato;
+        }
+
+        .bg_blue {
+            background: cornflowerblue;
+        }
+
+        .bg_orange {
+            background: sandybrown;
+        }
+
+        .bg_pink {
+            background: lightpink;
+        }
+
+        .custom_dragger {
+            background: #953b39;
+        }
+
+        .custom_grabber {
+            background: #00ffea;
+        }
+
+
+
+    </style>
+</head>
+<body>
+<div id="right"></div>
+
+
+<script type="module">
+  import zooy from '../../dist/zooy.es.js';
+
+  // Split (Simple)
+  const t = new zooy.Split();
+  t.domFunc = () => document.getElementById('right');
+  t.render();
+  t.addSplit(undefined, 'NS', 35, 80, ['bg_blue'], [], ['bg_red'], ['custom_dragger'], ['custom_grabber'],);
+  t.addSplit(t.getNest('B'), 'EW', 80, 80, [], ['bg_orange'], ['bg_pink'], ['custom_dragger'], ['custom_grabber']);
+  t.closeAndLock('BA');
+  t.lock('A')
+  t.listen(t, zooy.UiEventType.SPLIT, e => {
+    console.log(e);
+  })
+  window.split_test = t;
+  
+</script>
+
+</body>
+</html>
