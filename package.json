@@ -1,5 +1,5 @@
 {
-  "name": "zooy",
+  "name": "@trintel/zooy",
   "description": "UI Building Blocks",
   "version": "1.0.1-beta.0",
   "main": "./dist/zooy.cjs.js",
