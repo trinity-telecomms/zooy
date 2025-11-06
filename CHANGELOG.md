@@ -5,6 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1-beta.1] - 2025-11-06
+
+### Added
+- **Zoo Components**: New namespace for native zooy components styled via CSS custom properties
+  - `zoo-tag` - Generic tag/badge component with token-based styling
+  - Components organized in `src/ui/zoo/components/` directory
+  - Exported via `zooy.zoo` namespace
+- **Design Token System**: CSS custom property-based theming
+  - Applications define tokens in their own stylesheets
+  - Zoo components consume tokens via `--zoo-tag-{token}-bg/fg` pattern
+  - No framework-provided base tokens (application responsibility)
+- **Zoo Interactive Pattern Documentation**: Future design pattern for panel-aware components
+  - Documented in `.claude/zoo-interactive-components-pattern.md`
+  - Native components with built-in panel awareness
+  - No registration required (unlike third-party libraries)
+
+### Changed
+- **Zoo Tag Token Type**: Changed from `Number` to `String` for maximum flexibility
+  - Supports numeric tokens: `<zoo-tag token="52">`
+  - Supports named tokens: `<zoo-tag token="error">`
+  - Supports any string value for token attribute
+- **Project Structure**: Aligned zoo folder structure with carbon conventions
+  - `src/ui/zoo/components/tag.js` (was `zoo-tag.js`)
+  - `src/ui/zoo/components/index.js` exports all components
+- **Carbon Data Table**: Enhanced table component with semantic attributes support
+  - Table skeleton now matches table `size` property (xs, sm, md, lg, xl)
+  - Table-level semantic attributes now passed to row click events
+  - `row-click-event` attribute enables clickable rows with data from `data-bind-attr`
+  - Improved integration with DataBinder for dynamic table content
+- **Carbon Semantic Attributes**: Enhanced semantic attribute handling across components
+  - `getSemanticAttributes()` utility properly extracts framework and custom attributes
+  - Consistent attribute merging pattern across all Carbon components
+  - Better separation between framework attributes (event, record-id) and data-* attributes
+- **Documentation**: Major cleanup of README.md
+  - Removed non-technical content, history, and editorial commentary
+  - Focused on developer-centric documentation
+  - Improved scannability with consistent formatting
+
+### Fixed
+- **Carbon Overflow Menu**: Fixed variable shadowing bug in overflow menu handler
+  - Menu-level attributes now properly merge with item-level attributes
+  - Changed `menuAttr` to `menuAttrs` and added `itemAttrs` for clarity
+  - Overflow menu items now properly include both menu-level and item-level semantic attributes in events
+- **DataBinder Nested Templates**: DataBinder now correctly handles data-bind attributes at any depth
+  - Templates can have nested structure (e.g., tags inside table cells)
+  - `renderItem()` walks DOM tree to find all data-bind elements, not just direct children
+  - Enables complex cell layouts with multiple bindable elements
+
+### Removed
+- **Unused CSS Build Scripts**: Removed `build_css` and `dev_watch_sass` npm scripts
+  - Zooy exports source SASS files, not compiled CSS
+  - Applications compile SASS themselves
+- **Framework Base Tokens**: Removed unused design-tokens directory from zooy
+  - `src/sass/design-tokens/tag-tokens.scss` deleted
+  - Applications define all tokens in their own stylesheets
+  - Cleaner separation of concerns
+
 ## [36.1.0] - 2025-10-31
 
 ### Added

@@ -14,6 +14,7 @@ export * as domUtils from './dom/utils.js';
 export * as uriUtils from './uri/uri.js';
 export { ComponentLibraryRegistry } from './ui/component-library-registry.js';
 export * as handlers from './ui/handlers/index.js';
+export * as zoo from './ui/zoo/index.js';
 
 /**
  * Lazy-loads and registers the Carbon Design System library.
@@ -56,6 +57,7 @@ import * as domUtils from './dom/utils.js';
 import * as uriUtils from './uri/uri.js';
 import { ComponentLibraryRegistry } from './ui/component-library-registry.js';
 import * as handlers from './ui/handlers/index.js';
+import * as zoo from './ui/zoo/index.js';
 
 const zooy = {
   EVT,
@@ -75,6 +77,7 @@ const zooy = {
   registerMdcLibrary,
   ComponentLibraryRegistry,
   handlers,
+  zoo,
 };
 
 export default zooy;

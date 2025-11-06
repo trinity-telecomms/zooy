@@ -13,7 +13,6 @@ clean:
 build: clean lint lint-fix
     npm run build
     @echo "✓ Built zooy package"
-    just blah
 
 # Build and create tarball for local testing
 pack: build

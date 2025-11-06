@@ -23,7 +23,7 @@
  * await binder.load({ status: 'active' });
  */
 
-import {isDefAndNotNull } from 'badu';
+import {isDefAndNotNull} from 'badu';
 
 
 /**
@@ -76,9 +76,7 @@ export class DataBinder {
     this.#fetchFn = options.fetchFn || fetch.bind(window);
 
     // Resolve template
-    this.#template = typeof options.template === 'string'
-      ? document.getElementById(options.template)
-      : options.template;
+    this.#template = typeof options.template === 'string' ? document.getElementById(options.template) : options.template;
 
     if (!this.#template || this.#template.tagName !== 'TEMPLATE') {
       throw new Error('DataBinder template must be a <template> element or valid template ID');
@@ -117,9 +115,7 @@ export class DataBinder {
       const result = await this.#fetchFn(url.toString());
 
       // Check if result is a Response object (standard fetch) or direct data
-      const json = result instanceof Response
-        ? (result.ok ? await result.json() : Promise.reject(new Error(`HTTP ${result.status}: ${result.statusText}`)))
-        : result;
+      const json = result instanceof Response ? (result.ok ? await result.json() : Promise.reject(new Error(`HTTP ${result.status}: ${result.statusText}`))) : result;
       this.#data = this.#extractData(json);
 
       // Validate data is an array
@@ -348,11 +344,8 @@ export class DataBinder {
    * @private
    */
   #dispatch(eventName, detail = {}) {
-    this.#container.dispatchEvent(
-      new CustomEvent(eventName, {
-        detail,
-        bubbles: true
-      })
-    );
+    this.#container.dispatchEvent(new CustomEvent(eventName, {
+      detail, bubbles: true
+    }));
   }
 }

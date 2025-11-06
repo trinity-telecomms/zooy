@@ -31,7 +31,8 @@ export default [
         Set: 'readonly',
         fetch: 'readonly',
         history: 'readonly',
-        DOMParser: 'readonly'
+        DOMParser: 'readonly',
+        URL: 'readonly'
       }
     },
     rules: {

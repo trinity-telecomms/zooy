@@ -44,3 +44,33 @@ cds-icon-button {
     }
   }
 }
+
+
+// ============================================================================
+// Carbon Data Table Support
+// ============================================================================
+// Provides styling for Carbon data tables, including numeric column alignment.
+//
+// Example usage in Django template:
+//   <cds-table-header-cell class="number">Count</cds-table-header-cell>
+//   <cds-table-cell class="number">1,234</cds-table-cell>
+//
+// Per Carbon Design System guidelines, variable numerical values (prices,
+// percentages, counts, etc.) and their column headers should be right-aligned.
+// ============================================================================
+
+cds-table {
+  // Numeric table cells - right-aligned per Carbon Design guidelines
+  cds-table-cell {
+    &.number {
+      text-align: right;
+    }
+  }
+
+  // Numeric column headers - right-aligned to match cell alignment
+  cds-table-header-cell {
+    &.number {
+      text-align: right;
+    }
+  }
+}

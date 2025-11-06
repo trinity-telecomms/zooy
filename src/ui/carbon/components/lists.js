@@ -17,16 +17,16 @@ export default {
   // We collect the menu attributes from the menu, but we listen for the
   // events on the menu body.
   init: function (overflowMenu) {
-    const menuAttr = getSemanticAttributes(overflowMenu);
-    const eventName = menuAttr.event;
+    const menuAttrs = getSemanticAttributes(overflowMenu);
+    const eventName = menuAttrs.event;
     const menuBody = overflowMenu.querySelector('cds-overflow-menu-body');
     if (eventName && menuBody) {
       this.listen(menuBody, 'cds-overflow-menu-item-clicked', e => {
         e.stopPropagation();
-        const menuAttr = getSemanticAttributes(e.target);
+        const itemAttrs = getSemanticAttributes(e.target);
         this.dispatchPanelEvent(eventName, {
-          ...menuAttr,
-          ...menuAttr
+          ...menuAttrs,
+          ...itemAttrs
         });
       });
     }

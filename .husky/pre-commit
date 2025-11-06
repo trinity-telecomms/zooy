@@ -1,1 +1,47 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Check if CHANGELOG.md has been updated when source files change
+echo "Checking changelog..."
+
+# Get staged source files
+STAGED_SRC_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^src/' || true)
+
+# Get staged CHANGELOG.md
+STAGED_CHANGELOG=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^CHANGELOG.md$' || true)
+
+# Check commit message for bypass flag
+COMMIT_MSG_FILE=".git/COMMIT_EDITMSG"
+if [ -f "$COMMIT_MSG_FILE" ]; then
+  SKIP_CHANGELOG=$(grep -i '\[skip-changelog\]' "$COMMIT_MSG_FILE" || true)
+else
+  SKIP_CHANGELOG=""
+fi
+
+# If source files changed but CHANGELOG not updated and no bypass flag
+if [ -n "$STAGED_SRC_FILES" ] && [ -z "$STAGED_CHANGELOG" ] && [ -z "$SKIP_CHANGELOG" ]; then
+  echo ""
+  echo "❌ Error: Source files changed but CHANGELOG.md not updated"
+  echo ""
+  echo "Modified source files:"
+  echo "$STAGED_SRC_FILES" | sed 's/^/  - /'
+  echo ""
+  echo "Please update CHANGELOG.md and stage it:"
+  echo "  git add CHANGELOG.md"
+  echo ""
+  echo "Or bypass this check by adding [skip-changelog] to your commit message:"
+  echo "  git commit -m \"Your message [skip-changelog]\""
+  echo ""
+  exit 1
+fi
+
+if [ -n "$STAGED_SRC_FILES" ] && [ -n "$STAGED_CHANGELOG" ]; then
+  echo "✓ CHANGELOG.md updated"
+elif [ -n "$STAGED_SRC_FILES" ] && [ -n "$SKIP_CHANGELOG" ]; then
+  echo "⚠ CHANGELOG.md check skipped"
+else
+  echo "✓ No source file changes"
+fi
+
+# Run linting
 npm run lint
