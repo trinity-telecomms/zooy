@@ -1,7 +1,7 @@
 import Panel from './panel.js';
 import {UiEventType} from '../events/uieventtype.js';
 import {replaceNode, splitScripts} from '../dom/utils.js';
-import {whatType, isDefAndNotNull} from 'badu';
+import {whatType} from 'badu';
 import {EV} from '../events/mouseandtouchevents.js';
 
 

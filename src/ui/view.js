@@ -17,6 +17,11 @@ import {SearchHandlers, QueryParamHandlers} from './handlers/index.js';
  */
 export default class View extends EVT {
 
+  #registerViewConstructor = void 0;
+
+  #recordHistory = void 0;
+
+
   //--[ Static ]--
   /**
    * Returns the view event type code used for dispatching view events.
@@ -57,26 +62,22 @@ export default class View extends EVT {
     this.metaData_ = new Map();
 
 
-    this.recordHistory_ = void 0;
-
-    this.registerViewConstructor_ = void 0;
-
   };
 
   set recordHistory(func) {
-    this.recordHistory_ = func;
+    this.#recordHistory = func;
   }
 
   get recordHistory() {
-    return this.recordHistory_;
+    return this.#recordHistory;
   }
 
   set registerViewConstructor(func) {
-    this.registerViewConstructor_ = func;
+    this.#registerViewConstructor = func;
   }
 
   get registerViewConstructor() {
-    return this.registerViewConstructor_;
+    return this.#registerViewConstructor;
   }
 
   set split(split) {

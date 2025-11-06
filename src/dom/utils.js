@@ -166,12 +166,19 @@ export const totalHeight = el => {
  * Evaluates each of the scripts in the ajaxScriptsStrings_ map in turn.
  * The scripts are evaluated in the scope of this component. For these
  * scripts, "this" is the evaluating component object.
+ *
+ * SECURITY NOTE: This uses eval() intentionally to execute dynamic scripts
+ * within the component's scope. This is necessary for the framework's
+ * dynamic content loading functionality where scripts need access to the
+ * component context via "this". Only use with trusted script sources.
+ *
  * @param {!Component} comp
  * @return {function(?NodeList)}
  */
 export const evalScripts = comp => arr => {
   arr && Array.from(arr).forEach(s => {
     (function () {
+
       eval(s.text);
     }).bind(comp)();
   });

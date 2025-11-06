@@ -158,6 +158,42 @@ class Panel extends Component {
     this.qParamMap_.clear();
   }
 
+  //--[ Carbon Component Access ]-----
+  /**
+   * Gets all Carbon components of a specific type in this panel.
+   * Components are scanned and stored during Carbon library initialization.
+   * @param {string} selector - Carbon component selector (e.g., 'cds-table', 'cds-button')
+   * @return {Element[]} Array of matching elements, or empty array if none found
+   * @example
+   *   const tables = this.getCarbonComponents('cds-table');
+   *   const buttons = this.getCarbonComponents('cds-button');
+   */
+  getCarbonComponents(selector) {
+    return this.carbonComponents?.get(selector) || [];
+  }
+
+  /**
+   * Gets a single Carbon component by its ID.
+   * Searches across all Carbon component types stored in this panel.
+   * @param {string} id - The element ID to search for
+   * @return {Element|undefined} The matching element, or undefined if not found
+   * @example
+   *   const table = this.getCarbonComponentById('companies-table');
+   */
+  getCarbonComponentById(id) {
+    if (!this.carbonComponents) {
+      return undefined;
+    }
+
+    for (const elements of this.carbonComponents.values()) {
+      const found = elements.find(el => el.id === id);
+      if (found) {
+        return found;
+      }
+    }
+    return undefined;
+  }
+
 
   //--[ Template Render ]-----
   /**
@@ -484,7 +520,6 @@ class Panel extends Component {
       this.listen(el, EV.DRAGSTART, onDragStart);
       this.listen(el, EV.DRAGEND, onDragend);
     });
-
 
     //--[ Async Populate ]--
     // Grab all elements with a 'zoo_async_json' class.

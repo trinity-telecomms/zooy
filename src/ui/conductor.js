@@ -10,6 +10,22 @@ import View from './view.js';
  * @extends {EVT}
  */
 export default class Conductor extends EVT {
+
+  #viewConstructorMap = new Map();
+
+  #activeView = null;
+
+  /**
+   * @type {!UserManager|undefined}
+   * @private
+   */
+  #user = void 0;
+
+
+  #split = void 0;
+
+  #viewEventMap = new Map();
+
   /**
    * Creates a new Conductor instance. Sets up browser history listening
    * and initializes view event handling.
@@ -17,19 +33,7 @@ export default class Conductor extends EVT {
   constructor() {
     super();
 
-    this.activeView_ = null;
-
-    /**
-     * @type {!UserManager|undefined}
-     * @private
-     */
-    this.user_ = void 0;
-
-    this.split_ = void 0;
-
-    this.viewEventMap_ = this.initViewEventsInternal_();
-
-    this.viewConstructorMap_ = new Map();
+    this.#viewEventMap = this.#initViewEventsInternal();
 
     window.addEventListener('popstate', (event) => {
       if (event.state === null) {
@@ -41,14 +45,14 @@ export default class Conductor extends EVT {
   };
 
   set split(split) {
-    this.split_ = split;
+    this.#split = split;
   }
 
   get split() {
-    if (!this.split_) {
+    if (!this.#split) {
       throw new Error('No SPLIT component available');
     }
-    return this.split_;
+    return this.#split;
   }
 
 
@@ -56,9 +60,9 @@ export default class Conductor extends EVT {
    * @param {!UserManager} user
    */
   set user(user) {
-    this.user_ = user;
-    if (this.activeView_) {
-      this.activeView_.user = this.user;
+    this.#user = user;
+    if (this.#activeView) {
+      this.#activeView.user = this.user;
     }
   };
 
@@ -67,10 +71,10 @@ export default class Conductor extends EVT {
    * @return {!UserManager}
    */
   get user() {
-    if (!this.user_) {
-      this.user_ = new UserManager();
+    if (!this.#user) {
+      this.#user = new UserManager();
     }
-    return this.user_;
+    return this.#user;
   };
 
   /**
@@ -79,12 +83,12 @@ export default class Conductor extends EVT {
    * @return {!Map<string, !Function>} Map of event names to handler functions
    * @private
    */
-  initViewEventsInternal_() {
+  #initViewEventsInternal() {
     return new Map()
       .set('switch_view', (eventData, _eView) => {
-        if (this.viewConstructorMap_.has(eventData.view)) {
-          const view = this.viewConstructorMap_.get(eventData.view)(
-            eventData.pk, eventData);
+        if (this.#viewConstructorMap.has(eventData.view)) {
+          const view = this.#viewConstructorMap.get(eventData.view)(
+            eventData.pk || eventData.recordId, eventData);
           this.switchView(view);
         }
       });
@@ -97,7 +101,7 @@ export default class Conductor extends EVT {
    * @param {!Function} func The handler function that receives (eventData, eView)
    */
   mapViewEv(s, func) {
-    this.viewEventMap_.set(s, func);
+    this.#viewEventMap.set(s, func);
   }
 
   /**
@@ -107,7 +111,7 @@ export default class Conductor extends EVT {
    * @param {!Function} f Constructor function that receives (pk, data) and returns a View
    */
   registerViewConstructor(s, f) {
-    this.viewConstructorMap_.set(s, f);
+    this.#viewConstructorMap.set(s, f);
   }
 
   /**
@@ -117,8 +121,8 @@ export default class Conductor extends EVT {
     const eventValue = e.detail.getValue();
     const eventData = e.detail.getData();
     const eView = /** @type {Panel} */ (e.target);
-    if (this.viewEventMap_.has(eventValue)) {
-      this.viewEventMap_.get(eventValue)(eventData, eView);
+    if (this.#viewEventMap.has(eventValue)) {
+      this.#viewEventMap.get(eventValue)(eventData, eView);
     } else {
       console.warn('Unhandled VIEW Event:', e, eventValue, eventData, eView);
     }
@@ -129,14 +133,13 @@ export default class Conductor extends EVT {
    * @param {!View} view
    */
   setActiveView(view) {
-    if (this.activeView_) {
-      this.stopListeningTo(this.activeView_);
-      this.activeView_.dispose();
-      this.activeView_ = null;
-      delete this.activeView_;
+    if (this.#activeView) {
+      this.stopListeningTo(this.#activeView);
+      this.#activeView.dispose();
+      this.#activeView = null;
     }
-    this.activeView_ = view;
-    this.activeView_.render();
+    this.#activeView = view;
+    this.#activeView.render();
   };
 
   /**
@@ -185,13 +188,13 @@ export default class Conductor extends EVT {
   navTo = (item) => {
     item.history = true;
     const view = item.view;
-    const activeView = this.activeView_;
+    const activeView = this.#activeView;
 
     if (activeView.switchViewMap_.has(view)) {
       this.debugMe('NAV:VIEW:MAP', item);
       activeView.switchViewMap_.get(view)(item);
-    } else if (this.viewConstructorMap_.has(view)) {
-      const targetView = this.viewConstructorMap_.get(view)(item.pk, item);
+    } else if (this.#viewConstructorMap.has(view)) {
+      const targetView = this.#viewConstructorMap.get(view)(item.pk, item);
       this.debugMe('NAV:NEW:VIEW', item);
       this.switchView(targetView);
     }

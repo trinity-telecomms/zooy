@@ -5,6 +5,7 @@
   "main": "./dist/zooy.cjs.js",
   "module": "./dist/zooy.es.js",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/zooy.es.js",

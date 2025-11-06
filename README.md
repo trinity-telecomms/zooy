@@ -364,18 +364,6 @@ Zooy previously supported client-side icon placeholder loading (`[data-carbon-ic
 - ✅ Works without JS (progressive enhancement)
 - ✅ Instant rendering
 
-**For non-Django applications**: The programmatic icon API (`icons-api.js`) is still available for runtime icon generation if needed:
-
-```javascript
-import zooy from 'zooy';
-
-// Create icon programmatically
-const iconSvg = await zooy.icons.createIcon('add', 16, { slot: 'icon' });
-document.body.appendChild(iconSvg);
-```
-
-However, server-side rendering (in templates/build step) is strongly recommended over runtime generation.
-
 ## Development
 
 ### Prerequisites
