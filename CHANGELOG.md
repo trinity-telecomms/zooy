@@ -5,6 +5,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1-beta.2] - 2025-11-07
+
+### Changed
+- **DataBinder Architecture**: Complete refactor to single-binder pattern (BREAKING CHANGE)
+  - Constructor now requires URL and root element: `new DataBinder(url, root, options)`
+  - One binder instance per root element (stored on `element.dataBinder`)
+  - Binder systematically walks root to find all consumers with `data-bind-template`
+  - Consumers specify `data-path` attribute for slicing JSON response
+  - Binder instance is reused for sort, search, pagination operations
+  - `getData(params)` method fetches data with query parameters and renders all consumers
+  - `setData(data)` is convergence point, stores full JSON object and calls render()
+  - `render()` walks root for consumers and renders each with appropriate data slice
+  - `render()` now supports both simple property binding AND template-based rendering
+- **DataBinder Rendering Logic**: Unified rendering implementation for code quality
+  - `#renderSimpleBindings()` is now parameterized and reusable
+  - Accepts `(element, data, index, options)` parameters
+  - Options control behavior: `removeOnCondition` and `removeAttributes` flags
+  - Same method serves both root-level simple bindings and template item rendering
+  - Eliminated duplicate methods: `#bindContent()` and `#bindAttributes()` removed
+- **DataBinder Pagination Support**: Full Django REST Framework pagination integration
+  - Automatic detection of DRF pagination format (`{count, next, previous, results}`)
+  - Parses `offset` from URL for pagination-aware row numbering
+  - Dispatches custom pagination events with metadata (count, limit, offset, page, etc.)
+  - `$index` and `$index1` now account for offset across pages
+  - Page 1 (offset=0): rows 1-10, Page 2 (offset=10): rows 11-20, etc.
+- **Carbon Table Integration**: Updated to use new DataBinder API
+  - Sort handler calls `table.dataBinder.getData({ordering})`
+  - Search handler calls `table.dataBinder.getData({q})`
+  - Pagination handler calls `table.dataBinder.getData({limit, offset})`
+  - Single binder instance handles all table operations
+- **Carbon Pagination Component**: Two-way event communication with DataBinder
+  - Listens for pagination metadata from DataBinder
+  - Dispatches navigation events on user interaction
+  - Supports `data-pagination-event` attribute for event matching
+
+### Added
+- **Simple Property Binding**: DataBinder now supports direct property binding without templates
+  - Use `data-bind` on existing elements to bind JSON properties to textContent
+  - Use `data-bind-attr` to bind properties to element attributes
+  - Use `data-bind-show-if` / `data-bind-hide-if` for conditional rendering
+  - Binding attributes are preserved for re-rendering when `getData()` is called again
+  - Enables 4 use cases: simple binding, template repetition, multiple consumers, mixed mode
+- **Pagination-Aware Row Numbering**: `$index` and `$index1` special variables now account for pagination offset
+  - Enables continuous row numbering across paginated data
+  - Example: Page 1 shows rows 1-10, Page 2 shows rows 11-20, etc.
+- **DataBinder Documentation**: Comprehensive documentation rewrite
+  - File-level JSDoc organized by 4 use cases with complete HTML + JavaScript examples
+  - Reference sections: binding attributes, special variables, DRF pagination, custom fetch
+  - Shows conditional rendering, formatters, and mixed simple/template binding patterns
+  - Updated `.claude/databinder-architecture.md` with current API
+  - Documented pagination support and event flow
+
+### Removed
+- **DataBinder Static Methods**: Removed deprecated provider/consumer pattern methods (BREAKING CHANGE)
+  - `DataBinder.initializeFromProvider()` - replaced by `new DataBinder(url, root, options)`
+  - `DataBinder.initializeAll()` - no longer needed with new architecture
+  - Component integrations now create single binder instance directly
+
+### Fixed
+- **Carbon Table Interactions**: Fixed table sorting, searching, and pagination after refactor
+  - Handlers now use stored `table.dataBinder` instance instead of static methods
+  - All table operations work correctly with new single-binder pattern
+
 ## [1.0.1-beta.1] - 2025-11-06
 
 ### Added

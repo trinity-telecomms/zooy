@@ -308,16 +308,16 @@ const createSkeletonForTable = (component, table) => {
 };
 
 /**
- * Setup server-side sort handler for DataBinder tables.
+ * Setup server-side sort handler for DataBinder tables (provider/consumer pattern).
  * @private
  */
-const setupDataBinderSortHandler = (component, table, binder) => {
-  table.addEventListener('cds-table-header-cell-sort', e => {
+const setupDataBinderSortHandler = (component, provider) => {
+  provider.addEventListener('cds-table-header-cell-sort', e => {
     // Prevent Carbon's client-side DOM sorting
     e.stopPropagation();
     e.preventDefault();
 
-    const headerRow = table.querySelector('cds-table-header-row');
+    const headerRow = provider.querySelector('cds-table-header-row');
     const columns = [...headerRow.children];
     const columnIndex = columns.indexOf(e.target);
     const sortField = e.target.getAttribute('data-sort-field') || e.target.textContent.trim();
@@ -334,37 +334,44 @@ const setupDataBinderSortHandler = (component, table, binder) => {
     });
 
     // Disable sorting during reload to prevent rapid clicks
-    disableTableSorting(table);
+    disableTableSorting(provider);
 
     // Reload data with DRF ordering parameter (e.g., ?ordering=name or ?ordering=-name)
     const ordering = e.detail.sortDirection === 'descending' ? `-${sortField}` : sortField;
     const params = { ordering };
 
     // Preserve custom page size if set
-    const pageSize = table.getAttribute('data-page-size');
+    const pageSize = provider.getAttribute('data-page-size');
     if (pageSize) {
       params.limit = parseInt(pageSize, 10);
     }
 
-    binder.load(params)
+    // Refetch using existing binder instance
+    if (!provider.dataBinder) {
+      console.error('[Carbon Table] No dataBinder found on table');
+      enableTableSorting(provider);
+      return;
+    }
+
+    provider.dataBinder.getData(params)
       .then(() => {
         // Re-enable sorting when new data arrives
-        enableTableSorting(table);
+        enableTableSorting(provider);
       })
       .catch(err => {
         console.error('[Carbon Table] Sort load failed:', err);
         // Re-enable even on error
-        enableTableSorting(table);
+        enableTableSorting(provider);
       });
   }, { capture: true });
 }
 
 /**
- * Setup server-side search handler for DataBinder tables.
+ * Setup server-side search handler for DataBinder tables (provider/consumer pattern).
  * @private
  */
-const setupDataBinderSearchHandler = (component, table, binder) => {
-  const searchElement = table.querySelector('cds-search');
+const setupDataBinderSearchHandler = (component, provider) => {
+  const searchElement = provider.querySelector('cds-search');
   if (!searchElement) {
     return;
   }
@@ -373,32 +380,82 @@ const setupDataBinderSearchHandler = (component, table, binder) => {
     const params = { q: e.target.value };
 
     // Preserve custom page size if set
-    const pageSize = table.getAttribute('data-page-size');
+    const pageSize = provider.getAttribute('data-page-size');
     if (pageSize) {
       params.limit = parseInt(pageSize, 10);
     }
 
-    binder.load(params).catch(err => {
+    // Refetch using existing binder instance
+    if (!provider.dataBinder) {
+      console.error('[Carbon Table] No dataBinder found on table');
+      return;
+    }
+
+    provider.dataBinder.getData(params).catch(err => {
       console.error('[Carbon Table] Search load failed:', err);
     });
   });
 };
 
 /**
- * Setup DataBinder integration for automatic server-side data loading.
+ * Setup pagination navigation handler for DataBinder tables.
+ * Listens for pagination navigation events (dispatched by pagination component)
+ * and refetches data with new page/size parameters.
  * @private
  */
-const setupDataBinderIntegration = (component, table, attrs) => {
-  const apiUrl = table.getAttribute('data-api-url');
-  const templateId = table.getAttribute('data-template');
+const setupPaginationNavigationHandler = (component, table) => {
+  // Get pagination event name from table, or use default
+  const paginationEventName = table.getAttribute('data-pagination-event');
+  if (!paginationEventName) {
+    return; // No pagination event configured
+  }
 
-  if (!apiUrl || !templateId) {
+  // Listen for pagination navigation events
+  component.listen(document, `${paginationEventName}-navigate`, e => {
+    const { page, pageSize, action } = e.detail;
+
+    // Build params object for getData()
+    const params = { limit: pageSize };
+
+    if (action === 'page-change') {
+      // Calculate offset for requested page
+      params.offset = (page - 1) * pageSize;
+      component.debugMe(`[Carbon Table] Pagination navigate to page ${page} (offset=${params.offset})`);
+    } else if (action === 'page-size-change') {
+      // Change page size, reset to page 1
+      params.offset = 0;
+      component.debugMe(`[Carbon Table] Page size changed to ${pageSize}`);
+    }
+
+    // Refetch using existing binder instance
+    if (!table.dataBinder) {
+      console.error('[Carbon Table] No dataBinder found on table');
+      return;
+    }
+
+    table.dataBinder.getData(params).catch(err => {
+      console.error('[Carbon Table] Pagination navigation failed:', err);
+    });
+  });
+};
+
+/**
+ * Setup DataBinder integration using provider/consumer pattern.
+ * Tables with data-api-url act as providers, their descendants with
+ * data-bind-template act as consumers.
+ * @private
+ */
+const setupDataBinderIntegration = async (component, table, attrs) => {
+  // Check if this table has a data-api-url
+  const apiUrl = table.getAttribute('data-api-url');
+  if (!apiUrl) {
     return; // Not a DataBinder table
   }
 
-  const body = table.querySelector('cds-table-body');
-  if (!body) {
-    console.warn('[Carbon Table] DataBinder table missing cds-table-body');
+  // Check if table has any consumers (descendants with data-bind-template)
+  const consumers = table.querySelectorAll('[data-bind-template]');
+  if (consumers.length === 0) {
+    component.debugMe('[Carbon Table] Table has no consumers with data-bind-template');
     return;
   }
 
@@ -406,50 +463,47 @@ const setupDataBinderIntegration = (component, table, attrs) => {
     // Create and overlay skeleton loader
     const skeleton = createSkeletonForTable(component, table);
 
-    // Initialize DataBinder
-    const binder = new DataBinder({
-      url: apiUrl,
-      template: templateId,
-      container: body,
-      dataPath: table.getAttribute('data-path'),
+    // Create ONE DataBinder for the table
+    const binder = new DataBinder(apiUrl, table, {
       fetchFn: (url) => component.user.fetchJson(url, component.abortController.signal)
     });
 
-    // Setup server-side sorting and searching
-    setupDataBinderSortHandler(component, table, binder);
-    setupDataBinderSearchHandler(component, table, binder);
-
     // Get custom page size if specified
     const pageSize = table.getAttribute('data-page-size');
-    const loadParams = pageSize ? { limit: parseInt(pageSize, 10) } : {};
+    const params = pageSize ? { limit: parseInt(pageSize, 10) } : {};
 
-    // Initial data load - enable sorting when data arrives
-    binder.load(loadParams)
-      .then(() => {
-        // Hide skeleton loader now that data has loaded (keep in DOM for potential reuse)
-        if (skeleton) {
-          skeleton.style.display = 'none';
-        }
-        // Re-enable sorting now that we have data
-        enableTableSorting(table);
-      })
-      .catch(err => {
-        console.error('[Carbon Table] Initial load failed:', err);
-        // Hide skeleton even on error
-        if (skeleton) {
-          skeleton.style.display = 'none';
-        }
-        // Still enable sorting even on error, so user can retry
-        enableTableSorting(table);
-      });
+    // Fetch data - binder will walk table and render all consumers
+    await binder.getData(params);
+
+    // Hide skeleton loader now that data has loaded
+    if (skeleton) {
+      skeleton.style.display = 'none';
+    }
+
+    // Re-enable sorting now that we have data
+    enableTableSorting(table);
 
     // Store binder on table for Panel access
     table.dataBinder = binder;
+
+    // Setup server-side sorting, searching, and pagination
+    setupDataBinderSortHandler(component, table);
+    setupDataBinderSearchHandler(component, table);
+    setupPaginationNavigationHandler(component, table);
 
     component.debugMe(`[Carbon Table] DataBinder initialized for table: ${table.id || '(no id)'}`);
 
   } catch (error) {
     console.error('[Carbon Table] Failed to initialize DataBinder:', error);
+
+    // Hide skeleton even on error
+    const skeleton = table.parentNode?.querySelector('cds-table-skeleton');
+    if (skeleton) {
+      skeleton.style.display = 'none';
+    }
+
+    // Still enable sorting even on error, so user can retry
+    enableTableSorting(table);
   }
 }
 
