@@ -73,6 +73,7 @@ export function scanForCarbonComponents(panel) {
 
 /**
  * Collects unique import functions needed based on scanned elements.
+ * Supports both single imports and arrays of imports for components with dependencies.
  *
  * @param {Map<string, Element[]>} elementMap - Map from scanForCarbonComponents
  * @returns {Set<Function>} Set of unique import functions to load
@@ -84,7 +85,9 @@ export function collectImportsNeeded(elementMap) {
   for (const [selector, elements] of elementMap.entries()) {
     const config = COMPONENT_CONFIG[selector];
     if (config && config.import && elements.length > 0) {
-      importsNeeded.add(config.import);
+      // Handle both single import and array of imports
+      const imports = Array.isArray(config.import) ? config.import : [config.import];
+      imports.forEach(importFn => importsNeeded.add(importFn));
     }
   }
 

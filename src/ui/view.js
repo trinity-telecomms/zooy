@@ -1,4 +1,4 @@
-import EVT from './evt.js';
+import Evt from './evt.js';
 import {UiEventType} from '../events/uieventtype.js';
 import ZooyEventData from '../events/zooyeventdata.js';
 import UserManager from '../user/usermanager.js';
@@ -13,9 +13,9 @@ import {SearchHandlers, QueryParamHandlers} from './handlers/index.js';
  * manage navigation, and communicate with the Conductor for view switching.
  * Each view represents a distinct application state or screen.
  *
- * @extends {EVT}
+ * @extends {Evt}
  */
-export default class View extends EVT {
+export default class View extends Evt {
 
   #registerViewConstructor = void 0;
 
@@ -369,7 +369,7 @@ export default class View extends EVT {
    */
   dispatchViewEvent(value, opt_data) {
     const dataObj = new ZooyEventData(value, opt_data);
-    const event = EVT.makeEvent(UiEventType.VIEW, dataObj);
+    const event = Evt.makeEvent(UiEventType.VIEW, dataObj);
     return this.dispatchEvent(event);
   };
 

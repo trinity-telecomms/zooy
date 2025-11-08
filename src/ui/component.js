@@ -1,5 +1,5 @@
 import ZooyEventData from '../events/zooyeventdata.js';
-import EVT from './evt.js';
+import Evt from './evt.js';
 import {UiEventType} from '../events/uieventtype.js';
 import {isInPage, removeNode} from '../dom/utils.js';
 import {ComponentLibraryRegistry} from './component-library-registry.js';
@@ -66,9 +66,9 @@ const ComponentError = {
  * and a parent-child component hierarchy. Components can be rendered into the DOM,
  * manage their own children, and dispatch events to communicate with other components.
  *
- * @extends {EVT}
+ * @extends {Evt}
  */
-export default class Component extends EVT {
+export default class Component extends Evt {
 
   //--[ Static ]--
   /**
@@ -528,7 +528,7 @@ export default class Component extends EVT {
    */
   dispatchCompEvent(value, opt_data) {
     const dataObj = new ZooyEventData(value, opt_data);
-    const event = EVT.makeEvent(UiEventType.COMP, dataObj);
+    const event = Evt.makeEvent(UiEventType.COMP, dataObj);
     return this.dispatchEvent(event);
   };
 

@@ -10,7 +10,7 @@ import {
 import UserManager from '../user/usermanager.js';
 import {UiEventType} from '../events/uieventtype.js';
 import ZooyEventData from '../events/zooyeventdata.js';
-import EVT from './evt.js';
+import Evt from './evt.js';
 import {EV} from '../events/mouseandtouchevents.js';
 import {ComponentLibraryRegistry} from './component-library-registry.js';
 import {
@@ -638,7 +638,7 @@ class Panel extends Component {
    */
   dispatchPanelEvent(value, opt_data) {
     const dataObj = new ZooyEventData(value, opt_data);
-    const event = EVT.makeEvent(UiEventType.PANEL, dataObj);
+    const event = Evt.makeEvent(UiEventType.PANEL, dataObj);
     this.debugMe('PANEL EVENT FIRED. Value:', value, 'Opt DATA:', opt_data);
     return this.dispatchEvent(event);
   };

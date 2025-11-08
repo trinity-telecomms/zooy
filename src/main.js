@@ -1,5 +1,5 @@
 // Modern named exports for tree-shaking
-export { default as EVT } from "./ui/evt.js";
+export { default as Evt } from "./ui/evt.js";
 export { default as Component } from './ui/component.js';
 export { default as Dragger } from './ui/dragger.js';
 export { default as Panel } from './ui/panel.js';
@@ -42,7 +42,7 @@ export async function registerMdcLibrary() {
 
 // Legacy default export for backward compatibility
 // Modern code should use named imports instead
-import EVT from "./ui/evt.js";
+import Evt from "./ui/evt.js";
 import Component from './ui/component.js';
 import Dragger from './ui/dragger.js';
 import Panel from './ui/panel.js';
@@ -60,7 +60,7 @@ import * as handlers from './ui/handlers/index.js';
 import * as zoo from './ui/zoo/index.js';
 
 const zooy = {
-  EVT,
+  Evt,
   Component,
   Dragger,
   Panel,

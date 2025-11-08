@@ -83,13 +83,14 @@ const checkStatusTwo = panel => response => {
  * @return {Promise}
  */
 const getJson = response => {
-  if (response.status === 204) {
-    return Promise.resolve({});
-  }
-  return response.json().then(
-    data => Promise.resolve(data),
-    err => Promise.reject(new Error(`Could not get JSON from response: ${err}`))
-  );
+  // if (response.status === 204) {
+  //   return Promise.resolve({});
+  // }
+  // return response.json().then(
+  //   data => Promise.resolve(data),
+  //   err => Promise.reject(new Error(`Could not get JSON from response: ${err}`))
+  // );
+  return response.json();
 };
 
 
@@ -425,16 +426,28 @@ export default class UserManager {
    * @param {AbortSignal|undefined} signal
    * @return {Promise}
    */
-  fetchJson(uri, signal = void 0) {
+  async fetchJson(uri, signal = void 0) {
     const req = new Request(uri.toString());
     const catchClause = genCatchClause(`fetchJson: ${uri}`, {});
     const opts = basicGetInit(this.jwt, signal);
-    return startSpin()
-      .then(() => fetch(req, opts))
-      .then(checkStatus)
-      .then(stopSpin)
-      .then(getJson)
-      .catch(catchClause);
+
+    await startSpin();
+    let json = {};
+    try {
+      const response = await fetch(req, opts);
+      json = await response.json();
+    } catch (err) {
+      return catchClause(err);
+    }
+    await stopSpin();
+    return json;
+
+    // return startSpin()
+    //   .then(() => fetch(req, opts))
+    //   .then(checkStatus)
+    //   .then(stopSpin)
+    //   .then(getJson)
+    //   .catch(catchClause);
   };
 
   /**

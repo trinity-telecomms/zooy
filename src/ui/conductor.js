@@ -1,5 +1,5 @@
 import UserManager from '../user/usermanager.js';
-import EVT from './evt.js';
+import Evt from './evt.js';
 import View from './view.js';
 
 /**
@@ -7,9 +7,9 @@ import View from './view.js';
  * It maintains the active view, manages view transitions, handles browser history,
  * and coordinates communication between views via events.
  *
- * @extends {EVT}
+ * @extends {Evt}
  */
-export default class Conductor extends EVT {
+export default class Conductor extends Evt {
 
   #viewConstructorMap = new Map();
 

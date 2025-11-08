@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1-beta.3] - 2025-11-08
+
+### Added
+- **Automatic Table Pagination**: Tables with `data-api-url` now automatically create and configure pagination components
+  - Pagination component created dynamically when table has paginated data
+  - Automatically wired to DataBinder for page navigation
+  - Supports page size selection (10, 25, 50, 100, 500 items per page)
+  - Updates total items, total pages, and current page from API response
+  - No manual configuration required - fully automatic
+- **Component Import Dependencies**: Component system now supports arrays of imports
+  - Components can declare multiple import dependencies: `import: [tableImport, paginationImport]`
+  - All imports loaded in parallel before component initialization
+  - Declarative dependency management - no manual import calls needed
+  - Uses application-level cache (Conductor) and browser module cache
+
+### Changed
+- **Automatic Server-Side Sorting**: DataBinder tables now automatically sort on the backend
+  - No longer requires `sort-event` attribute on table
+  - Tables with `data-api-url` automatically do server-side sorting
+  - Sends `ordering` parameter to Django REST Framework API
+  - Prevents Carbon's client-side alphabetic DOM sorting
+  - Client-side sorting event dispatch still available via `sort-event` attribute for non-DataBinder tables
+- **Carbon Table Component**: Improved code organization and clarity
+  - Pagination event listeners moved into `createPagination()` function
+  - Better separation of concerns - pagination logic encapsulated
+  - Table init function simplified and more readable
+- **Component Renderer**: Enhanced to support array imports
+  - `collectImportsNeeded()` now handles both single imports and arrays
+  - Automatically flattens import arrays into unique set
+  - Backward compatible - single imports still work
+
+### Fixed
+- **Numeric Column Sorting**: Fixed tables sorting numeric columns alphabetically
+  - Server-side sorting now properly enabled for DataBinder tables
+  - Django backend performs correct numeric/text sorting based on field type
+  - Removed client-side sorting that was treating numbers as strings
+
+### Removed
+- **Debug Logging**: Removed all debug console.log statements from production code
+  - Cleaned up DataBinder debug logs (`templateId`, `dataPath`, etc.)
+  - Cleaned up table pagination debug logs (`DING`, `DONG`)
+  - Error logging (console.error/warn) retained for legitimate issues
+
 ## [1.0.1-beta.2] - 2025-11-07
 
 ### Changed

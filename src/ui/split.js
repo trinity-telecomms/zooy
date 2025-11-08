@@ -1,7 +1,7 @@
 import Component from './component.js';
 import {UiEventType} from '../events/uieventtype.js';
 import {identity, randomId} from 'badu';
-import EVT from './evt.js';
+import Evt from './evt.js';
 import Dragger from './dragger.js';
 import ZooyEventData from '../events/zooyeventdata.js';
 import {EV} from '../events/mouseandtouchevents.js';
@@ -482,7 +482,7 @@ export default class Split extends Component {
    */
   dispatchSplitEvent(value, opt_data) {
     const dataObj = new ZooyEventData(value, opt_data);
-    const event = EVT.makeEvent(UiEventType.SPLIT, dataObj);
+    const event = Evt.makeEvent(UiEventType.SPLIT, dataObj);
     return this.dispatchEvent(event);
   };
 

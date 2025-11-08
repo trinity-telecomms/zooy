@@ -11,14 +11,14 @@ npm install @trintel/zooy
 ## Core Architecture
 
 ```
-EVT (Event Target)
+Evt (Event Target)
  └─ Component
      ├─ Panel
      │   └─ FormPanel
      ├─ Dragger
      └─ Split
 
-EVT
+Evt
  ├─ View
  └─ Conductor
 
@@ -29,7 +29,7 @@ ComponentLibraryRegistry (Static)
 
 ## Core Concepts
 
-### EVT
+### Evt
 
 Base class extending `EventTarget` with lifecycle-aware listener management.
 
@@ -357,7 +357,7 @@ zooy/
 import zooy from '@trintel/zooy';
 
 // Main exports
-zooy.EVT
+zooy.Evt
 zooy.Component
 zooy.Panel
 zooy.FormPanel

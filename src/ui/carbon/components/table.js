@@ -6,523 +6,432 @@
  */
 
 import {DataBinder} from '../../data-binder.js';
-import { getSemanticAttributes } from '../../zoo/index.js';
+import {getSemanticAttributes} from '../../zoo/index.js';
+import * as R from "ramda";
+import {isDefAndNotNull} from "badu";
 
 const dataTableImport = () => import('@carbon/web-components/es/components/data-table/index.js');
+const paginationImport = () => import('@carbon/web-components/es/components/pagination/index.js');
+
+
+// Pagination component
+export const paginationComponent = {
+  'cds-pagination': {
+    import: paginationImport,
+    init: function (pagination) {
+      const panel = this;
+
+      // Listen for user navigation and dispatch navigation events
+      panel.listen(pagination, 'cds-pagination-changed-current', e => {
+        panel.dispatchPanelEvent("pagination-changed-current", {
+          detail: {
+            page: e.detail.page,
+            pageSize: pagination.pageSize,
+            action: 'page-change'
+          }
+        });
+      });
+
+      // Listen for page size changes and dispatch navigation events
+      panel.listen(pagination, 'cds-page-sizes-select-changed', e => {
+        const newPageSize = pagination.pageSize;
+        panel.dispatchPanelEvent("pagination-changed-page-size", {
+          detail: {
+            page: 1, // Reset to page 1 when changing size
+            pageSize: newPageSize,
+            action: 'page-size-change'
+          }
+        });
+      });
+    }
+  }
+};
 
 /**
  * Setup row selection event handlers (individual rows and select-all).
  * @private
  */
-const setupSelectionEvents = (component, table, attrs) => {
-  // Individual row selection
-  const selectionEvent = table.getAttribute('selection-event') || attrs.event;
+const initEventHandlers = (panel, el, attrs) => {
+  const selectionEvent = el.getAttribute('selection-event') || attrs.event;
   if (selectionEvent) {
-    component.listen(table, 'cds-table-row-change-selection', e => {
-      component.dispatchPanelEvent(selectionEvent, {
-        ...attrs,
-        selected: e.detail.selected,
-        rowId: e.target.id
+    panel.listen(el, 'cds-table-row-change-selection', e => {
+      panel.dispatchPanelEvent(selectionEvent, {
+        ...attrs, selected: e.detail.selected, rowId: e.target.id
       });
     });
   }
 
   // Select all checkbox
-  const selectAllEvent = table.getAttribute('select-all-event');
+  const selectAllEvent = el.getAttribute('select-all-event');
   if (selectAllEvent) {
-    component.listen(table, 'cds-table-change-selection-all', e => {
-      component.dispatchPanelEvent(selectAllEvent, {
-        ...attrs,
-        selected: e.detail.selected
+    panel.listen(el, 'cds-table-change-selection-all', e => {
+      panel.dispatchPanelEvent(selectAllEvent, {
+        ...attrs, selected: e.detail.selected
       });
     });
   }
 
   // High-level synthetic event for row selection
-  const rowSelectedEvent = table.getAttribute('row-selected-event');
+  const rowSelectedEvent = el.getAttribute('row-selected-event');
   if (rowSelectedEvent) {
-    component.listen(table, 'cds-table-row-selected', e => {
-      component.dispatchPanelEvent(rowSelectedEvent, {
-        ...attrs,
-        selectedRows: e.detail.selectedRows || []
+    panel.listen(el, 'cds-table-row-selected', e => {
+      panel.dispatchPanelEvent(rowSelectedEvent, {
+        ...attrs, selectedRows: e.detail.selectedRows || []
       });
     });
   }
 
   // High-level synthetic event for select-all
-  const allSelectedEvent = table.getAttribute('all-selected-event');
+  const allSelectedEvent = el.getAttribute('all-selected-event');
   if (allSelectedEvent) {
-    component.listen(table, 'cds-table-row-all-selected', e => {
-      component.dispatchPanelEvent(allSelectedEvent, {
-        ...attrs,
-        selected: e.detail.selected
+    panel.listen(el, 'cds-table-row-all-selected', e => {
+      panel.dispatchPanelEvent(allSelectedEvent, {
+        ...attrs, selected: e.detail.selected
       });
     });
   }
-};
 
-/**
- * Setup row interaction event handlers (clicks and expand/collapse).
- * @private
- */
-const setupRowInteractionEvents = (component, table, attrs) => {
   // Row click events
-  const rowClickEvent = table.getAttribute('row-click-event');
+  const rowClickEvent = el.getAttribute('row-click-event');
   if (rowClickEvent) {
-    component.listen(table, 'click', e => {
+    panel.listen(el, 'click', e => {
       const row = e.target.closest('cds-table-row');
-
-      // Ignore clicks on checkboxes or non-row elements
       if (!row || e.target.matches('cds-table-header-cell-checkbox, cds-table-cell-checkbox')) {
         return;
       }
-
       e.stopPropagation();
       const rowAttrs = getSemanticAttributes(row);
-      component.dispatchPanelEvent(rowClickEvent, {
-        ...attrs,
-        ...rowAttrs,
-        rowId: row.id
+      panel.dispatchPanelEvent(rowClickEvent, {
+        ...attrs, ...rowAttrs, rowId: row.id
       });
     });
   }
 
   // Expandable row toggle events
-  const expandEvent = table.getAttribute('expand-event');
+  const expandEvent = el.getAttribute('expand-event');
   if (expandEvent) {
-    component.listen(table, 'cds-table-row-expando-toggled', e => {
-      component.dispatchPanelEvent(expandEvent, {
+    panel.listen(el, 'cds-table-row-expando-toggled', e => {
+      panel.dispatchPanelEvent(expandEvent, {
         ...attrs,
         rowId: e.target.id,
         expanded: e.detail.expanded
       });
     });
   }
-};
 
-/**
- * Setup sort event handlers for client-side sorting.
- * @private
- */
-const setupSortEvents = (component, table, attrs) => {
-  const sortEvent = table.getAttribute('sort-event');
-  if (sortEvent) {
-    component.listen(table, 'cds-table-header-cell-sort', e => {
-      component.dispatchPanelEvent(sortEvent, {
-        ...attrs,
-        sortColumn: e.detail.columnId,
-        sortDirection: e.detail.sortDirection
+  const batchActionsElement = el.querySelector('cds-table-batch-actions');
+  if (batchActionsElement) {
+    const batchCancelEvent = el.getAttribute('batch-cancel-event');
+    if (batchCancelEvent) {
+      panel.listen(batchActionsElement, 'cds-table-batch-actions-cancel-clicked', _ => {
+        panel.dispatchPanelEvent(batchCancelEvent, {
+          ...attrs, action: 'cancel'
+        });
       });
-    });
+    }
+    const batchSelectAllEvent = el.getAttribute('batch-select-all-event');
+    if (batchSelectAllEvent) {
+      panel.listen(batchActionsElement, 'cds-table-batch-actions-select-all-clicked', _ => {
+        panel.dispatchPanelEvent(batchSelectAllEvent, {
+          ...attrs, action: 'select-all'
+        });
+      });
+    }
+  }
+
+  // Server-side sorting with DataBinder
+  if (el.dataBinder) {
+    el.addEventListener('cds-table-header-cell-sort', e => {
+      // Prevent Carbon's client-side DOM sorting
+      e.stopPropagation();
+      e.preventDefault();
+
+      const headerRow = el.querySelector('cds-table-header-row');
+      const columns = [...headerRow.children];
+      const columnIndex = columns.indexOf(e.target);
+      const sortField = e.target.getAttribute('data-sort-field') || e.target.textContent.trim();
+
+      // Manually update column sort states (since we prevented Carbon's handler)
+      columns.forEach((col, idx) => {
+        if (idx === columnIndex) {
+          col.setAttribute('sort-active', 'true');
+          col.setAttribute('sort-direction', e.detail.sortDirection);
+        } else {
+          col.removeAttribute('sort-active');
+          col.setAttribute('sort-direction', 'none');
+        }
+      });
+
+      // Reload data with DRF ordering parameter (e.g., ?ordering=name or ?ordering=-name)
+      const ordering = e.detail.sortDirection === 'descending' ? `-${sortField}` : sortField;
+      const params = {ordering};
+
+      // Preserve current page size
+      const pageSize = el.getAttribute('data-page-size');
+      if (pageSize) {
+        params.limit = parseInt(pageSize, 10);
+      }
+
+      el.dataBinder.getData(params).catch(err => {
+        console.error('[Carbon Table] Sort load failed:', err);
+      });
+    }, {capture: true});
+  } else {
+    // Client-side sorting event dispatch (only if sort-event attribute is set)
+    const sortEvent = el.getAttribute('sort-event');
+    if (sortEvent) {
+      panel.listen(el, 'cds-table-header-cell-sort', e => {
+        panel.dispatchPanelEvent(sortEvent, {
+          ...attrs, sortColumn: e.detail.columnId, sortDirection: e.detail.sortDirection
+        });
+      });
+    }
   }
 
   // High-level sorted event (fires after sorting is complete)
-  const sortedEvent = table.getAttribute('sorted-event');
+  const sortedEvent = el.getAttribute('sorted-event');
   if (sortedEvent) {
-    component.listen(table, 'cds-table-sorted', e => {
-      component.dispatchPanelEvent(sortedEvent, {
-        ...attrs,
-        sortColumn: e.detail.columnId,
-        sortDirection: e.detail.sortDirection
-      });
-    });
-  }
-};
-
-/**
- * Setup batch action event handlers.
- * @private
- */
-const setupBatchActionEvents = (component, table, attrs) => {
-  const batchActionsElement = table.querySelector('cds-table-batch-actions');
-  if (!batchActionsElement) {
-    return;
-  }
-
-  const batchCancelEvent = table.getAttribute('batch-cancel-event');
-  if (batchCancelEvent) {
-    component.listen(batchActionsElement, 'cds-table-batch-actions-cancel-clicked', _ => {
-      component.dispatchPanelEvent(batchCancelEvent, {
-        ...attrs,
-        action: 'cancel'
+    panel.listen(el, 'cds-table-sorted', e => {
+      panel.dispatchPanelEvent(sortedEvent, {
+        ...attrs, sortColumn: e.detail.columnId, sortDirection: e.detail.sortDirection
       });
     });
   }
 
-  const batchSelectAllEvent = table.getAttribute('batch-select-all-event');
-  if (batchSelectAllEvent) {
-    component.listen(batchActionsElement, 'cds-table-batch-actions-select-all-clicked', _ => {
-      component.dispatchPanelEvent(batchSelectAllEvent, {
-        ...attrs,
-        action: 'select-all'
-      });
-    });
-  }
-};
+  const searchElement = el.querySelector('cds-search');
+  if (searchElement) {
+    if (el.dataBinder) {
+      panel.listen(searchElement, 'cds-search-input', e => {
+        const params = {q: e.target.value};
 
-/**
- * Setup search/filter event handlers for client-side filtering.
- * @private
- */
-const setupSearchEvents = (component, table, attrs) => {
-  const searchElement = table.querySelector('cds-search');
-  if (!searchElement) {
-    return;
-  }
+        // Preserve custom page size if set
+        const pageSize = el.getAttribute('data-page-size');
+        if (pageSize) {
+          params.limit = parseInt(pageSize, 10);
+        }
 
-  const searchEvent = table.getAttribute('search-event');
-  if (searchEvent) {
-    component.listen(searchElement, 'cds-search-input', e => {
-      component.dispatchPanelEvent(searchEvent, {
-        ...attrs,
-        searchTerm: e.target.value
+        el.dataBinder.getData(params).catch(err => {
+          console.error('[Carbon Table] Search load failed:', err);
+        });
       });
-    });
+    } else {
+      const searchEvent = el.getAttribute('search-event');
+      if (searchEvent) {
+        panel.listen(searchElement, 'cds-search-input', e => {
+          panel.dispatchPanelEvent(searchEvent, {
+            ...attrs, searchTerm: e.target.value
+          });
+        });
+      }
+    }
   }
 
   // High-level filtered event
-  const filteredEvent = table.getAttribute('filtered-event');
+  const filteredEvent = el.getAttribute('filtered-event');
   if (filteredEvent) {
-    component.listen(table, 'cds-table-filtered', e => {
-      component.dispatchPanelEvent(filteredEvent, {
-        ...attrs,
-        searchTerm: e.detail.searchTerm
+    panel.listen(el, 'cds-table-filtered', e => {
+      panel.dispatchPanelEvent(filteredEvent, {
+        ...attrs, searchTerm: e.detail.searchTerm
       });
     });
   }
+
+  // Pagination events. These are
+  // const myPaginatorEvents = `${el.id}-navigate`;
+  // panel.listen(document, myPaginatorEvents, e => {
+  //   const {page, pageSize, action} = e.detail;
+  //   const params = {limit: pageSize};
+  //   if (action === 'page-change') {
+  //     params.offset = (page - 1) * pageSize;
+  //   } else if (action === 'page-size-change') {
+  //     params.offset = 0;
+  //   }
+  //   el.dataBinder.getData(params).catch(err => {
+  //     console.error('[Carbon Table] Pagination navigation failed:', err);
+  //   });
+  // });
+
 };
 
-/**
- * Disable sorting on all header cells (used while table is empty/loading).
- * @private
- */
-const disableTableSorting = (table) => {
-  const headerRow = table.querySelector('cds-table-header-row');
-  if (!headerRow) return;
+const createPagination = (el, panel, dataBinder) => {
+  const pagination = document.createElement('cds-pagination');
 
-  const headerCells = [...headerRow.children];
-  headerCells.forEach(cell => {
-    if (cell.isSortable) {
-      cell.isSortable = false;
-      cell.setAttribute('data-was-sortable', 'true'); // Remember it was sortable
-    }
+  pagination.backwardText = 'Previous page';
+  pagination.forwardText = 'Next page';
+  pagination.itemsPerPageText = 'Items per page:';
+  pagination.pageSize = 10;
+  pagination.size = 'lg';
+
+  const legalPageSizes = [10, 25, 50, 100, 500];
+  legalPageSizes.forEach(size => {
+    const selectItem = document.createElement('cds-select-item');
+    selectItem.value = size.toString();
+    selectItem.textContent = size.toString();
+    pagination.appendChild(selectItem);
   });
-};
 
-/**
- * Enable sorting on header cells that were previously sortable.
- * @private
- */
-const enableTableSorting = (table) => {
-  const headerRow = table.querySelector('cds-table-header-row');
-  if (!headerRow) return;
+  pagination.setData = (data, currentLimit, currentOffset) => {
+    if (maybePaginated(data)) {
+      const {count, next, previous} = R.pick(['count', 'next', 'previous'], data);
 
-  const headerCells = [...headerRow.children];
-  headerCells.forEach(cell => {
-    if (cell.getAttribute('data-was-sortable') === 'true') {
-      cell.isSortable = true;
-      cell.removeAttribute('data-was-sortable');
+      // Parse limit and offset from next, previous, or use current values
+      let limit = currentLimit;
+      let offset = currentOffset;
+
+      if (isDefAndNotNull(next)) {
+        const url = new URL(next);
+        limit = parseInt(url.searchParams.get('limit'), 10);
+        const nextOffset = parseInt(url.searchParams.get('offset'), 10);
+        offset = nextOffset - limit;
+      } else if (isDefAndNotNull(previous)) {
+        const url = new URL(previous);
+        limit = parseInt(url.searchParams.get('limit'), 10);
+        const prevOffset = parseInt(url.searchParams.get('offset'), 10);
+        offset = prevOffset + limit;
+      }
+
+      const totalPages = Math.ceil(count / limit);
+      const currentPage = Math.floor(offset / limit) + 1;
+
+      pagination.totalItems = count;
+      pagination.totalPages = totalPages;
+      pagination.pageSize = limit;
+      pagination.page = currentPage;
+      pagination.dataset.nextUrl = next || '';
+      pagination.dataset.previousUrl = previous || '';
     }
+  }
+
+  // Listen for Carbon's native pagination events
+  panel.listen(pagination, 'cds-pagination-changed-current', e => {
+    const {page} = e.detail;
+    const pageSize = pagination.pageSize;
+    const params = {
+      limit: pageSize,
+      offset: (page - 1) * pageSize
+    };
+    dataBinder.getData(params).catch(err => {
+      console.error('[Carbon Table] Pagination navigation failed:', err);
+    });
   });
-};
+
+  panel.listen(pagination, 'cds-page-sizes-select-changed', e => {
+    const pageSize = pagination.pageSize;
+    const params = {
+      limit: pageSize,
+      offset: 0 // Reset to page 1
+    };
+    dataBinder.getData(params).then(() => {
+      const {count} = dataBinder.data;
+      if (count) {
+        pagination.totalItems = count;
+        pagination.totalPages = Math.ceil(count / pageSize);
+      }
+    }).catch(err => {
+      console.error('[Carbon Table] Page size change failed:', err);
+    });
+  });
+
+  el.after(pagination);
+  return pagination;
+}
+
 
 /**
  * Create and configure a skeleton loader that matches the table structure.
  * @private
  */
-const createSkeletonForTable = (component, table) => {
+const createSkeletonForTable = (panel, table) => {
   // Verify parent exists
   if (!table.parentNode) {
     console.error('[Carbon Table] Cannot create skeleton: table has no parent node');
     return;
   }
 
-  const skeleton = document.createElement('cds-table-skeleton');
-  skeleton.classList.add('fade-in');
-
   // Interrogate table structure
-  const hasTitle = !!table.querySelector('[slot="title"]');
-  const hasDescription = !!table.querySelector('[slot="description"]');
-  const hasToolbar = !!table.querySelector('cds-table-toolbar, [slot="toolbar"]');
-  const headerRow = table.querySelector('cds-table-header-row');
+  const hasTitle = !!table.querySelector('cds-table-header-title');
+  const hasDescription = !!table.querySelector('cds-table-header-description');
+  const hasToolbar = !!table.querySelector('cds-table-toolbar');
+  const colCount = [...table.querySelectorAll('cds-table-header-cell')].length;
+  const hasZebra = table.hasAttribute('zebra');
+  const size = table.getAttribute('size');
 
-  // Configure skeleton to match table
-  // Note: Carbon skeleton defaults to showHeader=true and showToolbar=true
+  const skeleton = document.createElement('cds-table-skeleton');
   skeleton.showHeader = hasTitle || hasDescription;
   skeleton.showToolbar = hasToolbar;
-  skeleton.zebra = table.hasAttribute('zebra');
-
-  // Set column count from actual table headers
-  if (headerRow) {
-    skeleton.columnCount = headerRow.children.length;
-  }
-
-  // Match table size attribute
-  const size = table.getAttribute('size');
-  if (size && ['xs', 'sm', 'md', 'lg', 'xl'].includes(size)) {
-    skeleton.size = size;
-  }
-
-  component.debugMe(
-    `[Carbon Table] Skeleton created: columns=${skeleton.columnCount}, ` +
-    `showHeader=${skeleton.showHeader}, showToolbar=${skeleton.showToolbar}, ` +
-    `size=${skeleton.size || 'default'}, zebra=${skeleton.zebra}`
-  );
+  skeleton.zebra = hasZebra;
+  skeleton.classList.add('fade-in');
+  skeleton.columnCount = colCount;
+  skeleton.size = size;
 
   // Create wrapper and overlay skeleton behind table
   const wrapper = document.createElement('div');
   wrapper.style.position = 'relative';
-
-  // Insert wrapper before table
   table.parentNode.insertBefore(wrapper, table);
-
-  // Add both elements to wrapper
   wrapper.appendChild(skeleton);
   wrapper.appendChild(table);
 
   // Position skeleton behind table
   Object.assign(skeleton.style, {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    width: '100%',
-    zIndex: '0'
+    position: 'absolute', top: '0', left: '0', width: '100%', zIndex: '0'
   });
-
-  // Position table on top with transparent background
   Object.assign(table.style, {
-    position: 'relative',
-    zIndex: '1',
-    backgroundColor: 'transparent'
+    position: 'relative', zIndex: '1', backgroundColor: 'transparent'
   });
-
-  // Disable sorting while table is empty
-  disableTableSorting(table);
-
-  // Log to help debug
-  console.log('[Carbon Table] Skeleton element:', skeleton);
-  console.log('[Carbon Table] Skeleton in DOM:', document.body.contains(skeleton));
-
-  // Return skeleton so caller can remove it later
   return skeleton;
 };
 
 /**
- * Setup server-side sort handler for DataBinder tables (provider/consumer pattern).
+ * When a table defines a data-api-url attribute in its root element, we need to
+ * fetch and bind the data to that element.
+ * While we wait for the data, we render a placeholder component in the
+ * dom, to let the user know we are still waiting for data.
  * @private
  */
-const setupDataBinderSortHandler = (component, provider) => {
-  provider.addEventListener('cds-table-header-cell-sort', e => {
-    // Prevent Carbon's client-side DOM sorting
-    e.stopPropagation();
-    e.preventDefault();
-
-    const headerRow = provider.querySelector('cds-table-header-row');
-    const columns = [...headerRow.children];
-    const columnIndex = columns.indexOf(e.target);
-    const sortField = e.target.getAttribute('data-sort-field') || e.target.textContent.trim();
-
-    // Manually update column sort states (since we prevented Carbon's handler)
-    columns.forEach((col, idx) => {
-      if (idx === columnIndex) {
-        col.setAttribute('sort-active', 'true');
-        col.setAttribute('sort-direction', e.detail.sortDirection);
-      } else {
-        col.removeAttribute('sort-active');
-        col.setAttribute('sort-direction', 'none');
-      }
+const setupDataBinderIntegration = (panel, el) => {
+  const apiUrl = el.getAttribute('data-api-url');
+  const pageSize = parseInt(el.getAttribute('data-page-size') || 0, 10)
+  if (apiUrl) {
+    return new DataBinder(panel, apiUrl, el, {
+      urlParams: {limit: pageSize},
     });
-
-    // Disable sorting during reload to prevent rapid clicks
-    disableTableSorting(provider);
-
-    // Reload data with DRF ordering parameter (e.g., ?ordering=name or ?ordering=-name)
-    const ordering = e.detail.sortDirection === 'descending' ? `-${sortField}` : sortField;
-    const params = { ordering };
-
-    // Preserve custom page size if set
-    const pageSize = provider.getAttribute('data-page-size');
-    if (pageSize) {
-      params.limit = parseInt(pageSize, 10);
-    }
-
-    // Refetch using existing binder instance
-    if (!provider.dataBinder) {
-      console.error('[Carbon Table] No dataBinder found on table');
-      enableTableSorting(provider);
-      return;
-    }
-
-    provider.dataBinder.getData(params)
-      .then(() => {
-        // Re-enable sorting when new data arrives
-        enableTableSorting(provider);
-      })
-      .catch(err => {
-        console.error('[Carbon Table] Sort load failed:', err);
-        // Re-enable even on error
-        enableTableSorting(provider);
-      });
-  }, { capture: true });
+  }
 }
 
 /**
- * Setup server-side search handler for DataBinder tables (provider/consumer pattern).
- * @private
+ * Check if response has DRF pagination structure (count + results keys)
+ * @param {Object} json - Response object
+ * @return {boolean}
  */
-const setupDataBinderSearchHandler = (component, provider) => {
-  const searchElement = provider.querySelector('cds-search');
-  if (!searchElement) {
-    return;
-  }
+const maybePaginated = R.both(R.has('count'), R.has('results'));
 
-  component.listen(searchElement, 'cds-search-input', e => {
-    const params = { q: e.target.value };
-
-    // Preserve custom page size if set
-    const pageSize = provider.getAttribute('data-page-size');
-    if (pageSize) {
-      params.limit = parseInt(pageSize, 10);
-    }
-
-    // Refetch using existing binder instance
-    if (!provider.dataBinder) {
-      console.error('[Carbon Table] No dataBinder found on table');
-      return;
-    }
-
-    provider.dataBinder.getData(params).catch(err => {
-      console.error('[Carbon Table] Search load failed:', err);
-    });
-  });
-};
-
-/**
- * Setup pagination navigation handler for DataBinder tables.
- * Listens for pagination navigation events (dispatched by pagination component)
- * and refetches data with new page/size parameters.
- * @private
- */
-const setupPaginationNavigationHandler = (component, table) => {
-  // Get pagination event name from table, or use default
-  const paginationEventName = table.getAttribute('data-pagination-event');
-  if (!paginationEventName) {
-    return; // No pagination event configured
-  }
-
-  // Listen for pagination navigation events
-  component.listen(document, `${paginationEventName}-navigate`, e => {
-    const { page, pageSize, action } = e.detail;
-
-    // Build params object for getData()
-    const params = { limit: pageSize };
-
-    if (action === 'page-change') {
-      // Calculate offset for requested page
-      params.offset = (page - 1) * pageSize;
-      component.debugMe(`[Carbon Table] Pagination navigate to page ${page} (offset=${params.offset})`);
-    } else if (action === 'page-size-change') {
-      // Change page size, reset to page 1
-      params.offset = 0;
-      component.debugMe(`[Carbon Table] Page size changed to ${pageSize}`);
-    }
-
-    // Refetch using existing binder instance
-    if (!table.dataBinder) {
-      console.error('[Carbon Table] No dataBinder found on table');
-      return;
-    }
-
-    table.dataBinder.getData(params).catch(err => {
-      console.error('[Carbon Table] Pagination navigation failed:', err);
-    });
-  });
-};
-
-/**
- * Setup DataBinder integration using provider/consumer pattern.
- * Tables with data-api-url act as providers, their descendants with
- * data-bind-template act as consumers.
- * @private
- */
-const setupDataBinderIntegration = async (component, table, attrs) => {
-  // Check if this table has a data-api-url
-  const apiUrl = table.getAttribute('data-api-url');
-  if (!apiUrl) {
-    return; // Not a DataBinder table
-  }
-
-  // Check if table has any consumers (descendants with data-bind-template)
-  const consumers = table.querySelectorAll('[data-bind-template]');
-  if (consumers.length === 0) {
-    component.debugMe('[Carbon Table] Table has no consumers with data-bind-template');
-    return;
-  }
-
-  try {
-    // Create and overlay skeleton loader
-    const skeleton = createSkeletonForTable(component, table);
-
-    // Create ONE DataBinder for the table
-    const binder = new DataBinder(apiUrl, table, {
-      fetchFn: (url) => component.user.fetchJson(url, component.abortController.signal)
-    });
-
-    // Get custom page size if specified
-    const pageSize = table.getAttribute('data-page-size');
-    const params = pageSize ? { limit: parseInt(pageSize, 10) } : {};
-
-    // Fetch data - binder will walk table and render all consumers
-    await binder.getData(params);
-
-    // Hide skeleton loader now that data has loaded
-    if (skeleton) {
-      skeleton.style.display = 'none';
-    }
-
-    // Re-enable sorting now that we have data
-    enableTableSorting(table);
-
-    // Store binder on table for Panel access
-    table.dataBinder = binder;
-
-    // Setup server-side sorting, searching, and pagination
-    setupDataBinderSortHandler(component, table);
-    setupDataBinderSearchHandler(component, table);
-    setupPaginationNavigationHandler(component, table);
-
-    component.debugMe(`[Carbon Table] DataBinder initialized for table: ${table.id || '(no id)'}`);
-
-  } catch (error) {
-    console.error('[Carbon Table] Failed to initialize DataBinder:', error);
-
-    // Hide skeleton even on error
-    const skeleton = table.parentNode?.querySelector('cds-table-skeleton');
-    if (skeleton) {
-      skeleton.style.display = 'none';
-    }
-
-    // Still enable sorting even on error, so user can retry
-    enableTableSorting(table);
-  }
-}
 
 export default {
   selector: 'cds-table',
-  import: dataTableImport,
+  import: [dataTableImport, paginationImport],
 
   /**
    * Initialize the table component with event handlers and optional DataBinder.
-   * @param {HTMLElement} table - The cds-table element
+   * @param {HTMLElement} el - The cds-table element
    */
-  init: function (table) {
-    const attrs = getSemanticAttributes(table);
+  init: function (el) {
+    const attrs = getSemanticAttributes(el);
+    const panel = this;
 
-    setupSelectionEvents(this, table, attrs);
-    setupRowInteractionEvents(this, table, attrs);
-    setupSortEvents(this, table, attrs);
-    setupBatchActionEvents(this, table, attrs);
-    setupSearchEvents(this, table, attrs);
-    setupDataBinderIntegration(this, table, attrs);
+    const dataBinder = setupDataBinderIntegration(panel, el);
+    if (isDefAndNotNull(dataBinder)) {
+      el.dataBinder = dataBinder;
+      const skeleton = createSkeletonForTable(panel, el);
+      const paginator = createPagination(el, panel, dataBinder);
+
+      attrs.limit = paginator.pageSize;
+      dataBinder.getData(attrs).then(_ => {
+        paginator.setData(dataBinder.data, dataBinder.limit, dataBinder.offset);
+      });
+    }
+    initEventHandlers(panel, el, attrs);
   }
 };
+
+
+

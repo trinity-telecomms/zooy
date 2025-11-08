@@ -25,7 +25,7 @@ var listenerCount = 0;
  * Provides a foundation for components that need to listen to and dispatch
  * events while maintaining proper lifecycle management.
  */
-export default class EVT extends EventTarget {
+export default class Evt extends EventTarget {
 
   /**
    * Set this to true to get some debug in the console.
@@ -136,7 +136,7 @@ export default class EVT extends EventTarget {
 
   //--[ Listeners and Listening ]--
   /**
-   * @param {!EventTarget|!EVT} comp
+   * @param {!EventTarget|!Evt} comp
    */
   isListenedToBy(comp) {
     this.#isObservedBy.add(comp);
@@ -147,7 +147,7 @@ export default class EVT extends EventTarget {
    * use preventDefault when we intercept the form, and that leads to a
    * general inability to POST forms.
    *
-   * @param {!EventTarget|!EVT|!Node} target
+   * @param {!EventTarget|!Evt|!Node} target
    * @param {string} event
    * @param {!Function} action
    * @param {boolean|!Object} options
@@ -175,7 +175,7 @@ export default class EVT extends EventTarget {
 
   /**
    * Stop listening to all events on target.
-   * @param {!EventTarget|!EVT|!Node|undefined} target
+   * @param {!EventTarget|!Evt|!Node|undefined} target
    * @param {string=} opt_event
    */
   stopListeningTo(target, opt_event) {

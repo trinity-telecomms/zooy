@@ -8,7 +8,7 @@
  */
 
 // Complex components
-import tableComponent from './table.js';
+import tableComponent, {paginationComponent} from './table.js';
 import modalComponent, { modalSubComponents } from './modal.js';
 import menuComponent, { menuButtonComponent } from './menu.js';
 import buttonComponent, { buttonComponents } from './button.js';
@@ -16,7 +16,7 @@ import dropdownComponent, { dropdownComponents } from './dropdown.js';
 import datePickerComponent, { timePickerComponent } from './date-picker.js';
 import fileUploaderComponent from './file-uploader.js';
 import tabsComponent, { navigationComponents } from './tabs.js';
-import breadcrumbComponent, { breadcrumbComponents, paginationComponent } from './breadcrumb.js';
+import breadcrumbComponent, { breadcrumbComponents } from './breadcrumb.js';
 
 // Form components
 import formInputComponent, { formInputComponents } from './form-inputs.js';

@@ -211,32 +211,27 @@ const DEFAULT_FORMATTERS = {
   }
 };
 
-/**
- * Check if response has DRF pagination structure (count + results keys)
- * @param {Object} json - Response object
- * @return {boolean}
- */
-const isDRFPaginated = R.both(R.has('count'), R.has('results'));
-
 export class DataBinder {
+  #component;
+  #baseUrl;
   #url;
   #root;
   #data = null;
   #formatters;
-  #fetchFn;
   #offset = 0;
 
   /**
    * Creates a new DataBinder instance.
    *
+   * @param component
    * @param {string} url - API endpoint URL
    * @param {Element} root - Root element to walk for bindings
-   * @param {Object} [options={}] - Configuration options
+   * @param {{urlParams: {limit: number}|{}, abortController: *|AbortController}} [options={}] - Configuration options
    * @param {Function} [options.fetchFn] - Custom fetch function (for authentication, etc.)
    * @param {Object<string, Function>} [options.formatters] - Custom formatters
    * @throws {Error} If url or root is missing/invalid
    */
-  constructor(url, root, options = {}) {
+  constructor(component, url, root, options = {}) {
     // Validate required parameters
     if (!url) {
       throw new Error('DataBinder requires a URL');
@@ -246,10 +241,27 @@ export class DataBinder {
     }
 
     // Store configuration
-    this.#url = url;
+    this.#component = component;
+    this.#baseUrl = new URL(url, window.location.origin);
+    this.#url = this.#baseUrl;
     this.#root = root;
-    this.#fetchFn = options.fetchFn || fetch.bind(window);
     this.#formatters = {...DEFAULT_FORMATTERS, ...options.formatters};
+  }
+
+  get url() {
+    return this.#url;
+  }
+
+  get data() {
+    return this.#data;
+  }
+
+  get offset() {
+    return this.#offset;
+  }
+
+  get limit() {
+    return parseInt(this.#url.searchParams.get('limit') || '0', 10);
   }
 
   /**
@@ -263,64 +275,30 @@ export class DataBinder {
    * - Calls setData() with full JSON response
    * - Dispatches lifecycle events: 'data-loading', 'data-loaded', 'data-error'
    *
-   * @param {Object} [params={}] - Query parameters to append to URL (e.g., {limit: 25, offset: 0, ordering: 'name'})
+   * @param {Object} [urlParams={}] - Query parameters to append to URL (e.g., {limit: 25, offset: 0, ordering: 'name'})
    * @return {Promise<Object>} The full JSON response from the server
    * @throws {Error} If fetch fails or response is invalid
    */
-  async getData(params = {}) {
+  async getData(urlParams = {}) {
     this.#dispatch('data-loading');
 
     try {
       // Build URL with query parameters
-      const url = new URL(this.#url, window.location.origin);
-      Object.entries(params).forEach(([key, value]) => {
+      this.#url = new URL(this.#baseUrl, window.location.origin);
+      Object.entries(urlParams).forEach(([key, value]) => {
         if (isDefAndNotNull(value)) {
-          url.searchParams.set(key, value);
+          this.#url.searchParams.set(key, value);
         }
       });
 
-      // Parse offset for pagination
-      this.#offset = parseInt(url.searchParams.get('offset')) || 0;
+      // Track offset for pagination-aware row numbering ($index, $index1)
+      this.#offset = parseInt(this.#url.searchParams.get('offset') || '0', 10);
 
-      // Fetch data using custom fetch function (supports authentication)
-      // Note: fetchFn can return either a Response object or JSON directly
-      const result = await this.#fetchFn(url.toString());
-
-      // Check if result is a Response object (standard fetch) or direct data
-      const json = result instanceof Response ?
-        (result.ok ? await result.json() : Promise.reject(new Error(`HTTP ${result.status}: ${result.statusText}`))) :
-        result;
-
-      // Dispatch pagination event if DRF paginated
-      if (isDRFPaginated(json)) {
-        const paginationMeta = R.pick(['count', 'next', 'previous'], json);
-        const limit = parseInt(url.searchParams.get('limit')) || 100;
-        const offset = this.#offset;
-        const page = Math.floor(offset / limit) + 1;
-        const totalPages = Math.ceil(paginationMeta.count / limit);
-
-        const paginationEventName = this.#root.getAttribute('data-pagination-event') || 'data-pagination';
-
-        this.#root.dispatchEvent(new CustomEvent(paginationEventName, {
-          detail: {
-            ...paginationMeta,
-            limit,
-            offset,
-            page,
-            totalPages,
-            hasNext: paginationMeta.next !== null,
-            hasPrevious: paginationMeta.previous !== null
-          },
-          bubbles: true
-        }));
-      }
-
-      // Pass to setData (convergence point)
-      this.setData(json);
+      const json = await this.#component.user.fetchJson(
+        this.#url.toString(), this.#component.abortController.signal);
 
       this.#dispatch('data-loaded', {data: json});
-      return json;
-
+      this.setData(json);
     } catch (error) {
       this.#dispatch('data-error', {error});
       throw error;
@@ -361,15 +339,12 @@ export class DataBinder {
    * of the same JSON response (e.g., results, metadata, alerts).
    */
   render() {
-    if (!this.#data) {
+    if (!isDefAndNotNull(this.#data)) {
       console.warn('[DataBinder] No data to render');
       return;
     }
 
-    // 1. Handle simple property bindings (not inside template consumers)
     this.#renderSimpleBindings(this.#root, this.#data, 0);
-
-    // 2. Handle template consumers
     this.#renderTemplateConsumers();
   }
 
@@ -392,9 +367,7 @@ export class DataBinder {
     const removeOnCondition = options.removeOnCondition ?? false;
     const removeAttributes = options.removeAttributes ?? false;
 
-    // Process attribute bindings
     element.querySelectorAll('[data-bind-attr]').forEach(el => {
-      // Skip if inside a template consumer (will be handled during template rendering)
       if (el.closest('[data-bind-template]')) return;
 
       const bindings = el.getAttribute('data-bind-attr');
@@ -411,9 +384,7 @@ export class DataBinder {
       }
     });
 
-    // Process content bindings
     element.querySelectorAll('[data-bind]').forEach(el => {
-      // Skip if inside a template consumer
       if (el.closest('[data-bind-template]')) return;
 
       const path = el.getAttribute('data-bind');
@@ -432,13 +403,11 @@ export class DataBinder {
       }
     });
 
-    // Process conditional show
     element.querySelectorAll('[data-bind-show-if]').forEach(el => {
       if (el.closest('[data-bind-template]')) return;
 
       const condition = el.getAttribute('data-bind-show-if');
       const value = this.#getValue(data, condition, index);
-
       if (!value) {
         if (removeOnCondition) {
           el.remove();
@@ -449,17 +418,13 @@ export class DataBinder {
         el.style.display = '';
       }
 
-      if (removeAttributes && !el.isConnected) {
-        // Element was removed, can't remove attribute
-      } else if (removeAttributes) {
+      if (removeAttributes && el.isConnected) {
         el.removeAttribute('data-bind-show-if');
       }
     });
 
-    // Process conditional hide
     element.querySelectorAll('[data-bind-hide-if]').forEach(el => {
       if (el.closest('[data-bind-template]')) return;
-
       const condition = el.getAttribute('data-bind-hide-if');
       const value = this.#getValue(data, condition, index);
 
@@ -473,9 +438,7 @@ export class DataBinder {
         el.style.display = '';
       }
 
-      if (removeAttributes && !el.isConnected) {
-        // Element was removed, can't remove attribute
-      } else if (removeAttributes) {
+      if (removeAttributes && el.isConnected) {
         el.removeAttribute('data-bind-hide-if');
       }
     });
@@ -499,7 +462,7 @@ export class DataBinder {
       }
 
       // Get template element
-      const template = document.getElementById(templateId);
+      const template = this.#root.querySelector(`#${templateId}`);
       if (!template || template.tagName !== 'TEMPLATE') {
         console.error(`[DataBinder] Template not found or invalid: ${templateId}`);
         return;
@@ -524,17 +487,6 @@ export class DataBinder {
         consumer.appendChild(clone);
       });
     });
-  }
-
-  /**
-   * Disposes of this DataBinder instance.
-   * Clears data and root.
-   */
-  dispose() {
-    this.#data = null;
-    // Find all consumers and clear them
-    const consumers = this.#root.querySelectorAll('[data-bind-template]');
-    consumers.forEach(consumer => consumer.innerHTML = '');
   }
 
   /**
@@ -604,5 +556,16 @@ export class DataBinder {
     this.#root.dispatchEvent(new CustomEvent(eventName, {
       detail, bubbles: true
     }));
+  }
+
+  /**
+   * Disposes of this DataBinder instance.
+   * Clears data and root.
+   */
+  dispose() {
+    this.#data = null;
+    // Find all consumers and clear them
+    const consumers = this.#root.querySelectorAll('[data-bind-template]');
+    consumers.forEach(consumer => consumer.innerHTML = '');
   }
 }
