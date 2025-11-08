@@ -17,17 +17,14 @@ const paginationImport = () => import('@carbon/web-components/es/components/pagi
 // Pagination component
 export const paginationComponent = {
   'cds-pagination': {
-    import: paginationImport,
-    init: function (pagination) {
+    import: paginationImport, init: function (pagination) {
       const panel = this;
 
       // Listen for user navigation and dispatch navigation events
       panel.listen(pagination, 'cds-pagination-changed-current', e => {
         panel.dispatchPanelEvent("pagination-changed-current", {
           detail: {
-            page: e.detail.page,
-            pageSize: pagination.pageSize,
-            action: 'page-change'
+            page: e.detail.page, pageSize: pagination.pageSize, action: 'page-change'
           }
         });
       });
@@ -38,8 +35,7 @@ export const paginationComponent = {
         panel.dispatchPanelEvent("pagination-changed-page-size", {
           detail: {
             page: 1, // Reset to page 1 when changing size
-            pageSize: newPageSize,
-            action: 'page-size-change'
+            pageSize: newPageSize, action: 'page-size-change'
           }
         });
       });
@@ -112,9 +108,7 @@ const initEventHandlers = (panel, el, attrs) => {
   if (expandEvent) {
     panel.listen(el, 'cds-table-row-expando-toggled', e => {
       panel.dispatchPanelEvent(expandEvent, {
-        ...attrs,
-        rowId: e.target.id,
-        expanded: e.detail.expanded
+        ...attrs, rowId: e.target.id, expanded: e.detail.expanded
       });
     });
   }
@@ -235,22 +229,6 @@ const initEventHandlers = (panel, el, attrs) => {
       });
     });
   }
-
-  // Pagination events. These are
-  // const myPaginatorEvents = `${el.id}-navigate`;
-  // panel.listen(document, myPaginatorEvents, e => {
-  //   const {page, pageSize, action} = e.detail;
-  //   const params = {limit: pageSize};
-  //   if (action === 'page-change') {
-  //     params.offset = (page - 1) * pageSize;
-  //   } else if (action === 'page-size-change') {
-  //     params.offset = 0;
-  //   }
-  //   el.dataBinder.getData(params).catch(err => {
-  //     console.error('[Carbon Table] Pagination navigation failed:', err);
-  //   });
-  // });
-
 };
 
 const createPagination = (el, panel, dataBinder) => {
@@ -259,7 +237,7 @@ const createPagination = (el, panel, dataBinder) => {
   pagination.backwardText = 'Previous page';
   pagination.forwardText = 'Next page';
   pagination.itemsPerPageText = 'Items per page:';
-  pagination.pageSize = 10;
+  pagination.pageSize = parseInt(el.getAttribute('data-page-size') || 0, 10);
   pagination.size = 'lg';
 
   const legalPageSizes = [10, 25, 50, 100, 500];
@@ -275,24 +253,21 @@ const createPagination = (el, panel, dataBinder) => {
       const {count, next, previous} = R.pick(['count', 'next', 'previous'], data);
 
       // Parse limit and offset from next, previous, or use current values
-      let limit = currentLimit;
-      let offset = currentOffset;
+      const hasNextPage = isDefAndNotNull(next);
+      const hasPrevPage = isDefAndNotNull(previous);
 
-      if (isDefAndNotNull(next)) {
-        const url = new URL(next);
-        limit = parseInt(url.searchParams.get('limit'), 10);
-        const nextOffset = parseInt(url.searchParams.get('offset'), 10);
-        offset = nextOffset - limit;
-      } else if (isDefAndNotNull(previous)) {
-        const url = new URL(previous);
-        limit = parseInt(url.searchParams.get('limit'), 10);
-        const prevOffset = parseInt(url.searchParams.get('offset'), 10);
-        offset = prevOffset + limit;
-      }
+      const url = hasNextPage ? new URL(next) : (hasPrevPage ? new URL(previous) : void 0);
+      const limit = url ? parseInt(url.searchParams.get('limit'), 10) : currentLimit;
+      const nowOffset = url ? parseInt(url.searchParams.get('offset'), 10) : currentOffset;
+      const offset = hasNextPage ? nowOffset - limit : (currentOffset ? nowOffset + limit : currentOffset);
 
       const totalPages = Math.ceil(count / limit);
       const currentPage = Math.floor(offset / limit) + 1;
 
+      // Use pagesUnknown mode for large datasets to avoid Carbon
+      // rendering thousands of <option> elements
+      const MAX_PAGES_FOR_DROPDOWN = 100;
+      pagination.pagesUnknown = totalPages > MAX_PAGES_FOR_DROPDOWN;
       pagination.totalItems = count;
       pagination.totalPages = totalPages;
       pagination.pageSize = limit;
@@ -307,8 +282,7 @@ const createPagination = (el, panel, dataBinder) => {
     const {page} = e.detail;
     const pageSize = pagination.pageSize;
     const params = {
-      limit: pageSize,
-      offset: (page - 1) * pageSize
+      limit: pageSize, offset: (page - 1) * pageSize
     };
     dataBinder.getData(params).catch(err => {
       console.error('[Carbon Table] Pagination navigation failed:', err);
@@ -318,8 +292,7 @@ const createPagination = (el, panel, dataBinder) => {
   panel.listen(pagination, 'cds-page-sizes-select-changed', e => {
     const pageSize = pagination.pageSize;
     const params = {
-      limit: pageSize,
-      offset: 0 // Reset to page 1
+      limit: pageSize, offset: 0 // Reset to page 1
     };
     dataBinder.getData(params).then(() => {
       const {count} = dataBinder.data;
@@ -407,8 +380,7 @@ const maybePaginated = R.both(R.has('count'), R.has('results'));
 
 
 export default {
-  selector: 'cds-table',
-  import: [dataTableImport, paginationImport],
+  selector: 'cds-table', import: [dataTableImport, paginationImport],
 
   /**
    * Initialize the table component with event handlers and optional DataBinder.
@@ -423,9 +395,9 @@ export default {
       el.dataBinder = dataBinder;
       const skeleton = createSkeletonForTable(panel, el);
       const paginator = createPagination(el, panel, dataBinder);
-
       attrs.limit = paginator.pageSize;
       dataBinder.getData(attrs).then(_ => {
+        skeleton.remove();
         paginator.setData(dataBinder.data, dataBinder.limit, dataBinder.offset);
       });
     }

@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1-beta.4] - 2025-11-09
+
+### Fixed
+- **Pagination Performance for Large Datasets**: Fixed browser freeze when paginating tables with tens of thousands of pages
+  - Carbon pagination component was generating 33k+ `<option>` elements for the page dropdown
+  - Now automatically uses `pagesUnknown` mode for datasets with >100 pages
+  - In `pagesUnknown` mode, shows simple text display instead of dropdown
+  - Previous/Next buttons still work normally
+  - Significantly improves performance for large datasets (e.g., 332,550 items = 33,255 pages)
+
+### Changed
+- **Pagination Page Dropdown**: Adaptive behavior based on dataset size
+  - Small datasets (≤100 pages): Full dropdown with all page numbers
+  - Large datasets (>100 pages): Text display showing current page and total pages
+  - Threshold configurable via `MAX_PAGES_FOR_DROPDOWN` constant
+
 ## [1.0.1-beta.3] - 2025-11-08
 
 ### Added
