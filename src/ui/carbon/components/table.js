@@ -32,9 +32,14 @@
  * - Automatic pagination component creation
  * - Skeleton loader while fetching initial data
  * - Server-side sorting (sends ordering parameter to API)
- * - Server-side search (sends q parameter to API)
+ * - Server-side search (triggers on Enter key or clear button, sends q parameter to API)
  * - Pagination navigation (sends limit/offset parameters)
  * - DataBinder stored on table.dataBinder for programmatic access
+ *
+ * Search Behavior:
+ * - Press Enter in search box to trigger server-side search
+ * - Click clear (X) button to reset search and reload full dataset
+ * - Prevents API spam by not searching on every keystroke
  *
  * ====================================================================
  * USAGE: Client-Side Event Dispatch
@@ -286,18 +291,36 @@ const initEventHandlers = (panel, el, attrs) => {
     });
   }
 
-  // Search input
-  const searchElement = el.querySelector('cds-search');
+  // Search input - support both cds-search and cds-table-toolbar-search
+  const searchElement = el.querySelector('cds-table-toolbar-search');
   if (searchElement) {
     if (el.dataBinder) {
-      panel.listen(searchElement, 'cds-search-input', e => {
-        const params = {q: e.target.value};
+      // Server-side search: only trigger on Enter key or clear button
 
-        el.dataBinder.fetchData(params).catch(err => {
-          console.error('[Carbon Table] Search load failed:', err);
-        });
+      // Handle Enter key to trigger search
+      panel.listen(searchElement, 'keydown', e => {
+        if (e.key === 'Enter') {
+          const searchValue = searchElement.value || '';
+          const params = {q: searchValue};
+          el.dataBinder.fetchData(params).catch(err => {
+            console.error('[Carbon Table] Search load failed:', err);
+          });
+        }
+      });
+
+      // Handle clear button click (value becomes empty)
+      panel.listen(searchElement, 'cds-search-input', e => {
+        const searchValue = e.detail.value || '';
+        // Only act when value is cleared (user clicked X button)
+        if (searchValue === '') {
+          const params = {q: ''};
+          el.dataBinder.fetchData(params).catch(err => {
+            console.error('[Carbon Table] Search clear failed:', err);
+          });
+        }
       });
     } else {
+      // Client-side search: dispatch event on every keystroke (existing behavior)
       const searchEvent = el.getAttribute('search-event');
       if (searchEvent) {
         panel.listen(searchElement, 'cds-search-input', e => {
@@ -307,16 +330,6 @@ const initEventHandlers = (panel, el, attrs) => {
         });
       }
     }
-  }
-
-  // High-level filtered event
-  const filteredEvent = el.getAttribute('filtered-event');
-  if (filteredEvent) {
-    panel.listen(el, 'cds-table-filtered', e => {
-      panel.dispatchPanelEvent(filteredEvent, {
-        ...attrs, searchTerm: e.detail.searchTerm
-      });
-    });
   }
 
   // Wire up pagination listeners.

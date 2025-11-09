@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1-beta.6] - 2025-11-09
+
+### Added
+- **Server-Side Table Search**: Tables with `data-api-url` now support server-side search via `cds-table-toolbar-search`
+  - Search triggers on Enter key press (prevents API spam from every keystroke)
+  - Search triggers when clear button (X) is clicked to reset results
+  - Sends `q` parameter to API endpoint with search term
+  - Only applies to DataBinder tables - client-side tables use Carbon's native filtering
+  - Supports both `cds-table-toolbar-search` (recommended) and `cds-search` components
+
+### Changed
+- **Table Search Behavior**: Different search behavior based on table configuration
+  - **Server-side** (with `data-api-url`): Enter key or clear button triggers API call
+  - **Client-side with custom events** (with `search-event` attribute): Keystroke events dispatched to panel
+  - **Client-side native** (no attributes): Carbon's built-in filtering works automatically
+
 ## [1.0.1-beta.5] - 2025-11-09
 
 ### Fixed
