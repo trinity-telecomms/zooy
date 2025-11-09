@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - LitElement's `updated()` lifecycle detects `page` property change and dispatches event again
     - Workaround tracks last fetched offset and only executes fetch when offset actually changes
   - Applied deduplication to both table-integrated pagination (API fetches) and standalone pagination (panel event dispatches)
+- **DataBinder Documentation**: Corrected all documentation to match actual implementation
+  - Fixed all constructor examples to include required `panel` parameter
+  - Corrected special variables documentation: `$index`/`$index1` are page-local, `$index__paged`/`$index1__paged` account for pagination offset
+  - Updated Django REST Framework pagination section to reflect actual API (removed references to non-existent events)
+  - Fixed `fetchData()` return type documentation (`Promise<void>` not `Promise<Object>`)
+  - Removed "Standard DOM events for lifecycle" feature claim (events were removed)
 - **DataBinder Event Cleanup**: Removed unused `data-loading`, `data-loaded`, and `data-error` event dispatches and associated `#dispatch` method
 
 ## [1.0.1-beta.4] - 2025-11-09

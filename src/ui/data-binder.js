@@ -8,11 +8,10 @@
  * - Simple property binding for single objects
  * - Template-based rendering for arrays
  * - Nested property access (e.g., "profile.name")
- * - Pagination-aware row numbering ($index, $index1)
+ * - Pagination-aware row numbering ($index, $index1, $index__paged, $index1__paged)
  * - Django REST Framework pagination support
  * - Conditional rendering (show-if, hide-if)
  * - Extensible formatter system
- * - Standard DOM events for lifecycle
  *
  * Architecture:
  * - One DataBinder instance per rootEl element
@@ -38,7 +37,7 @@
  *
  * // JavaScript
  * const rootEl = document.getElementById('user-profile');
- * const binder = new DataBinder('/api/user/123/', rootEl);
+ * const binder = new DataBinder(panel, '/api/user/123/', rootEl);
  * await binder.fetchData();
  *
  * // Later, refresh with new data
@@ -66,7 +65,7 @@
  *
  * // JavaScript
  * const rootEl = document.getElementById('users-list');
- * const binder = new DataBinder('/api/users/', rootEl);
+ * const binder = new DataBinder(panel, '/api/users/', rootEl);
  * await binder.fetchData({ limit: 10 });
  *
  * // API Response: { count: 100, results: [...] }
@@ -92,7 +91,7 @@
  *
  * // JavaScript
  * const rootEl = document.getElementById('dashboard');
- * const binder = new DataBinder('/api/dashboard/', rootEl);
+ * const binder = new DataBinder(panel, '/api/dashboard/', rootEl);
  * await binder.fetchData();
  *
  * // API Response: { results: [...], stats: {...}, alerts: [...] }
@@ -125,7 +124,7 @@
  *
  * // JavaScript
  * const rootEl = document.getElementById('product-page');
- * const binder = new DataBinder('/api/product/456/', rootEl, {
+ * const binder = new DataBinder(panel, '/api/product/456/', rootEl, {
  *   formatters: {
  *     stars: (rating) => '⭐'.repeat(rating)
  *   }
@@ -147,29 +146,33 @@
  * - data-path="path.to.array" - Slices JSON for this consumer
  *
  * ====================================================================
- * SPECIAL VARIABLES (pagination-aware)
+ * SPECIAL VARIABLES
  * ====================================================================
- * - $index - 0-based row number (accounts for offset)
- * - $index1 - 1-based row number (accounts for offset)
+ * - $index - 0-based row number (within current page/dataset)
+ * - $index1 - 1-based row number (within current page/dataset)
+ * - $index__paged - 0-based row number (accounts for pagination offset)
+ * - $index1__paged - 1-based row number (accounts for pagination offset)
  *
  * @example
- * // Page 1 (offset=0): $index=0-9, $index1=1-10
- * // Page 2 (offset=10): $index=10-19, $index1=11-20
- * <td data-bind="$index1"></td>
+ * // Page 1 (offset=0): $index=0-9, $index1=1-10, $index__paged=0-9, $index1__paged=1-10
+ * // Page 2 (offset=10): $index=0-9, $index1=1-10, $index__paged=10-19, $index1__paged=11-20
+ * <td data-bind="$index1__paged"></td>  <!-- Shows absolute row number across all pages -->
  *
  * ====================================================================
  * DJANGO REST FRAMEWORK PAGINATION
  * ====================================================================
- * DataBinder automatically detects DRF pagination format and dispatches
- * a pagination event with metadata.
+ * DataBinder automatically handles DRF pagination format (count, next, previous, results).
+ * Use the limit and offset getters to access pagination state.
  *
  * @example
  * // JavaScript
- * const binder = new DataBinder('/api/items/', rootEl);
- * rootEl.addEventListener('data-pagination', e => {
- *   console.log(e.detail); // { count, next, previous, limit, offset, page, totalPages }
- * });
+ * const binder = new DataBinder(panel, '/api/items/', rootEl);
  * await binder.fetchData({ limit: 25, offset: 0 });
+ *
+ * // Access pagination state
+ * console.log(binder.limit);   // 25
+ * console.log(binder.offset);  // 0
+ * console.log(binder.data);    // { count: 100, next: "...", previous: null, results: [...] }
  *
  * ====================================================================
  * COMPONENT INTEGRATION (Carbon Table)
@@ -281,8 +284,10 @@ export class DataBinder {
 
   /**
    * Fetches data from the configured URL with optional query parameters.
+   * Data is automatically bound to the DOM via setData() after fetch completes.
+   *
    * @param {Object} [urlParams={}] - Query parameters to append to URL (e.g., {limit: 25, offset: 0, ordering: 'name'})
-   * @return {Promise<Object>} The full JSON response from the server
+   * @return {Promise<void>}
    * @throws {Error} If fetch fails or response is invalid
    */
   async fetchData(urlParams = {}) {
@@ -509,13 +514,13 @@ export class DataBinder {
    * Gets a value from an object using dot notation.
    *
    * Special Variables:
-   * - $index: 0-based row number
-   * - $index1: 1-based row number
-   * - $index__paged: 0-based pagination aware row number
-   * - $index1__paged: 1-based pagination aware row number
+   * - $index: 0-based row number (within current page)
+   * - $index1: 1-based row number (within current page)
+   * - $index__paged: 0-based row number (accounts for pagination offset)
+   * - $index1__paged: 1-based row number (accounts for pagination offset)
    *
    * @param {Object} obj - Object to query
-   * @param {string} path - Dot-separated path (e.g., "profile.name") or special variable ($index, $index1)
+   * @param {string} path - Dot-separated path (e.g., "profile.name") or special variable ($index, $index1, $index__paged, $index1__paged)
    * @param {number} index - Item index in current data array (0-based)
    * @return {*} The value, or undefined if not found
    * @private
@@ -534,20 +539,6 @@ export class DataBinder {
 
     return R.path(path.split('.'), obj);
   }
-
-
-  // /**
-  //  * Dispatches a custom event on the rootEl element.
-  //  *
-  //  * @param {string} eventName - Event name
-  //  * @param {Object} [detail={}] - Event detail
-  //  * @private
-  //  */
-  // #dispatch(eventName, detail = {}) {
-  //   this.#rootEl.dispatchEvent(new CustomEvent(eventName, {
-  //     detail, bubbles: true
-  //   }));
-  // }
 
   /**
    * Disposes of this DataBinder instance.
