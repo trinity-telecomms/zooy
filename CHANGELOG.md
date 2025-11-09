@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated Django REST Framework pagination section to reflect actual API (removed references to non-existent events)
   - Fixed `fetchData()` return type documentation (`Promise<void>` not `Promise<Object>`)
   - Removed "Standard DOM events for lifecycle" feature claim (events were removed)
+- **Carbon Table Documentation**: Comprehensive documentation improvements
+  - Added complete usage examples for both server-side (DataBinder) and client-side modes
+  - Documented all event attributes (selection-event, sort-event, search-event, etc.)
+  - Added Carbon Web Components bug documentation and workaround explanation
+  - Fixed `initEventHandlers` description (now accurately lists all 9 event types it handles, not just "row selection")
+  - Added missing documentation for `createPagination`, `pagination.setData`, and `setupDataBinderIntegration` functions
+  - Documented initialization flow including timing of event handler registration
 - **DataBinder Event Cleanup**: Removed unused `data-loading`, `data-loaded`, and `data-error` event dispatches and associated `#dispatch` method
 
 ## [1.0.1-beta.4] - 2025-11-09

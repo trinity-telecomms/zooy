@@ -3,6 +3,70 @@
  *
  * Handles all data table initialization, events, and DataBinder integration.
  * Supports both client-side and server-side (DataBinder) data management.
+ *
+ * ====================================================================
+ * USAGE: Server-Side Data Binding
+ * ====================================================================
+ * Tables with data-api-url automatically fetch and bind data from an API endpoint.
+ *
+ * @example
+ * <cds-table data-api-url="/api/users/" data-page-size="25">
+ *   <cds-table-head>
+ *     <cds-table-header-row>
+ *       <cds-table-header-cell data-sort-field="name">Name</cds-table-header-cell>
+ *       <cds-table-header-cell data-sort-field="email">Email</cds-table-header-cell>
+ *     </cds-table-header-row>
+ *   </cds-table-head>
+ *   <cds-table-body>
+ *     <template id="user-row">
+ *       <cds-table-row>
+ *         <cds-table-cell data-bind="name"></cds-table-cell>
+ *         <cds-table-cell data-bind="email"></cds-table-cell>
+ *       </cds-table-row>
+ *     </template>
+ *     <cds-table-body data-bind-template="user-row" data-path="results"></cds-table-body>
+ *   </cds-table-body>
+ * </cds-table>
+ *
+ * Features:
+ * - Automatic pagination component creation
+ * - Skeleton loader while fetching initial data
+ * - Server-side sorting (sends ordering parameter to API)
+ * - Server-side search (sends q parameter to API)
+ * - Pagination navigation (sends limit/offset parameters)
+ * - DataBinder stored on table.dataBinder for programmatic access
+ *
+ * ====================================================================
+ * USAGE: Client-Side Event Dispatch
+ * ====================================================================
+ * Tables without data-api-url dispatch panel events for manual handling.
+ *
+ * @example
+ * <cds-table
+ *   selection-event="user-selected"
+ *   sort-event="table-sorted"
+ *   search-event="table-searched">
+ *   <!-- Table content -->
+ * </cds-table>
+ *
+ * Event attributes:
+ * - selection-event: Row checkbox toggled
+ * - select-all-event: Select all checkbox toggled
+ * - row-click-event: Row clicked (excludes checkbox clicks)
+ * - expand-event: Expandable row toggled
+ * - sort-event: Column header clicked
+ * - search-event: Search input changed
+ * - batch-cancel-event: Batch actions cancel clicked
+ * - batch-select-all-event: Batch actions select all clicked
+ *
+ * ====================================================================
+ * CARBON WEB COMPONENTS BUG WORKAROUND
+ * ====================================================================
+ * Carbon's cds-pagination-changed-current event fires twice per navigation
+ * due to a bug in their LitElement implementation. This component includes
+ * offset-based deduplication to prevent duplicate API calls.
+ *
+ * See: pagination event handlers in initEventHandlers() and paginationComponent
  */
 
 import {DataBinder} from '../../data-binder.js';
@@ -14,7 +78,16 @@ const dataTableImport = () => import('@carbon/web-components/es/components/data-
 const paginationImport = () => import('@carbon/web-components/es/components/pagination/index.js');
 
 
-// Pagination component
+/**
+ * Standalone pagination component configuration.
+ *
+ * Registers standalone <cds-pagination> elements (not created by tables) with the
+ * component system. Includes Carbon double-fire bug workaround to prevent duplicate
+ * panel event dispatches.
+ *
+ * This is separate from table-integrated pagination which handles data fetching.
+ * Standalone pagination dispatches panel events that application code can listen to.
+ */
 export const paginationComponent = {
   'cds-pagination': {
     import: paginationImport, init: function (pagination) {
@@ -58,7 +131,20 @@ export const paginationComponent = {
 };
 
 /**
- * Setup row selection event handlers (individual rows and select-all).
+ * Initialize all event handlers for a data table.
+ *
+ * Sets up listeners for:
+ * - Row selection (individual and select-all)
+ * - Row clicks
+ * - Expandable row toggles
+ * - Batch actions (cancel, select-all)
+ * - Sorting (server-side with DataBinder, or client-side event dispatch)
+ * - Search input (server-side with DataBinder, or client-side event dispatch)
+ * - Pagination navigation (when DataBinder is present)
+ *
+ * @param {zooy.Panel} panel - Panel instance
+ * @param {HTMLElement} el - The cds-table element
+ * @param {Object} attrs - Semantic attributes from the table element
  * @private
  */
 const initEventHandlers = (panel, el, attrs) => {
@@ -272,6 +358,20 @@ const initEventHandlers = (panel, el, attrs) => {
 
 };
 
+/**
+ * Create and configure a Carbon pagination component for a data-bound table.
+ *
+ * The pagination component:
+ * - Shows page size options: 10, 25, 50, 100, 500
+ * - Automatically uses pagesUnknown mode for datasets with >100 pages (prevents browser freeze)
+ * - Has a custom setData() method to update pagination state from DRF API responses
+ * - Stores next/previous URLs in dataset attributes
+ *
+ * @param {HTMLElement} el - The cds-table element
+ * @param {DataBinder} dataBinder - DataBinder instance for the table
+ * @return {HTMLElement} The configured cds-pagination element
+ * @private
+ */
 const createPagination = (el, dataBinder) => {
   const pagination = document.createElement('cds-pagination');
 
@@ -288,6 +388,14 @@ const createPagination = (el, dataBinder) => {
     pagination.appendChild(selectItem);
   });
 
+  /**
+   * Custom method to update pagination state from DRF API response.
+   * Parses count, next, previous from response and updates pagination properties.
+   * Automatically enables pagesUnknown mode for large datasets (>100 pages).
+   *
+   * @param {Object} data - DRF API response with count, next, previous, results
+   * @param {number} currentLimit - Current page size limit
+   */
   pagination.setData = (data, currentLimit) => {
     if (maybePaginated(data)) {
       const {count, next, previous} = R.pick(['count', 'next', 'previous'], data);
@@ -358,10 +466,15 @@ const createSkeleton = (table) => {
 };
 
 /**
- * When a table defines a data-api-url attribute in its root element, we need to
- * fetch and bind the data to that element.
- * While we wait for the data, we render a placeholder component in the
- * dom, to let the user know we are still waiting for data.
+ * Set up DataBinder integration for a table with data-api-url attribute.
+ *
+ * Checks for data-api-url attribute and creates a DataBinder instance if present.
+ * The DataBinder will fetch data from the API and bind it to the table using
+ * data-bind attributes.
+ *
+ * @param {zooy.Panel} panel - Panel instance
+ * @param {HTMLElement} el - The cds-table element
+ * @return {DataBinder|undefined} DataBinder instance if data-api-url is present, undefined otherwise
  * @private
  */
 const setupDataBinderIntegration = (panel, el) => {
@@ -386,7 +499,21 @@ export default {
   selector: 'cds-table', import: [dataTableImport, paginationImport],
 
   /**
-   * Initialize the table component with event handlers and optional DataBinder.
+   * Initialize a Carbon data table component.
+   *
+   * Initialization flow:
+   * 1. Extract semantic attributes from table element
+   * 2. Check for data-api-url attribute to determine if DataBinder is needed
+   * 3. If DataBinder:
+   *    - Create DataBinder instance with configured page size
+   *    - Create and show skeleton loader
+   *    - Create pagination component
+   *    - Fetch initial data
+   *    - Remove skeleton and configure pagination when data arrives
+   *    - Set up event handlers after data is loaded (prevents duplicate initial fetch)
+   * 4. If no DataBinder:
+   *    - Set up event handlers immediately for client-side behavior
+   *
    * @param {HTMLElement} el - The cds-table element
    */
   init: function (el) {
