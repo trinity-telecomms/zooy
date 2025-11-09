@@ -20,18 +20,32 @@ export const paginationComponent = {
     import: paginationImport, init: function (pagination) {
       const panel = this;
 
+      // Carbon Web Components fires cds-pagination-changed-current twice per navigation.
+      // Track last offset to deduplicate panel events.
+      let lastNavigationOffset = null;
+
       // Listen for user navigation and dispatch navigation events
       panel.listen(pagination, 'cds-pagination-changed-current', e => {
-        panel.dispatchPanelEvent("pagination-changed-current", {
-          detail: {
-            page: e.detail.page, pageSize: pagination.pageSize, action: 'page-change'
-          }
-        });
+        const page = e.detail.page;
+        const pageSize = pagination.pageSize;
+        const offset = (page - 1) * pageSize;
+
+        // Only dispatch if we're actually navigating to a different offset
+        if (offset !== lastNavigationOffset) {
+          lastNavigationOffset = offset;
+          panel.dispatchPanelEvent("pagination-changed-current", {
+            detail: {
+              page, pageSize, action: 'page-change'
+            }
+          });
+        }
       });
 
       // Listen for page size changes and dispatch navigation events
       panel.listen(pagination, 'cds-page-sizes-select-changed', e => {
         const newPageSize = pagination.pageSize;
+        // Reset the navigation offset when page size changes
+        lastNavigationOffset = null;
         panel.dispatchPanelEvent("pagination-changed-page-size", {
           detail: {
             page: 1, // Reset to page 1 when changing size
@@ -160,13 +174,7 @@ const initEventHandlers = (panel, el, attrs) => {
       const ordering = e.detail.sortDirection === 'descending' ? `-${sortField}` : sortField;
       const params = {ordering};
 
-      // Preserve current page size
-      const pageSize = el.getAttribute('data-page-size');
-      if (pageSize) {
-        params.limit = parseInt(pageSize, 10);
-      }
-
-      el.dataBinder.getData(params).catch(err => {
+      el.dataBinder.fetchData(params).catch(err => {
         console.error('[Carbon Table] Sort load failed:', err);
       });
     }, {capture: true});
@@ -192,19 +200,14 @@ const initEventHandlers = (panel, el, attrs) => {
     });
   }
 
+  // Search input
   const searchElement = el.querySelector('cds-search');
   if (searchElement) {
     if (el.dataBinder) {
       panel.listen(searchElement, 'cds-search-input', e => {
         const params = {q: e.target.value};
 
-        // Preserve custom page size if set
-        const pageSize = el.getAttribute('data-page-size');
-        if (pageSize) {
-          params.limit = parseInt(pageSize, 10);
-        }
-
-        el.dataBinder.getData(params).catch(err => {
+        el.dataBinder.fetchData(params).catch(err => {
           console.error('[Carbon Table] Search load failed:', err);
         });
       });
@@ -229,26 +232,63 @@ const initEventHandlers = (panel, el, attrs) => {
       });
     });
   }
+
+  // Wire up pagination listeners.
+  if (el.dataBinder && el.pagination) {
+    // Carbon Web Components fires cds-pagination-changed-current twice per navigation.
+    // This happens because the click handler sets this.page++ (triggering LitElement's
+    // reactive update) and then explicitly calls _handleUserInitiatedChangeStart(),
+    // and then updated() lifecycle also calls _handleUserInitiatedChangeStart() when
+    // it detects the page property changed. Track last fetched offset to deduplicate.
+    let lastFetchedOffset = null;
+
+    panel.listen(el.pagination, 'cds-pagination-changed-current', e => {
+      const {page} = e.detail;
+      const pageSize = el.pagination.pageSize;
+      const offset = (page - 1) * pageSize;
+
+      // Only fetch if we're actually navigating to a different offset
+      if (offset !== lastFetchedOffset) {
+        lastFetchedOffset = offset;
+        const params = {limit: pageSize, offset};
+        el.dataBinder.fetchData(params).catch(err => {
+          console.error('[Carbon Table] Pagination navigation failed:', err);
+        });
+      }
+    });
+
+    panel.listen(el.pagination, 'cds-page-sizes-select-changed', e => {
+      const pageSize = el.pagination.pageSize;
+      const params = {
+        limit: pageSize, offset: 0 // Reset to page 1
+      };
+      el.dataBinder.fetchData(params).then(() => {
+        el.pagination.setData(el.dataBinder.data, pageSize);
+      }).catch(err => {
+        console.error('[Carbon Table] Page size change failed:', err);
+      });
+    });
+  }
+
 };
 
-const createPagination = (el, panel, dataBinder) => {
+const createPagination = (el, dataBinder) => {
   const pagination = document.createElement('cds-pagination');
 
   pagination.backwardText = 'Previous page';
   pagination.forwardText = 'Next page';
   pagination.itemsPerPageText = 'Items per page:';
-  pagination.pageSize = parseInt(el.getAttribute('data-page-size') || 0, 10);
+  pagination.pageSize = dataBinder.limit;
   pagination.size = 'lg';
 
-  const legalPageSizes = [10, 25, 50, 100, 500];
-  legalPageSizes.forEach(size => {
+  [10, 25, 50, 100, 500].forEach(size => {
     const selectItem = document.createElement('cds-select-item');
     selectItem.value = size.toString();
     selectItem.textContent = size.toString();
     pagination.appendChild(selectItem);
   });
 
-  pagination.setData = (data, currentLimit, currentOffset) => {
+  pagination.setData = (data, currentLimit) => {
     if (maybePaginated(data)) {
       const {count, next, previous} = R.pick(['count', 'next', 'previous'], data);
 
@@ -258,54 +298,17 @@ const createPagination = (el, panel, dataBinder) => {
 
       const url = hasNextPage ? new URL(next) : (hasPrevPage ? new URL(previous) : void 0);
       const limit = url ? parseInt(url.searchParams.get('limit'), 10) : currentLimit;
-      const nowOffset = url ? parseInt(url.searchParams.get('offset'), 10) : currentOffset;
-      const offset = hasNextPage ? nowOffset - limit : (currentOffset ? nowOffset + limit : currentOffset);
-
       const totalPages = Math.ceil(count / limit);
-      const currentPage = Math.floor(offset / limit) + 1;
 
       // Use pagesUnknown mode for large datasets to avoid Carbon
       // rendering thousands of <option> elements
       const MAX_PAGES_FOR_DROPDOWN = 100;
       pagination.pagesUnknown = totalPages > MAX_PAGES_FOR_DROPDOWN;
       pagination.totalItems = count;
-      pagination.totalPages = totalPages;
-      pagination.pageSize = limit;
-      pagination.page = currentPage;
       pagination.dataset.nextUrl = next || '';
       pagination.dataset.previousUrl = previous || '';
     }
   }
-
-  // Listen for Carbon's native pagination events
-  panel.listen(pagination, 'cds-pagination-changed-current', e => {
-    const {page} = e.detail;
-    const pageSize = pagination.pageSize;
-    const params = {
-      limit: pageSize, offset: (page - 1) * pageSize
-    };
-    dataBinder.getData(params).catch(err => {
-      console.error('[Carbon Table] Pagination navigation failed:', err);
-    });
-  });
-
-  panel.listen(pagination, 'cds-page-sizes-select-changed', e => {
-    const pageSize = pagination.pageSize;
-    const params = {
-      limit: pageSize, offset: 0 // Reset to page 1
-    };
-    dataBinder.getData(params).then(() => {
-      const {count} = dataBinder.data;
-      if (count) {
-        pagination.totalItems = count;
-        pagination.totalPages = Math.ceil(count / pageSize);
-      }
-    }).catch(err => {
-      console.error('[Carbon Table] Page size change failed:', err);
-    });
-  });
-
-  el.after(pagination);
   return pagination;
 }
 
@@ -314,7 +317,7 @@ const createPagination = (el, panel, dataBinder) => {
  * Create and configure a skeleton loader that matches the table structure.
  * @private
  */
-const createSkeletonForTable = (panel, table) => {
+const createSkeleton = (table) => {
   // Verify parent exists
   if (!table.parentNode) {
     console.error('[Carbon Table] Cannot create skeleton: table has no parent node');
@@ -349,7 +352,7 @@ const createSkeletonForTable = (panel, table) => {
     position: 'absolute', top: '0', left: '0', width: '100%', zIndex: '0'
   });
   Object.assign(table.style, {
-    position: 'relative', zIndex: '1', backgroundColor: 'transparent'
+    position: 'relative', zIndex: '1',
   });
   return skeleton;
 };
@@ -363,7 +366,7 @@ const createSkeletonForTable = (panel, table) => {
  */
 const setupDataBinderIntegration = (panel, el) => {
   const apiUrl = el.getAttribute('data-api-url');
-  const pageSize = parseInt(el.getAttribute('data-page-size') || 0, 10)
+  const pageSize = parseInt(el.getAttribute('data-page-size') || 25, 10)
   if (apiUrl) {
     return new DataBinder(panel, apiUrl, el, {
       urlParams: {limit: pageSize},
@@ -393,15 +396,21 @@ export default {
     const dataBinder = setupDataBinderIntegration(panel, el);
     if (isDefAndNotNull(dataBinder)) {
       el.dataBinder = dataBinder;
-      const skeleton = createSkeletonForTable(panel, el);
-      const paginator = createPagination(el, panel, dataBinder);
-      attrs.limit = paginator.pageSize;
-      dataBinder.getData(attrs).then(_ => {
+      const skeleton = createSkeleton(el);
+      const pagination = createPagination(el, dataBinder);
+      el.pagination = pagination;
+      el.after(pagination);
+
+      // Fetch initial data with only the page size parameter
+      dataBinder.fetchData().then(_ => {
         skeleton.remove();
-        paginator.setData(dataBinder.data, dataBinder.limit, dataBinder.offset);
+        pagination.setData(dataBinder.data, dataBinder.limit);
+        initEventHandlers(panel, el, attrs);
       });
+    } else {
+      // No data binding, set up event handlers immediately
+      initEventHandlers(panel, el, attrs);
     }
-    initEventHandlers(panel, el, attrs);
   }
 };
 

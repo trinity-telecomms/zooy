@@ -15,8 +15,8 @@
  * - Standard DOM events for lifecycle
  *
  * Architecture:
- * - One DataBinder instance per root element
- * - Binder walks root to find all bindings (simple and template-based)
+ * - One DataBinder instance per rootEl element
+ * - Binder walks rootEl to find all bindings (simple and template-based)
  * - Each template consumer can specify a data path to slice JSON response
  * - Binder instance is reused for subsequent operations (sort, search, pagination)
  *
@@ -24,7 +24,7 @@
  * USE CASE 1: Simple property binding (no template duplication)
  * ====================================================================
  * Bind JSON properties directly to existing elements. Values update when
- * getData() is called again with new data.
+ * fetchData() is called again with new data.
  *
  * @example
  * // HTML
@@ -37,12 +37,12 @@
  * </div>
  *
  * // JavaScript
- * const root = document.getElementById('user-profile');
- * const binder = new DataBinder('/api/user/123/', root);
- * await binder.getData();
+ * const rootEl = document.getElementById('user-profile');
+ * const binder = new DataBinder('/api/user/123/', rootEl);
+ * await binder.fetchData();
  *
  * // Later, refresh with new data
- * await binder.getData(); // Re-binds to same elements
+ * await binder.fetchData(); // Re-binds to same elements
  *
  * ====================================================================
  * USE CASE 2: Template repetition for arrays
@@ -65,9 +65,9 @@
  * </template>
  *
  * // JavaScript
- * const root = document.getElementById('users-list');
- * const binder = new DataBinder('/api/users/', root);
- * await binder.getData({ limit: 10 });
+ * const rootEl = document.getElementById('users-list');
+ * const binder = new DataBinder('/api/users/', rootEl);
+ * await binder.fetchData({ limit: 10 });
  *
  * // API Response: { count: 100, results: [...] }
  * // Template duplicated once per item in results array
@@ -91,9 +91,9 @@
  * <template id="alert-tpl"><div data-bind="message"></div></template>
  *
  * // JavaScript
- * const root = document.getElementById('dashboard');
- * const binder = new DataBinder('/api/dashboard/', root);
- * await binder.getData();
+ * const rootEl = document.getElementById('dashboard');
+ * const binder = new DataBinder('/api/dashboard/', rootEl);
+ * await binder.fetchData();
  *
  * // API Response: { results: [...], stats: {...}, alerts: [...] }
  * // Each consumer renders its data-path slice
@@ -102,7 +102,7 @@
  * USE CASE 4: Mixing simple bindings with template consumers
  * ====================================================================
  * Combine simple property binding (for header/metadata) with template
- * repetition (for lists) in the same root element.
+ * repetition (for lists) in the same rootEl element.
  *
  * @example
  * // HTML
@@ -124,13 +124,13 @@
  * </template>
  *
  * // JavaScript
- * const root = document.getElementById('product-page');
- * const binder = new DataBinder('/api/product/456/', root, {
+ * const rootEl = document.getElementById('product-page');
+ * const binder = new DataBinder('/api/product/456/', rootEl, {
  *   formatters: {
  *     stars: (rating) => '⭐'.repeat(rating)
  *   }
  * });
- * await binder.getData();
+ * await binder.fetchData();
  *
  * // API Response: { productName: "...", description: "...", reviews: [...] }
  * // Simple bindings populate header, template duplicates for each review
@@ -165,19 +165,11 @@
  *
  * @example
  * // JavaScript
- * const binder = new DataBinder('/api/items/', root);
- * root.addEventListener('data-pagination', e => {
+ * const binder = new DataBinder('/api/items/', rootEl);
+ * rootEl.addEventListener('data-pagination', e => {
  *   console.log(e.detail); // { count, next, previous, limit, offset, page, totalPages }
  * });
- * await binder.getData({ limit: 25, offset: 0 });
- *
- * ====================================================================
- * CUSTOM FETCH FUNCTION (authentication, etc.)
- * ====================================================================
- * @example
- * const binder = new DataBinder(apiUrl, root, {
- *   fetchFn: (url) => userManager.fetchJson(url, abortSignal)
- * });
+ * await binder.fetchData({ limit: 25, offset: 0 });
  *
  * ====================================================================
  * COMPONENT INTEGRATION (Carbon Table)
@@ -191,7 +183,7 @@
  * const table = document.getElementById('my-table');
  *
  * // Later, programmatically trigger operations
- * table.dataBinder.getData({ limit: 50, ordering: '-created' });
+ * table.dataBinder.fetchData({ limit: 50, ordering: '-created' });
  */
 
 import {isDefAndNotNull} from 'badu';
@@ -212,40 +204,42 @@ const DEFAULT_FORMATTERS = {
 };
 
 export class DataBinder {
-  #component;
-  #baseUrl;
+  #panel;
   #url;
-  #root;
+  #rootEl;
   #data = null;
   #formatters;
-  #offset = 0;
 
   /**
    * Creates a new DataBinder instance.
    *
-   * @param component
+   * @param {zooy.Panel} panel
    * @param {string} url - API endpoint URL
-   * @param {Element} root - Root element to walk for bindings
-   * @param {{urlParams: {limit: number}|{}, abortController: *|AbortController}} [options={}] - Configuration options
-   * @param {Function} [options.fetchFn] - Custom fetch function (for authentication, etc.)
+   * @param {Element} rootEl - Root element to walk for bindings
+   * @param options
+   * @param {Object<string, string|number>} [options.urlParams] - Configuration options
    * @param {Object<string, Function>} [options.formatters] - Custom formatters
-   * @throws {Error} If url or root is missing/invalid
+   * @throws {Error} If url or rootEl is missing/invalid
    */
-  constructor(component, url, root, options = {}) {
+  constructor(panel, url, rootEl, options = {}) {
     // Validate required parameters
     if (!url) {
       throw new Error('DataBinder requires a URL');
     }
-    if (!root || !(root instanceof Element)) {
-      throw new Error('DataBinder requires a valid root Element');
+    if (!rootEl || !(rootEl instanceof Element)) {
+      throw new Error('DataBinder requires a valid rootEl Element');
     }
 
     // Store configuration
-    this.#component = component;
-    this.#baseUrl = new URL(url, window.location.origin);
-    this.#url = this.#baseUrl;
-    this.#root = root;
+    this.#panel = panel;
+    this.#url = new URL(url, window.location.origin);
+    this.#rootEl = rootEl;
     this.#formatters = {...DEFAULT_FORMATTERS, ...options.formatters};
+
+    // Apply initial URL params if provided
+    if (options.urlParams) {
+      this.#setUrlParams(options.urlParams);
+    }
   }
 
   get url() {
@@ -256,58 +250,50 @@ export class DataBinder {
     return this.#data;
   }
 
-  get offset() {
-    return this.#offset;
-  }
-
   get limit() {
     return parseInt(this.#url.searchParams.get('limit') || '0', 10);
   }
 
+  get offset() {
+    return parseInt(this.#url.searchParams.get('offset') || '0', 10);
+  }
+
+  #setUrlParams(params) {
+    Object.entries(params).forEach(([key, value]) => {
+      // Remove param if null, undefined, or empty string
+      // eslint-disable-next-line eqeqeq
+      if (value == null || value === '') {
+        this.#url.searchParams.delete(key);
+        return;
+      }
+
+      // Handle arrays as comma-separated
+      if (Array.isArray(value)) {
+        this.#url.searchParams.set(key, value.join(','));
+        return;
+      }
+
+      // Set normal values
+      this.#url.searchParams.set(key, value);
+    });
+    return this.#url;
+  }
+
   /**
    * Fetches data from the configured URL with optional query parameters.
-   *
-   * Behavior:
-   * - Builds URL with query parameters (limit, offset, ordering, q, etc.)
-   * - Parses offset from URL for pagination-aware row numbering
-   * - Detects Django REST Framework pagination format
-   * - Dispatches custom pagination event with metadata if paginated
-   * - Calls setData() with full JSON response
-   * - Dispatches lifecycle events: 'data-loading', 'data-loaded', 'data-error'
-   *
    * @param {Object} [urlParams={}] - Query parameters to append to URL (e.g., {limit: 25, offset: 0, ordering: 'name'})
    * @return {Promise<Object>} The full JSON response from the server
    * @throws {Error} If fetch fails or response is invalid
    */
-  async getData(urlParams = {}) {
-    this.#dispatch('data-loading');
-
-    try {
-      // Build URL with query parameters
-      this.#url = new URL(this.#baseUrl, window.location.origin);
-      Object.entries(urlParams).forEach(([key, value]) => {
-        if (isDefAndNotNull(value)) {
-          this.#url.searchParams.set(key, value);
-        }
-      });
-
-      // Track offset for pagination-aware row numbering ($index, $index1)
-      this.#offset = parseInt(this.#url.searchParams.get('offset') || '0', 10);
-
-      const json = await this.#component.user.fetchJson(
-        this.#url.toString(), this.#component.abortController.signal);
-
-      this.#dispatch('data-loaded', {data: json});
-      this.setData(json);
-    } catch (error) {
-      this.#dispatch('data-error', {error});
-      throw error;
-    }
+  async fetchData(urlParams = {}) {
+    const json = await this.#panel.user.fetchJson(
+      this.#setUrlParams(urlParams).toString(), this.#panel.abortController.signal);
+    this.setData(json);
   }
 
   /**
    * Sets data directly without fetching from URL.
-   * This is the convergence point for all data updates (from getData() or external sources).
+   * This is the convergence point for all data updates (from fetchData() or external sources).
    *
    * Behavior:
    * - Stores full JSON object (not just arrays)
@@ -322,7 +308,7 @@ export class DataBinder {
   }
 
   /**
-   * Renders data by walking the root element and processing all bindings.
+   * Renders data by walking the rootEl element and processing all bindings.
    *
    * Supports two binding patterns:
    * 1. Simple property binding - Direct data-bind attributes on elements (no templates)
@@ -335,7 +321,7 @@ export class DataBinder {
    *    - Extract data slice using Ramda's R.path()
    *    - Clear consumer and clone template for each item
    *
-   * Multiple consumers can exist in the same root, each rendering different slices
+   * Multiple consumers can exist in the same rootEl, each rendering different slices
    * of the same JSON response (e.g., results, metadata, alerts).
    */
   render() {
@@ -344,7 +330,7 @@ export class DataBinder {
       return;
     }
 
-    this.#renderSimpleBindings(this.#root, this.#data, 0);
+    this.#renderSimpleBindings(this.#rootEl, this.#data, 0);
     this.#renderTemplateConsumers();
   }
 
@@ -353,7 +339,7 @@ export class DataBinder {
    * Processes data-bind-attr, data-bind, and conditional rendering attributes.
    *
    * This method is reusable and can be called with different elements and data objects.
-   * Used for both root-level simple bindings and template item rendering.
+   * Used for both rootEl-level simple bindings and template item rendering.
    *
    * @param {Element|DocumentFragment} element - Root element to search for bindings
    * @param {Object} data - Data object to bind
@@ -450,7 +436,7 @@ export class DataBinder {
    * @private
    */
   #renderTemplateConsumers() {
-    const consumers = this.#root.querySelectorAll('[data-bind-template]');
+    const consumers = this.#rootEl.querySelectorAll('[data-bind-template]');
 
     consumers.forEach(consumer => {
       const templateId = consumer.getAttribute('data-bind-template');
@@ -462,7 +448,7 @@ export class DataBinder {
       }
 
       // Get template element
-      const template = this.#root.querySelector(`#${templateId}`);
+      const template = this.#rootEl.querySelector(`#${templateId}`);
       if (!template || template.tagName !== 'TEMPLATE') {
         console.error(`[DataBinder] Template not found or invalid: ${templateId}`);
         return;
@@ -472,6 +458,12 @@ export class DataBinder {
       const dataSlice = dataPath ?
         R.path(dataPath.split('.'), this.#data) :
         this.#data;
+
+      // Validate it's defined
+      if (!dataSlice) {
+        console.warn(`[DataBinder] Data slice is undefined. Path: ${dataPath}. Skipping render for this consumer.`);
+        return;
+      }
 
       // Validate it's an array
       if (!Array.isArray(dataSlice)) {
@@ -516,14 +508,11 @@ export class DataBinder {
   /**
    * Gets a value from an object using dot notation.
    *
-   * Special Variables (pagination-aware):
-   * - $index: 0-based row number (offset + index)
-   * - $index1: 1-based row number (offset + index + 1)
-   *
-   * Pagination Examples:
-   * - Page 1 (offset=0, limit=10): $index=0-9, $index1=1-10
-   * - Page 2 (offset=10, limit=10): $index=10-19, $index1=11-20
-   * - Page 3 (offset=20, limit=10): $index=20-29, $index1=21-30
+   * Special Variables:
+   * - $index: 0-based row number
+   * - $index1: 1-based row number
+   * - $index__paged: 0-based pagination aware row number
+   * - $index1__paged: 1-based pagination aware row number
    *
    * @param {Object} obj - Object to query
    * @param {string} path - Dot-separated path (e.g., "profile.name") or special variable ($index, $index1)
@@ -532,40 +521,42 @@ export class DataBinder {
    * @private
    */
   #getValue(obj, path, index) {
-    // Handle special variables (pagination-aware)
-    if (path === '$index') {
-      return this.#offset + index;
-    }
-    if (path === '$index1') {
-      return this.#offset + index + 1;
+    const specialVars = {
+      '$index': () => index,
+      '$index__paged': () => this.offset + index,
+      '$index1': () => index + 1,
+      '$index1__paged': () => this.offset + index + 1
+    };
+
+    if (specialVars[path]) {
+      return specialVars[path]();
     }
 
-    // Handle nested paths using Ramda
     return R.path(path.split('.'), obj);
   }
 
 
-  /**
-   * Dispatches a custom event on the root element.
-   *
-   * @param {string} eventName - Event name
-   * @param {Object} [detail={}] - Event detail
-   * @private
-   */
-  #dispatch(eventName, detail = {}) {
-    this.#root.dispatchEvent(new CustomEvent(eventName, {
-      detail, bubbles: true
-    }));
-  }
+  // /**
+  //  * Dispatches a custom event on the rootEl element.
+  //  *
+  //  * @param {string} eventName - Event name
+  //  * @param {Object} [detail={}] - Event detail
+  //  * @private
+  //  */
+  // #dispatch(eventName, detail = {}) {
+  //   this.#rootEl.dispatchEvent(new CustomEvent(eventName, {
+  //     detail, bubbles: true
+  //   }));
+  // }
 
   /**
    * Disposes of this DataBinder instance.
-   * Clears data and root.
+   * Clears data and rootEl.
    */
   dispose() {
     this.#data = null;
     // Find all consumers and clear them
-    const consumers = this.#root.querySelectorAll('[data-bind-template]');
+    const consumers = this.#rootEl.querySelectorAll('[data-bind-template]');
     consumers.forEach(consumer => consumer.innerHTML = '');
   }
 }

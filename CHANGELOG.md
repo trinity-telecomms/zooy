@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1-beta.5] - 2025-11-09
+
+### Fixed
+- **Table Pagination Double Fetch**: Fixed duplicate API calls on initial table load and pagination navigation
+  - **Initial Load**: Event handlers now registered after initial data fetch completes, preventing pagination property updates from triggering duplicate fetches
+  - **Navigation**: Added offset-based deduplication to handle Carbon Web Components bug where `cds-pagination-changed-current` fires twice per navigation
+    - Carbon's `_handleClickNextButton/PrevButton` sets `this.page++` (triggering LitElement reactive update) then explicitly dispatches event
+    - LitElement's `updated()` lifecycle detects `page` property change and dispatches event again
+    - Workaround tracks last fetched offset and only executes fetch when offset actually changes
+  - Applied deduplication to both table-integrated pagination (API fetches) and standalone pagination (panel event dispatches)
+- **DataBinder Event Cleanup**: Removed unused `data-loading`, `data-loaded`, and `data-error` event dispatches and associated `#dispatch` method
+
 ## [1.0.1-beta.4] - 2025-11-09
 
 ### Fixed
@@ -73,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Binder systematically walks root to find all consumers with `data-bind-template`
   - Consumers specify `data-path` attribute for slicing JSON response
   - Binder instance is reused for sort, search, pagination operations
-  - `getData(params)` method fetches data with query parameters and renders all consumers
+  - `fetchData(params)` method fetches data with query parameters and renders all consumers
   - `setData(data)` is convergence point, stores full JSON object and calls render()
   - `render()` walks root for consumers and renders each with appropriate data slice
   - `render()` now supports both simple property binding AND template-based rendering
@@ -90,9 +102,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `$index` and `$index1` now account for offset across pages
   - Page 1 (offset=0): rows 1-10, Page 2 (offset=10): rows 11-20, etc.
 - **Carbon Table Integration**: Updated to use new DataBinder API
-  - Sort handler calls `table.dataBinder.getData({ordering})`
-  - Search handler calls `table.dataBinder.getData({q})`
-  - Pagination handler calls `table.dataBinder.getData({limit, offset})`
+  - Sort handler calls `table.dataBinder.fetchData({ordering})`
+  - Search handler calls `table.dataBinder.fetchData({q})`
+  - Pagination handler calls `table.dataBinder.fetchData({limit, offset})`
   - Single binder instance handles all table operations
 - **Carbon Pagination Component**: Two-way event communication with DataBinder
   - Listens for pagination metadata from DataBinder
@@ -104,7 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Use `data-bind` on existing elements to bind JSON properties to textContent
   - Use `data-bind-attr` to bind properties to element attributes
   - Use `data-bind-show-if` / `data-bind-hide-if` for conditional rendering
-  - Binding attributes are preserved for re-rendering when `getData()` is called again
+  - Binding attributes are preserved for re-rendering when `fetchData()` is called again
   - Enables 4 use cases: simple binding, template repetition, multiple consumers, mixed mode
 - **Pagination-Aware Row Numbering**: `$index` and `$index1` special variables now account for pagination offset
   - Enables continuous row numbering across paginated data
