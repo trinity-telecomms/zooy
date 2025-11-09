@@ -120,7 +120,7 @@ export const paginationComponent = {
       });
 
       // Listen for page size changes and dispatch navigation events
-      panel.listen(pagination, 'cds-page-sizes-select-changed', e => {
+      panel.listen(pagination, 'cds-page-sizes-select-changed', _ => {
         const newPageSize = pagination.pageSize;
         // Reset the navigation offset when page size changes
         lastNavigationOffset = null;
@@ -356,7 +356,7 @@ const initEventHandlers = (panel, el, attrs) => {
       }
     });
 
-    panel.listen(el.pagination, 'cds-page-sizes-select-changed', e => {
+    panel.listen(el.pagination, 'cds-page-sizes-select-changed', _ => {
       const pageSize = el.pagination.pageSize;
       const params = {
         limit: pageSize, offset: 0 // Reset to page 1
