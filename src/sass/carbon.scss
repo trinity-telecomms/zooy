@@ -74,3 +74,31 @@ cds-table {
     }
   }
 }
+
+.zoo-datatable-skeleton-wrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+
+  cds-table,
+  cds-table-skeleton {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  cds-table {
+    z-index: 2; /* Table always on top */
+  }
+
+  cds-table-skeleton {
+    z-index: 1;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 1s ease, visibility 1s ease;
+
+    &.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+}

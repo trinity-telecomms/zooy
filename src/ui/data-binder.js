@@ -261,6 +261,11 @@ export class DataBinder {
     return parseInt(this.#url.searchParams.get('offset') || '0', 10);
   }
 
+  get isPaginated() {
+    return R.both(R.has('count'), R.has('results'))(this.#data);
+  }
+
+
   #setUrlParams(params) {
     Object.entries(params).forEach(([key, value]) => {
       // Remove param if null, undefined, or empty string

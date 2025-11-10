@@ -543,29 +543,6 @@
 }
 
 //--[ Animations ]--
-.fade-in {
-  -webkit-animation: fade-in 0.3s ease-in both;
-  animation: fade-in 0.3s ease-in both;
-}
-
-@-webkit-keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
 .slide-in-top {
   -webkit-animation: slide-in-top .2s cubic-bezier(.25, .46, .45, .94) both;
   animation: slide-in-top .5s cubic-bezier(.25, .46, .45, .94) both

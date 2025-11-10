@@ -5,15 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1-beta.7] - 2025-11-10
+
+### Changed
+- **Table Skeleton Loader Architecture**: Refactored skeleton overlay system for better performance
+  - New `.zoo-datatable-skeleton-wrapper` uses CSS Grid for overlay positioning
+  - Skeleton and table occupy same grid cell with z-index layering
+  - Eliminates absolute positioning complexity and improves layout stability
+  - Skeleton fades out with CSS transitions instead of DOM removal
+  - Skeleton element now stored as `table.skeleton` for programmatic control
+- **CSS Cleanup**: Removed duplicate animation definitions
+  - Removed `.fade-in` animation from `panels.scss` (was duplicate)
+  - Removed `.fade-in` animation from `split.scss` (was duplicate)
+  - Consolidated animation definitions to reduce CSS bloat
+- **Table Code Organization**: Improved code structure and variable naming
+  - Extracted `dataBinder`, `pagination`, and `skeleton` to local variables in event handlers
+  - Better separation of concerns in `initEventHandlers()`
+  - Improved readability and maintainability
+
+### Fixed
+- **Table Search State Management**: Search now properly resets pagination and shows skeleton
+  - Skeleton displays during search to indicate loading state
+  - Pagination resets to page 1 when search is triggered
+  - Table body cleared during search to prevent stale data flash
+  - Skeleton hidden after successful data load
+
+### Dependencies
+- **@carbon/web-components**: Updated to 2.42.0 (from 2.41.0)
+- **@carbon/styles**: Updated to 1.94.0 (from 1.93.1)
+
 ## [1.0.1-beta.6] - 2025-11-09
 
 ### Added
 - **Server-Side Table Search**: Tables with `data-api-url` now support server-side search via `cds-table-toolbar-search`
   - Search triggers on Enter key press (prevents API spam from every keystroke)
   - Search triggers when clear button (X) is clicked to reset results
-  - Sends `q` parameter to API endpoint with search term
+  - Sends `search` parameter to API endpoint (DRF standard SearchFilter)
   - Only applies to DataBinder tables - client-side tables use Carbon's native filtering
-  - Supports both `cds-table-toolbar-search` (recommended) and `cds-search` components
+  - Backend requires `SearchFilter` in `filter_backends` and `search_fields` attribute
 
 ### Changed
 - **Table Search Behavior**: Different search behavior based on table configuration
