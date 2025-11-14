@@ -309,11 +309,14 @@ export default class View extends Evt {
     if (this.panelEventMap_.has(eventValue)) {
       this.panelEventMap_.get(eventValue)(eventData, ePanel);
     } else {
-      this.debugMe(`NO EVENT MATCH
-          oPe: ${e}
-          eventValue: ${eventValue}
-          eventData: ${JSON.stringify(eventData, undefined, 2)}
-          ePanel: ${ePanel.constructor.name}`);
+      this.debugMe(`NO EVENT MATCH - This usually you are missing 
+        a "mapPanEv(${eventValue} ..." statement in your panel JS
+        or you have a "event='${eventValue}'" attribute in your panel HTML`, {
+        event: e,
+        eventValue,
+        eventData,
+        panel: ePanel.constructor.name
+      });
     }
   };
 

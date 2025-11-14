@@ -9,7 +9,7 @@ export { default as UserManager } from './user/usermanager.js';
 export { default as View } from './ui/view.js';
 export { UiEventType } from './events/uieventtype.js';
 export { default as Conductor } from './ui/conductor.js';
-export {DataBinder} from './ui/data-binder.js'
+export {Binder} from './ui/binder.js'
 export * as domUtils from './dom/utils.js';
 export * as uriUtils from './uri/uri.js';
 export { ComponentLibraryRegistry } from './ui/component-library-registry.js';
@@ -52,7 +52,7 @@ import UserManager from './user/usermanager.js';
 import View from './ui/view.js';
 import {UiEventType} from './events/uieventtype.js';
 import Conductor from './ui/conductor.js';
-import {DataBinder} from './ui/data-binder.js';
+import {Binder} from './ui/binder.js';
 import * as domUtils from './dom/utils.js';
 import * as uriUtils from './uri/uri.js';
 import { ComponentLibraryRegistry } from './ui/component-library-registry.js';
@@ -69,7 +69,7 @@ const zooy = {
   UserManager,
   View,
   Conductor,
-  DataBinder,
+  DataBinder: Binder,
   UiEventType,
   domUtils,
   uriUtils,

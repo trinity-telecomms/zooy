@@ -6,6 +6,14 @@
 
 import { getSemanticAttributes } from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/tag/tag.js').default} CDSTag
+ * @typedef {import('@carbon/web-components/es/components/tag/dismissible-tag.js').default} CDSDismissibleTag
+ * @typedef {import('@carbon/web-components/es/components/tag/filter-tag.js').default} CDSFilterTag
+ */
+
+// noinspection JSFileReferences
 const tagImport = () => import('@carbon/web-components/es/components/tag/index.js');
 
 // Tags - regular tags (click only, not closeable)
@@ -21,6 +29,10 @@ export const tagComponents = {
   // Dismissible tags (closeable tags with X button)
   'cds-dismissible-tag': {
     import: tagImport,
+    /**
+     * @param {CDSDismissibleTag} tag - The CDSDismissibleTag custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function (tag) {
       const attrs = getSemanticAttributes(tag);
 

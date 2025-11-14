@@ -6,11 +6,21 @@
 
 import { getSemanticAttributes } from '../../zoo/index.js';
 
+// noinspection JSFileReferences
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/file-uploader/file-uploader.js').default} CDSFileUploader
+ */
+
 const fileUploaderImport = () => import('@carbon/web-components/es/components/file-uploader/index.js');
 
 export default {
   selector: 'cds-file-uploader',
   import: fileUploaderImport,
+  /**
+   * @param {CDSFileUploader} uploader - The CDSFileUploader custom element instance
+   * @this {Panel} The panel instance
+   */
   init: function (uploader) {
     const attrs = getSemanticAttributes(uploader);
 

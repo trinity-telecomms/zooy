@@ -6,14 +6,28 @@
 
 import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/tooltip/tooltip.js').default} CDSTooltip
+ * @typedef {import('@carbon/web-components/es/components/popover/popover.js').default} CDSPopover
+ * @typedef {import('@carbon/web-components/es/components/toggle-tip/toggletip.js').default} CDSToggletip
+ */
+
+// noinspection JSFileReferences
 const tooltipImport = () => import('@carbon/web-components/es/components/tooltip/index.js');
+// noinspection JSFileReferences
 const popoverImport = () => import('@carbon/web-components/es/components/popover/index.js');
+// noinspection JSFileReferences
 const toggleTipImport = () => import('@carbon/web-components/es/components/toggle-tip/index.js');
 
 // Tooltip
 export default {
   selector: 'cds-tooltip',
   import: tooltipImport,
+  /**
+   * @param {CDSTooltip} tooltip - The CDSTooltip custom element instance
+   * @this {Panel} The panel instance
+   */
   init: function (tooltip) {
     const attrs = getSemanticAttributes(tooltip);
 
@@ -45,6 +59,10 @@ export const tooltipComponents = {
   // Popover
   'cds-popover': {
     import: popoverImport,
+    /**
+     * @param {CDSPopover} popover - The CDSPopover custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function (popover) {
       const attrs = getSemanticAttributes(popover);
 
@@ -74,6 +92,10 @@ export const tooltipComponents = {
   // Toggletip - tooltip that stays open until dismissed
   'cds-toggletip': {
     import: toggleTipImport,
+    /**
+     * @param {CDSToggletip} toggletip - The CDSToggletip custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function (toggletip) {
       const attrs = getSemanticAttributes(toggletip);
 

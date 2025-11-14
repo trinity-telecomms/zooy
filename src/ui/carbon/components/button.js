@@ -6,15 +6,31 @@
 
 import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/button/button.js').default} CDSButton
+ * @typedef {import('@carbon/web-components/es/components/icon-button/icon-button.js').default} CDSIconButton
+ * @typedef {import('@carbon/web-components/es/components/combo-button/combo-button.js').default} CDSComboButton
+ * @typedef {import('@carbon/web-components/es/components/copy-button/copy-button.js').default} CDSCopyButton
+ */
+
+// noinspection JSFileReferences
 const buttonImport = () => import('@carbon/web-components/es/components/button/index.js');
+// noinspection JSFileReferences
 const iconButtonImport = () => import('@carbon/web-components/es/components/icon-button/index.js');
+// noinspection JSFileReferences
 const comboButtonImport = () => import('@carbon/web-components/es/components/combo-button/index.js');
+// noinspection JSFileReferences
 const copyButtonImport = () => import('@carbon/web-components/es/components/copy-button/index.js');
 
 // Standard Button
 export default {
   selector: 'cds-button',
   import: buttonImport,
+  /**
+   * @param {CDSButton} button - The CDSButton custom element instance
+   * @this {Panel} The panel instance
+   */
   init: function (button) {
     const attrs = getSemanticAttributes(button);
     const buttonType = button.getAttribute('type');

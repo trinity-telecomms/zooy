@@ -39,6 +39,11 @@ import { buildComponentMap } from './components/index.js';
 export function scanForCarbonComponents(panel) {
   const elementMap = new Map();
 
+  // Guard against invalid panel parameter (null, undefined, non-Element nodes)
+  if (!panel || !(panel instanceof Element)) {
+    return elementMap;
+  }
+
   // Initialize map with all selectors
   for (const selector of Object.keys(COMPONENT_CONFIG)) {
     elementMap.set(selector, []);

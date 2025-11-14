@@ -6,14 +6,27 @@
 
 import { getSemanticAttributes } from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/progress-bar/progress-bar.js').default} CDSProgressBar
+ * @typedef {import('@carbon/web-components/es/components/progress-indicator/progress-indicator.js').default} CDSProgressIndicator
+ * @typedef {import('@carbon/web-components/es/components/inline-loading/inline-loading.js').default} CDSInlineLoading
+ */
+// noinspection JSFileReferences
 const progressBarImport = () => import('@carbon/web-components/es/components/progress-bar/index.js');
+// noinspection JSFileReferences
 const progressIndicatorImport = () => import('@carbon/web-components/es/components/progress-indicator/index.js');
+// noinspection JSFileReferences
 const inlineLoadingImport = () => import('@carbon/web-components/es/components/inline-loading/index.js');
 
 // Progress Bar - monitors for completion
 export default {
   selector: 'cds-progress-bar',
   import: progressBarImport,
+  /**
+   * @param {CDSProgressBar} progressBar - The CDSProgressBar custom element instance
+   * @this {Panel} The panel instance
+   */
   init: function (progressBar) {
     const attrs = getSemanticAttributes(progressBar);
 
@@ -46,6 +59,10 @@ export const progressComponents = {
   // Progress Indicator
   'cds-progress-indicator': {
     import: progressIndicatorImport,
+    /**
+     * @param {CDSProgressIndicator} indicator - The CDSProgressIndicator custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function (indicator) {
       const attrs = getSemanticAttributes(indicator);
 
@@ -71,6 +88,10 @@ export const progressComponents = {
   // Inline Loading - Loading indicator for inline actions (e.g., form submit)
   'cds-inline-loading': {
     import: inlineLoadingImport,
+    /**
+     * @param {CDSInlineLoading} inlineLoading - The CDSInlineLoading custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function(inlineLoading) {
       const attrs = getSemanticAttributes(inlineLoading);
 

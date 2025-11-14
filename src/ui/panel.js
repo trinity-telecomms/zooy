@@ -639,7 +639,9 @@ class Panel extends Component {
   dispatchPanelEvent(value, opt_data) {
     const dataObj = new ZooyEventData(value, opt_data);
     const event = Evt.makeEvent(UiEventType.PANEL, dataObj);
-    this.debugMe('PANEL EVENT FIRED. Value:', value, 'Opt DATA:', opt_data);
+    this.debugMe(`PANEL EVENT FIRED:
+      value:${value}
+      data:${opt_data}`);
     return this.dispatchEvent(event);
   };
 

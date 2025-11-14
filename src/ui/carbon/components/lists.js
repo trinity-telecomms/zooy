@@ -6,8 +6,18 @@
 
 import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/overflow-menu/overflow-menu.js').default} CDSOverflowMenu
+ * @typedef {import('@carbon/web-components/es/components/structured-list/structured-list.js').default} CDSStructuredList
+ * @typedef {import('@carbon/web-components/es/components/tree-view/tree-view.js').default} CDSTreeView
+ */
+
+// noinspection JSFileReferences
 const overflowMenuImport = () => import('@carbon/web-components/es/components/overflow-menu/index.js');
+// noinspection JSFileReferences
 const structuredListImport = () => import('@carbon/web-components/es/components/structured-list/index.js');
+// noinspection JSFileReferences
 const treeViewImport = () => import('@carbon/web-components/es/components/tree-view/index.js');
 
 // Overflow Menu
@@ -16,6 +26,10 @@ export default {
   import: overflowMenuImport,
   // We collect the menu attributes from the menu, but we listen for the
   // events on the menu body.
+  /**
+   * @param {CDSOverflowMenu} overflowMenu - The CDSOverflowMenu custom element instance
+   * @this {Panel} The panel instance
+   */
   init: function (overflowMenu) {
     const menuAttrs = getSemanticAttributes(overflowMenu);
     const eventName = menuAttrs.event;
@@ -38,6 +52,10 @@ export const listComponents = {
   // Structured List
   'cds-structured-list': {
     import: structuredListImport,
+    /**
+     * @param {CDSStructuredList} list - The CDSStructuredList custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function (list) {
       const listAttrs = getSemanticAttributes(list);
 
@@ -79,6 +97,10 @@ export const listComponents = {
   // Tree View
   'cds-tree-view': {
     import: treeViewImport,
+    /**
+     * @param {CDSTreeView} tree - The CDSTreeView custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function (tree) {
       const attrs = getSemanticAttributes(tree);
 

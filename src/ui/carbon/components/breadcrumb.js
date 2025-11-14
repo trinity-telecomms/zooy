@@ -6,11 +6,26 @@
 
 import {getSemanticAttributes} from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/breadcrumb/breadcrumb.js').default} CDSBreadcrumb
+ * @typedef {import('@carbon/web-components/es/components/breadcrumb/breadcrumb-item.js').default} CDSBreadcrumbItem
+ * @typedef {import('@carbon/web-components/es/components/breadcrumb/breadcrumb-link.js').default} CDSBreadcrumbLink
+ */
+
+// noinspection JSFileReferences
 const breadcrumbImport = () => import('@carbon/web-components/es/components/breadcrumb/index.js');
 
 // Breadcrumb - Navigation trail component
 export default {
-  selector: 'cds-breadcrumb', import: breadcrumbImport, init: function (breadcrumb) {
+  selector: 'cds-breadcrumb',
+  import: breadcrumbImport,
+  /**
+   * @param {CDSBreadcrumb} breadcrumb - The CDSBreadcrumb custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (breadcrumb)
+  {
     const breadcrumbAttrs = getSemanticAttributes(breadcrumb);
     const eventName = breadcrumbAttrs.event;
 

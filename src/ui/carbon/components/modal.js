@@ -6,12 +6,22 @@
 
 import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/modal/modal.js').default} CDSModal
+ */
+// noinspection JSFileReferences
 const modalImport = () => import('@carbon/web-components/es/components/modal/index.js');
 
 export default {
   selector: 'cds-modal',
   import: modalImport,
+  /**
+   * @param {CDSModal} modal - The CDSModal custom element instance
+   * @this {Panel} The panel instance
+   */
   init: function (modal) {
+    const CDSModal = customElements.get('cds-modal');
     const attrs = getSemanticAttributes(modal);
 
     // Open event
@@ -28,7 +38,7 @@ export default {
     // Before close event (cancelable)
     const beforeCloseEvent = modal.getAttribute('before-close-event');
     if (beforeCloseEvent) {
-      this.listen(modal, 'cds-modal-beingclosed', _ => {
+      this.listen(modal, CDSModal.eventBeforeClose, _ => {
         this.dispatchPanelEvent(beforeCloseEvent, {
           ...attrs,
           action: 'closing',
@@ -40,7 +50,7 @@ export default {
     // Close event - Carbon's way of handling modal dismissal
     // ALWAYS emit 'destroy_me' to integrate with zooy's panel destruction
     // This is not configurable - modals MUST destroy their panel when closed
-    this.listen(modal, 'cds-modal-closed', e => {
+    this.listen(modal, CDSModal.eventClose, e => {
       this.dispatchPanelEvent('destroy_me', {
         ...attrs,
         action: 'closed',

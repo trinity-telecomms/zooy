@@ -6,12 +6,24 @@
 
 import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/menu/menu.js').default} CDSMenu
+ * @typedef {import('@carbon/web-components/es/components/menu/menu-button.js').default} CDSMenuButton
+ * @typedef {import('@carbon/web-components/es/components/menu/menu-item.js').default} CDSMenuItem
+ */
+
+// noinspection JSFileReferences
 const menuImport = () => import('@carbon/web-components/es/components/menu/index.js');
 
 // Main Menu component
 export default {
   selector: 'cds-menu',
   import: menuImport,
+  /**
+   * @param {CDSMenu} menu - The CDSMenu custom element instance
+   * @this {Panel} The panel instance
+   */
   init: function (menu) {
     const attrs = getSemanticAttributes(menu);
 
@@ -74,6 +86,10 @@ export default {
 export const menuButtonComponent = {
   'cds-menu-button': {
     import: menuImport,
+    /**
+     * @param {CDSMenuButton} menuButton - The CDSMenuButton custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function (menuButton) {
       const attrs = getSemanticAttributes(menuButton);
 

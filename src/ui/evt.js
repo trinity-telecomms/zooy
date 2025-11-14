@@ -43,7 +43,7 @@ export default class Evt extends EventTarget {
 
 
   /**
-   * A map of listener targets to an object of event: functions
+   * A map of listener targets to an object of zoo-event functions
    * When adding a listener, immediately also create the un-listen functions
    * and store those in an object keyed with the event.
    * Store these objects against the target in a map

@@ -6,6 +6,14 @@
 
 import { getSemanticAttributes } from '../../zoo/index.js';
 
+/**
+ * Type definitions for Carbon Web Components (for IDE intellisense)
+ * @typedef {import('@carbon/web-components/es/components/tile/clickable-tile.js').default} CDSClickableTile
+ * @typedef {import('@carbon/web-components/es/components/tile/expandable-tile.js').default} CDSExpandableTile
+ * @typedef {import('@carbon/web-components/es/components/tile/selectable-tile.js').default} CDSSelectableTile
+ * @typedef {import('@carbon/web-components/es/components/tile/radio-tile.js').default} CDSRadioTile
+ */
+// noinspection JSFileReferences
 const tileImport = () => import('@carbon/web-components/es/components/tile/index.js');
 
 // Clickable Tile
@@ -24,6 +32,10 @@ export const tileComponents = {
   // Expandable Tile
   'cds-expandable-tile': {
     import: tileImport,
+    /**
+     * @param {CDSExpandableTile} tile - The CDSExpandableTile custom element instance
+     * @this {Panel} The panel instance
+     */
     init: function (tile) {
       const attrs = getSemanticAttributes(tile);
 

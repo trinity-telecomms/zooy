@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-beta.6] - 2025-11-09
 
 ### Added
-- **Server-Side Table Search**: Tables with `data-api-url` now support server-side search via `cds-table-toolbar-search`
+- **Server-Side Table Search**: Tables with `zoo-url__api` now support server-side search via `cds-table-toolbar-search`
   - Search triggers on Enter key press (prevents API spam from every keystroke)
   - Search triggers when clear button (X) is clicked to reset results
   - Sends `search` parameter to API endpoint (DRF standard SearchFilter)
@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Table Search Behavior**: Different search behavior based on table configuration
-  - **Server-side** (with `data-api-url`): Enter key or clear button triggers API call
+  - **Server-side** (with `zoo-url__api`): Enter key or clear button triggers API call
   - **Client-side with custom events** (with `search-event` attribute): Keystroke events dispatched to panel
   - **Client-side native** (no attributes): Carbon's built-in filtering works automatically
 
@@ -94,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-beta.3] - 2025-11-08
 
 ### Added
-- **Automatic Table Pagination**: Tables with `data-api-url` now automatically create and configure pagination components
+- **Automatic Table Pagination**: Tables with `zoo-url__api` now automatically create and configure pagination components
   - Pagination component created dynamically when table has paginated data
   - Automatically wired to DataBinder for page navigation
   - Supports page size selection (10, 25, 50, 100, 500 items per page)
@@ -109,7 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Automatic Server-Side Sorting**: DataBinder tables now automatically sort on the backend
   - No longer requires `sort-event` attribute on table
-  - Tables with `data-api-url` automatically do server-side sorting
+  - Tables with `zoo-url__api` automatically do server-side sorting
   - Sends `ordering` parameter to Django REST Framework API
   - Prevents Carbon's client-side alphabetic DOM sorting
   - Client-side sorting event dispatch still available via `sort-event` attribute for non-DataBinder tables
@@ -140,8 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **DataBinder Architecture**: Complete refactor to single-binder pattern (BREAKING CHANGE)
   - Constructor now requires URL and root element: `new DataBinder(url, root, options)`
   - One binder instance per root element (stored on `element.dataBinder`)
-  - Binder systematically walks root to find all consumers with `data-bind-template`
-  - Consumers specify `data-path` attribute for slicing JSON response
+  - Binder systematically walks root to find all consumers with `zoo-template`
+  - Consumers specify `zoo-template__bind` attribute for slicing JSON response
   - Binder instance is reused for sort, search, pagination operations
   - `fetchData(params)` method fetches data with query parameters and renders all consumers
   - `setData(data)` is convergence point, stores full JSON object and calls render()
@@ -171,9 +171,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Simple Property Binding**: DataBinder now supports direct property binding without templates
-  - Use `data-bind` on existing elements to bind JSON properties to textContent
-  - Use `data-bind-attr` to bind properties to element attributes
-  - Use `data-bind-show-if` / `data-bind-hide-if` for conditional rendering
+  - Use `zoo-bind` on existing elements to bind JSON properties to textContent
+  - Use `zoo-bind__attr` to bind properties to element attributes
   - Binding attributes are preserved for re-rendering when `fetchData()` is called again
   - Enables 4 use cases: simple binding, template repetition, multiple consumers, mixed mode
 - **Pagination-Aware Row Numbering**: `$index` and `$index1` special variables now account for pagination offset
@@ -224,7 +223,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Carbon Data Table**: Enhanced table component with semantic attributes support
   - Table skeleton now matches table `size` property (xs, sm, md, lg, xl)
   - Table-level semantic attributes now passed to row click events
-  - `row-click-event` attribute enables clickable rows with data from `data-bind-attr`
+  - `zoo-event__row-click` attribute enables clickable rows with data from `zoo-bind__attr`
   - Improved integration with DataBinder for dynamic table content
 - **Carbon Semantic Attributes**: Enhanced semantic attribute handling across components
   - `getSemanticAttributes()` utility properly extracts framework and custom attributes
@@ -240,9 +239,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Menu-level attributes now properly merge with item-level attributes
   - Changed `menuAttr` to `menuAttrs` and added `itemAttrs` for clarity
   - Overflow menu items now properly include both menu-level and item-level semantic attributes in events
-- **DataBinder Nested Templates**: DataBinder now correctly handles data-bind attributes at any depth
+- **DataBinder Nested Templates**: DataBinder now correctly handles zoo-bind attributes at any depth
   - Templates can have nested structure (e.g., tags inside table cells)
-  - `renderItem()` walks DOM tree to find all data-bind elements, not just direct children
+  - `renderItem()` walks DOM tree to find all zoo-bind elements, not just direct children
   - Enables complex cell layouts with multiple bindable elements
 
 ### Removed
