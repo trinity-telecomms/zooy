@@ -9,8 +9,9 @@
  *   registerCarbonLibrary();
  */
 
-import { ComponentLibraryRegistry } from '../component-library-registry.js';
-import { renderCarbonComponents } from './renderers.js';
+import {ComponentLibraryRegistry} from '../component-library-registry.js';
+import {renderCarbonComponents} from './renderers.js';
+
 
 /**
  * Registers the Carbon Design System library with the ComponentLibraryRegistry.
@@ -22,7 +23,7 @@ import { renderCarbonComponents } from './renderers.js';
  * import { registerCarbonLibrary } from './ui/carbon/register.js';
  * registerCarbonLibrary();
  */
-export function registerCarbonLibrary() {
+const registerCarbonLibrary = () => {
   ComponentLibraryRegistry.register('carbon', {
     /**
      * Main render function that orchestrates Carbon component initialization.
@@ -32,7 +33,7 @@ export function registerCarbonLibrary() {
      * @param {Map} cache - Import cache to prevent duplicate module loads
      * @returns {Promise<void>}
      */
-    render: async function(panel, cache) {
+    render: async function (panel, cache) {
       try {
         // Scan, collect, load, and attach Carbon Web Components
         await renderCarbonComponents.call(this, panel, cache);
@@ -50,7 +51,7 @@ export function registerCarbonLibrary() {
      *
      * @param {Element} _element - The element being disposed
      */
-    dispose: function(_element) {
+    dispose: function (_element) {
       // Carbon Web Components are native web components and handle their own
       // cleanup via disconnectedCallback(). No manual cleanup needed.
       //
@@ -64,4 +65,8 @@ export function registerCarbonLibrary() {
   });
 
   console.debug('[Zooy] Carbon Design System library registered');
+}
+
+export {
+  registerCarbonLibrary,
 }

@@ -91,10 +91,11 @@ import {
  * @typedef {import('@carbon/web-components/es/components/pagination/pagination.js').default} CDSPagination
  * @typedef {import('@carbon/web-components/es/components/data-table/table-batch-actions.js').default} CDSTableBatchActions
  * @typedef {import('@carbon/web-components/es/components/data-table/table-skeleton.js').default} CDSTableSkeleton
+ * @typedef {import('@carbon/web-components/es/components/popover/index.js').default} CDSPopover
  */
 
 // noinspection JSFileReferences
-const dataTableImport = () => import('@carbon/web-components/es/components/data-table/index.js');
+const dataTableImport =  () => import('@carbon/web-components/es/components/data-table/index.js');
 // noinspection JSFileReferences
 const paginationImport = () => import('@carbon/web-components/es/components/pagination/index.js');
 
@@ -209,6 +210,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   const CDSTable = customElements.get('cds-table');
   const CDSPagination = customElements.get('cds-pagination');
   const CDSTableBatchActions = customElements.get(CDSTable.selectorTableBatchActions);
+  const CDSPopover = customElements.get('cds-popover');
 
   const dataBinder = cdsTable.dataBinder;
   const pagination = cdsTable.pagination;
@@ -216,8 +218,11 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
 
   const searchElement = cdsTable.querySelector(CDSTable.selectorTableToolbarSearch);
   const batActToolbar = cdsTable.querySelector(CDSTable.selectorTableBatchActions);
+  const tableToolbar = cdsTable.querySelector(CDSTable.selectorTableToolbarContent);
   const tableBody = cdsTable.querySelector(CDSTable.selectorTableBody);
   const noNavEls = ['button', 'a', 'input', 'select', 'textarea', '[role="button"]', '.cds--table-expand', '.cds--table-column-checkbox',].join(',');
+  const sortableHeaders = cdsTable.querySelectorAll(CDSTable.selectorHeaderCell + '[is-sortable]')
+  const isSortable = cdsTable.isSortable ||  sortableHeaders.length > 0;
 
   // Keep a map of all the custom events we want to issue, which needs to be
   // prepped with a custom event name, but which piggyback off some event listener
@@ -234,7 +239,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
       e.stopPropagation();
       const targetAttrs = getSemanticAttributes(target);
       panel.dispatchPanelEvent(customEventName, {
-        tableAttrs, target, ...targetAttrs,
+        ...targetAttrs,
       });
     });
   }
@@ -247,7 +252,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
       const didExpand = e.detail.expanded;
       const targetAttrs = getSemanticAttributes(target);
       const payload = {
-        tableAttrs, targetAttrs, target, allRows, didExpand,
+        tableAttrs, ...targetAttrs, target, allRows, didExpand,
       }
       panel.dispatchPanelEvent(customEventName, payload);
     });
@@ -269,7 +274,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
       const targetAttrs = getSemanticAttributes(target);
       const selection = selectedRows.map(getSemanticAttributes);
       const payload = {
-        tableAttrs, targetAttrs, target, selectCount, selection
+        tableAttrs, ...targetAttrs, target, selectCount, selection
       };
       panel.dispatchPanelEvent(customEventName, payload);
     })
@@ -288,7 +293,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
       const selection = selectedRows.map(getSemanticAttributes);
       const targetAttrs = getSemanticAttributes(target);
       const payload = {
-        tableAttrs, targetAttrs, selectCount, selection, target,
+        tableAttrs, ...targetAttrs, selectCount, selection, target,
       };
       panel.dispatchPanelEvent(customEventName, payload);
     });
@@ -296,6 +301,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
 
   // Server side sorting is sorts on the server. Ha!
   const initServerSideSorting = () => {
+
     panel.listen(cdsTable, CDSTable.eventBeforeSort, e => {
       const target = e.target;
       const sortWas = e.detail.oldSortDirection;
@@ -313,8 +319,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
       tableBody.innerHTML = '';
       skeleton && skeleton.show();
 
-      const columns = cdsTable.querySelectorAll(CDSTable.selectorHeaderCell);
-      columns.forEach((col, _) => {
+      sortableHeaders.forEach((col, _) => {
         if (col === target) {
           col.setAttribute('sort-active', 'true');
           col.setAttribute('sort-direction', sortNow);
@@ -334,7 +339,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
 
       // Maybe issue custom event with payload.
       userEventsMap.has(onColSorted) && userEventsMap.get(onColSorted)({
-        tableAttrs, targetAttrs, sortNow, sortWas, sortField, ordering, target,
+        tableAttrs, ...targetAttrs, sortNow, sortWas, sortField, ordering, target,
       });
     })
 
@@ -433,6 +438,38 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
+  /**
+   * Initialize filter popover functionality
+   * Sets up the batch filter popover with proper open/close behavior and styling.
+   * Uses Carbon's native .cds--overflow-menu--open class for consistent styling.
+   *
+   * Finds the trigger button by looking for the first cds-icon-button or button
+   * element that is a direct child of the popover (not slotted content).
+   *
+   * @param {CDSPopover} popover - The cds-popover element
+   * @private
+   */
+  const initFilterPopover = (popover) => {
+    const button = popover.querySelector('cds-icon-button, button:not([slot])');
+    if (!button) return;
+
+    popover.caret = false;
+    panel.listen(button, 'click', (e) => {
+      e.stopPropagation();
+      popover.open = !popover.open;
+      popover.classList.toggle('cds--overflow-menu--open', popover.open);
+    });
+
+    // Watch for popover closing (e.g., clicking outside)
+    const observer = new MutationObserver(() => {
+      popover.classList.toggle('cds--overflow-menu--open', popover.open);
+    });
+    observer.observe(popover, {
+      attributes: true,
+      attributeFilter: ['open']
+    });
+  };
+
   // Handel page size changes at server side
   // When page sizes change, we reset our pagination nav back to page 1
   const initPageSizeChangeFunctionality = () => {
@@ -484,6 +521,12 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     initClearSearch(searchElement);
   }
 
+  // Filter popover initialization - find popover with data-batch-filter attribute
+  const filterPopovers = tableToolbar.querySelectorAll('cds-popover[data-batch-filter]');
+  if (filterPopovers) {
+    filterPopovers.forEach(initFilterPopover);
+  }
+
   // If the table is selectable, then we want to listen to the batch action toolbar.
   // If the `eventClickSelectAll` event issues from the toolbar, we generate a synthetic
   // event that automatically selects all the rows (as a side effect) which we then
@@ -508,7 +551,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   // happens server side.
   // When a `zoo-event-column-sort` attribute is present, the custom sort event is
   // dispatched by the panel, regardless of the presence of a binder or not.
-  if (cdsTable.isSortable && dataBinder) {
+  if (dataBinder && isSortable) {
     initServerSideSorting();
   }
 
@@ -655,7 +698,8 @@ const setupDataBinderIntegration = (panel, el) => {
 }
 
 export default {
-  selector: 'cds-table', import: [dataTableImport, paginationImport],
+  selector: 'cds-table',
+  import: [dataTableImport, paginationImport],
 
   /**
    * Initialize a Carbon data table component.

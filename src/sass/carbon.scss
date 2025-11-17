@@ -75,6 +75,14 @@ cds-table {
   }
 }
 
+// Batch filter popover - active state styling
+// Matches Carbon's overflow menu behavior when open
+cds-popover.cds--overflow-menu--open {
+  box-shadow: 0 2px 6px var(--cds-shadow);
+  background-color: var(--cds-background);
+  transition: none;
+}
+
 .zoo-datatable-skeleton-wrapper {
   display: grid;
   grid-template-columns: 1fr;

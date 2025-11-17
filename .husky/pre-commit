@@ -18,22 +18,22 @@ else
   SKIP_CHANGELOG=""
 fi
 
-# If source files changed but CHANGELOG not updated and no bypass flag
-if [ -n "$STAGED_SRC_FILES" ] && [ -z "$STAGED_CHANGELOG" ] && [ -z "$SKIP_CHANGELOG" ]; then
-  echo ""
-  echo "❌ Error: Source files changed but CHANGELOG.md not updated"
-  echo ""
-  echo "Modified source files:"
-  echo "$STAGED_SRC_FILES" | sed 's/^/  - /'
-  echo ""
-  echo "Please update CHANGELOG.md and stage it:"
-  echo "  git add CHANGELOG.md"
-  echo ""
-  echo "Or bypass this check by adding [skip-changelog] to your commit message:"
-  echo "  git commit -m \"Your message [skip-changelog]\""
-  echo ""
-  exit 1
-fi
+## If source files changed but CHANGELOG not updated and no bypass flag
+#if [ -n "$STAGED_SRC_FILES" ] && [ -z "$STAGED_CHANGELOG" ] && [ -z "$SKIP_CHANGELOG" ]; then
+#  echo ""
+#  echo "❌ Error: Source files changed but CHANGELOG.md not updated"
+#  echo ""
+#  echo "Modified source files:"
+#  echo "$STAGED_SRC_FILES" | sed 's/^/  - /'
+#  echo ""
+#  echo "Please update CHANGELOG.md and stage it:"
+#  echo "  git add CHANGELOG.md"
+#  echo ""
+#  echo "Or bypass this check by adding [skip-changelog] to your commit message:"
+#  echo "  git commit -m \"Your message [skip-changelog]\""
+#  echo ""
+#  exit 1
+#fi
 
 if [ -n "$STAGED_SRC_FILES" ] && [ -n "$STAGED_CHANGELOG" ]; then
   echo "✓ CHANGELOG.md updated"

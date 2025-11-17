@@ -303,8 +303,12 @@ export default class View extends Evt {
    * @param {!CustomEvent} e
    */
   onPanelEvent(e) {
-    const eventValue = e.detail.getValue();
+    let eventValue = e.detail.getValue();
     const eventData = e.detail.getData();
+    if (eventValue.startsWith('switch_view:')) {
+      eventData.view = eventValue.split(':')[1];
+      eventValue = 'switch_view';
+    }
     const ePanel = /** @type {Panel} */ (e.target);
     if (this.panelEventMap_.has(eventValue)) {
       this.panelEventMap_.get(eventValue)(eventData, ePanel);

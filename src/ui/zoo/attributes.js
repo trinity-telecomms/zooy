@@ -13,6 +13,8 @@ const SEMANTIC_ATTRS = new Map(Object.entries({
   "url": "url",
   "target": "target",
   "record-id": "recordId",
+  "zoo-sort-field": "sortField",
+  "zoo-view": "view"
 }));
 
 
