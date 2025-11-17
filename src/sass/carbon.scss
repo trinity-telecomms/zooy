@@ -77,11 +77,44 @@ cds-table {
 
 // Batch filter popover - active state styling
 // Matches Carbon's overflow menu behavior when open
-cds-popover.cds--overflow-menu--open {
-  box-shadow: 0 2px 6px var(--cds-shadow);
-  background-color: var(--cds-background);
-  transition: none;
+cds-popover {
+  &.cds--overflow-menu--open {
+    box-shadow: 0 2px 6px var(--cds-shadow);
+    background-color: var(--cds-background);
+    transition: none;
+  }
+
+  cds-popover-content {
+    .batch-filter-container {
+      display: flex;
+
+      &.horizontal {
+        flex-flow: row nowrap;
+      }
+
+      &.vertical {
+        flex-flow: column nowrap;
+      }
+
+      padding: 1.5rem;
+      gap: 1.5rem;
+
+      .divider {
+        border-block-start: 1px solid var(--cds-layer-accent);
+        border-inline-start: 1px solid var(--cds-layer-accent);
+
+        &:last-of-type {
+         border: none;
+        }
+      }
+    }
+  }
+
+  &[data-batch-filter] cds-popover-content::part(content) {
+    max-inline-size: 700px !important;
+  }
 }
+
 
 .zoo-datatable-skeleton-wrapper {
   display: grid;
@@ -115,3 +148,4 @@ cds-popover.cds--overflow-menu--open {
   opacity: 0;
   visibility: hidden;
 }
+

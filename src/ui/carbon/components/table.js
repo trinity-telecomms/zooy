@@ -95,7 +95,7 @@ import {
  */
 
 // noinspection JSFileReferences
-const dataTableImport =  () => import('@carbon/web-components/es/components/data-table/index.js');
+const dataTableImport = () => import('@carbon/web-components/es/components/data-table/index.js');
 // noinspection JSFileReferences
 const paginationImport = () => import('@carbon/web-components/es/components/pagination/index.js');
 
@@ -222,7 +222,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   const tableBody = cdsTable.querySelector(CDSTable.selectorTableBody);
   const noNavEls = ['button', 'a', 'input', 'select', 'textarea', '[role="button"]', '.cds--table-expand', '.cds--table-column-checkbox',].join(',');
   const sortableHeaders = cdsTable.querySelectorAll(CDSTable.selectorHeaderCell + '[is-sortable]')
-  const isSortable = cdsTable.isSortable ||  sortableHeaders.length > 0;
+  const isSortable = cdsTable.isSortable || sortableHeaders.length > 0;
 
   // Keep a map of all the custom events we want to issue, which needs to be
   // prepped with a custom event name, but which piggyback off some event listener
@@ -446,6 +446,14 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    * Finds the trigger button by looking for the first cds-icon-button or button
    * element that is a direct child of the popover (not slotted content).
    *
+   * Handles Reset and Apply button functionality:
+   * - Reset: Unchecks all filter checkboxes and removes filter params from dataBinder URL
+   * - Apply: Reads checked checkboxes, updates dataBinder URL with array params, fetches new data
+   *
+   * Checkbox IDs must be formatted as "field:value" (e.g., "mno:verizon", "state:52")
+   * Generated URL params use repeated parameters (e.g., ?mno=verizon&mno=tmobile&state=50&state=52)
+   * Passed to Binder as arrays: {mno: ['verizon', 'tmobile'], state: ['50', '52']}
+   *
    * @param {CDSPopover} popover - The cds-popover element
    * @private
    */
@@ -468,6 +476,116 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
       attributes: true,
       attributeFilter: ['open']
     });
+
+    // Get all checkboxes and buttons
+    const checkboxes = popover.querySelectorAll('cds-checkbox');
+    const filterFieldGroups = popover.querySelectorAll('cds-checkbox-group');
+    const buttons = popover.querySelectorAll('cds-button, cds-modal-footer-button');
+
+    // Find Reset and Apply buttons by their text content
+    let resetButton, applyButton;
+    buttons.forEach(btn => {
+      const text = btn.textContent.trim().toLowerCase();
+      if (text.includes('reset')) {
+        resetButton = btn;
+      } else if (text.includes('apply')) {
+        applyButton = btn;
+      }
+    });
+
+    /**
+     * Get all unique filter field names from checkbox IDs
+     * Returns plain field names without any suffix
+     * @return {Set<string>} Set of field names
+     */
+    const getAllFilterFields = () => {
+      console.log("THIS GOT CALLED!");
+      const fields = new Set();
+      filterFieldGroups.forEach(el => {
+        console.log(getSemanticAttributes(el));
+      });
+      // checkboxes.forEach(checkbox => {
+      //   const id = checkbox.getAttribute('id');
+      //   if (id && id.includes(':')) {
+      //     const [field] = id.split(':');
+      //     fields.add(field);
+      //   }
+      // });
+      console.log("HERE THE FIELDS", fields);
+      return fields;
+    };
+
+
+    const buildFilterParams = () => {
+      const filterMap = new Map();
+
+      checkboxes.forEach(checkbox => {
+        const id = checkbox.getAttribute('id');
+        if (!id || !id.includes(':')) return;
+
+        const [field, value] = id.split(':');
+        if (!filterMap.has(field)) {
+          filterMap.set(field, []);
+        }
+        if (checkbox.checked) {
+          filterMap.get(field).push(value);
+        }
+      });
+      return filterMap
+    };
+
+    // Reset button: uncheck all checkboxes and clear filters
+    // if (resetButton && dataBinder) {
+    //   panel.listen(resetButton, 'click', (e) => {
+    //     e.stopPropagation();
+    //
+    //     // Uncheck all checkboxes
+    //     checkboxes.forEach(checkbox => {
+    //       checkbox.checked = false;
+    //     });
+    //
+    //     // Remove all filter parameters from URL
+    //     const filterFields = getAllFilterFields();
+    //     const clearParams = {};
+    //     filterFields.forEach(field => {
+    //       clearParams[field] = null;
+    //     });
+    //
+    //     // Fetch data with cleared filters
+    //     skeleton && skeleton.show();
+    //     dataBinder.fetchData(clearParams).then(() => {
+    //       pagination && pagination.setData(dataBinder);
+    //       skeleton && skeleton.hide();
+    //       // Close the popover after resetting
+    //       popover.open = false;
+    //     });
+    //   });
+    // }
+
+    // Apply button: update filters and fetch data
+    if (applyButton && dataBinder) {
+      panel.listen(applyButton, 'click', (e) => {
+        e.stopPropagation();
+
+        // Build filter params from the checkboxes
+        const params = [...buildFilterParams()].reduce((p, [key, value]) => {
+          p[key] = value === [] ? null : value;
+          return p;
+        }, {offset: 0});
+
+        console.log(params);
+
+        // Fetch data with new filters and reset to page 1
+        // params.offset = 0;
+        skeleton && skeleton.show();
+        dataBinder.fetchData(params).then(() => {
+          pagination && pagination.setData(dataBinder);
+          skeleton && skeleton.hide();
+          // Close the popover after applying
+          popover.open = false;
+        });
+      });
+    }
   };
 
   // Handel page size changes at server side

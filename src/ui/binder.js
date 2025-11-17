@@ -95,16 +95,18 @@ export class Binder {
 
 
   #setUrlParams(params) {
+    console.log(this.#url.searchParams);
     Object.entries(params).forEach(([key, value]) => {
+
       // Remove param if null, undefined, or empty string
       // eslint-disable-next-line eqeqeq
-      if (value == null || value === '') {
+      if (value == null || value === '' || (Array.isArray(value) && value.length < 1)) {
         this.#url.searchParams.delete(key);
         return;
       }
 
-      // Handle arrays as comma-separated
       if (Array.isArray(value)) {
+        // value.forEach(v => this.#url.searchParams.append(key, v));
         this.#url.searchParams.set(key, value.join(','));
         return;
       }
@@ -112,6 +114,7 @@ export class Binder {
       // Set normal values
       this.#url.searchParams.set(key, value);
     });
+    console.log(this.#url.searchParams);
     return this.#url;
   }
 
