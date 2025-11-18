@@ -3,30 +3,11 @@
 /**
  * Generic Carbon Design System Component Renderer
  *
- * Configuration-driven approach to attach event listeners to Carbon components.
- * This single renderer replaces 18 individual component renderers with a
- * declarative configuration.
- *
- * Features:
- * - Single source of truth for all Carbon component integrations
- * - Lazy loading - only imports components that are actually used in the panel
- * - Automatic import caching - modules loaded once, shared across all panels
- * - Easy to add new components - just add configuration
- * - Consistent event handling patterns
- * - Reduced code duplication
- * - Future-proof - doesn't depend on Carbon internals
- *
  * @see https://web-components.carbondesignsystem.com/
  */
 
 import {getSemanticAttributes, getEventAttribute} from '../zoo/index.js';
 import { buildComponentMap } from './components/index.js';
-
-//--[ Component Imports ]--
-// All component configurations have been extracted to components/ directory
-// No import declarations needed here - components manage their own imports
-
-//--[ Helper Functions ]--
 
 /**
  * Scans panel DOM once and categorizes all Carbon elements by their config selector.
@@ -39,24 +20,20 @@ import { buildComponentMap } from './components/index.js';
 export function scanForCarbonComponents(panel) {
   const elementMap = new Map();
 
-  // Guard against invalid panel parameter (null, undefined, non-Element nodes)
   if (!panel || !(panel instanceof Element)) {
     return elementMap;
   }
 
-  // Initialize map with all selectors
   for (const selector of Object.keys(COMPONENT_CONFIG)) {
     elementMap.set(selector, []);
   }
 
-  // Check the panel element itself first (it might be a Carbon component)
   for (const [selector, config] of Object.entries(COMPONENT_CONFIG)) {
     if (panel.matches(selector)) {
       elementMap.get(selector).push(panel);
     }
   }
 
-  // Single DOM traversal - categorize descendant elements by matching selectors
   const allElements = panel.querySelectorAll('*');
   for (const element of allElements) {
     for (const [selector, config] of Object.entries(COMPONENT_CONFIG)) {
@@ -66,7 +43,6 @@ export function scanForCarbonComponents(panel) {
     }
   }
 
-  // Remove empty entries
   for (const [selector, elements] of elementMap.entries()) {
     if (elements.length === 0) {
       elementMap.delete(selector);
@@ -113,12 +89,9 @@ export async function loadComponentImports(importFunctions, cache) {
   }
 
   const loadPromises = Array.from(importFunctions).map(async (importFn) => {
-    // Check cache first
     if (!cache.has(importFn)) {
-      // Not cached - load and cache the promise
       cache.set(importFn, importFn());
     }
-    // Return cached promise (may be in-flight or completed)
     return cache.get(importFn);
   });
 
@@ -140,13 +113,11 @@ export function attachEventListeners(elementMap, panel) {
     const config = COMPONENT_CONFIG[selector];
 
     elements.forEach(element => {
-      // Custom initialization (for complex components)
       if (config.init) {
         config.init.call(panel, element);
         return;
       }
 
-      // Multi-event components (e.g., text-input with input + change)
       if (config.multiEvent) {
         const attrs = getSemanticAttributes(element);
         config.events.forEach(eventConfig => {
@@ -169,7 +140,6 @@ export function attachEventListeners(elementMap, panel) {
           e.stopPropagation();
           const data = config.getData(e, attrs, element);
 
-          // Handle event override (e.g., menu items with their own event names)
           const finalEventName = data._eventOverride || eventName;
           delete data._eventOverride;
 

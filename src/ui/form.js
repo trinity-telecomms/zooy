@@ -69,8 +69,6 @@ class FormPanel extends Panel {
 
     this.#intercept = intercept;
 
-    this.debugMode = true;
-
     // noinspection JSUnusedLocalSymbols
     /**
      * @type {function(!FormPanel, (string|!ServerFormSuccessJsonType)=): (?|null|Promise<?>)}

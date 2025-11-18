@@ -64,16 +64,20 @@ cds-table {
   cds-table-cell {
     &.number {
       text-align: right;
+
+      &.index {
+        width: 2.5em;
+      }
     }
   }
 
-  // Numeric column headers - right-aligned to match cell alignment
-  cds-table-header-cell {
-    &.number {
-      text-align: right;
-    }
+  cds-table-header-cell.number::part(label-text) {
+    flex: 1;
+    text-align: right;
   }
+
 }
+
 
 // Batch filter popover - active state styling
 // Matches Carbon's overflow menu behavior when open
@@ -104,7 +108,7 @@ cds-popover {
         border-inline-start: 1px solid var(--cds-layer-accent);
 
         &:last-of-type {
-         border: none;
+          border: none;
         }
       }
     }

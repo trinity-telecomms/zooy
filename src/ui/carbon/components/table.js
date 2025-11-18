@@ -458,76 +458,56 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    * @private
    */
   const initFilterPopover = (popover) => {
-    const button = popover.querySelector('cds-icon-button, button:not([slot])');
-    if (!button) return;
-
     popover.caret = false;
-    panel.listen(button, 'click', (e) => {
-      e.stopPropagation();
-      popover.open = !popover.open;
-      popover.classList.toggle('cds--overflow-menu--open', popover.open);
-    });
+
+    const button = popover.querySelector('cds-icon-button, button:not([slot])');
+    const checkboxes = popover.querySelectorAll('cds-checkbox');
+    const actionButtons = popover.querySelectorAll('cds-modal-footer-button');
+    const resetFilterParams = [...popover.querySelectorAll('cds-checkbox-group')].map(getSemanticAttributes)
+      .map(R.pathOr("noop", ["zoo", "filter", "field"]))
+      .reduce((p, c) => {
+          p[c] = null;
+          return p;
+        },
+        {offset: 0}
+      )
+
+    if (!button || !actionButtons) {
+      console.error("Improperly configured Batch Filter popover")
+      return;
+    }
 
     // Watch for popover closing (e.g., clicking outside)
-    const observer = new MutationObserver(() => {
+    new MutationObserver(() => {
       popover.classList.toggle('cds--overflow-menu--open', popover.open);
-    });
-    observer.observe(popover, {
+    }).observe(popover, {
       attributes: true,
       attributeFilter: ['open']
     });
 
-    // Get all checkboxes and buttons
-    const checkboxes = popover.querySelectorAll('cds-checkbox');
-    const filterFieldGroups = popover.querySelectorAll('cds-checkbox-group');
-    const buttons = popover.querySelectorAll('cds-button, cds-modal-footer-button');
-
-    // Find Reset and Apply buttons by their text content
-    let resetButton, applyButton;
-    buttons.forEach(btn => {
-      const text = btn.textContent.trim().toLowerCase();
-      if (text.includes('reset')) {
-        resetButton = btn;
-      } else if (text.includes('apply')) {
-        applyButton = btn;
+    const actionButtonReset = Symbol();
+    const actionButtonApply = Symbol();
+    const actionButtonMap = [...actionButtons].reduce((p, c, i) => {
+      if (c.hasAttribute('reset-filter')) {
+        p.set(actionButtonReset, c);
       }
-    });
-
-    /**
-     * Get all unique filter field names from checkbox IDs
-     * Returns plain field names without any suffix
-     * @return {Set<string>} Set of field names
-     */
-    const getAllFilterFields = () => {
-      console.log("THIS GOT CALLED!");
-      const fields = new Set();
-      filterFieldGroups.forEach(el => {
-        console.log(getSemanticAttributes(el));
-      });
-      // checkboxes.forEach(checkbox => {
-      //   const id = checkbox.getAttribute('id');
-      //   if (id && id.includes(':')) {
-      //     const [field] = id.split(':');
-      //     fields.add(field);
-      //   }
-      // });
-      console.log("HERE THE FIELDS", fields);
-      return fields;
-    };
-
+      if (c.hasAttribute('apply-filter')) {
+        p.set(actionButtonApply, c);
+      }
+      return p;
+    }, new Map());
 
     const buildFilterParams = () => {
       const filterMap = new Map();
 
-      checkboxes.forEach(checkbox => {
-        const id = checkbox.getAttribute('id');
+      checkboxes.forEach(el => {
+        const id = el.getAttribute('id');
         if (!id || !id.includes(':')) return;
-
         const [field, value] = id.split(':');
         if (!filterMap.has(field)) {
           filterMap.set(field, []);
         }
-        if (checkbox.checked) {
+        if (el.checked) {
           filterMap.get(field).push(value);
         }
       });
@@ -535,57 +515,44 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     };
 
     // Reset button: uncheck all checkboxes and clear filters
-    // if (resetButton && dataBinder) {
-    //   panel.listen(resetButton, 'click', (e) => {
-    //     e.stopPropagation();
-    //
-    //     // Uncheck all checkboxes
-    //     checkboxes.forEach(checkbox => {
-    //       checkbox.checked = false;
-    //     });
-    //
-    //     // Remove all filter parameters from URL
-    //     const filterFields = getAllFilterFields();
-    //     const clearParams = {};
-    //     filterFields.forEach(field => {
-    //       clearParams[field] = null;
-    //     });
-    //
-    //     // Fetch data with cleared filters
-    //     skeleton && skeleton.show();
-    //     dataBinder.fetchData(clearParams).then(() => {
-    //       pagination && pagination.setData(dataBinder);
-    //       skeleton && skeleton.hide();
-    //       // Close the popover after resetting
-    //       popover.open = false;
-    //     });
-    //   });
-    // }
-
-    // Apply button: update filters and fetch data
-    if (applyButton && dataBinder) {
-      panel.listen(applyButton, 'click', (e) => {
+    if (actionButtonMap.has(actionButtonReset)) {
+      const uncheck = e => e.checked = false;
+      panel.listen(actionButtonMap.get(actionButtonReset), 'click', (e) => {
         e.stopPropagation();
 
-        // Build filter params from the checkboxes
+        checkboxes.forEach(uncheck);
+        skeleton && skeleton.show();
+        dataBinder.fetchData(resetFilterParams).then(() => {
+          pagination && pagination.setData(dataBinder);
+          skeleton && skeleton.hide();
+          popover.open = false;
+        });
+      });
+    }
+
+    if (actionButtonMap.has(actionButtonApply)) {
+      panel.listen(actionButtonMap.get(actionButtonApply), 'click', (e) => {
+        e.stopPropagation();
+
         const params = [...buildFilterParams()].reduce((p, [key, value]) => {
           p[key] = value === [] ? null : value;
           return p;
         }, {offset: 0});
 
-        console.log(params);
-
-        // Fetch data with new filters and reset to page 1
-        // params.offset = 0;
         skeleton && skeleton.show();
         dataBinder.fetchData(params).then(() => {
           pagination && pagination.setData(dataBinder);
           skeleton && skeleton.hide();
-          // Close the popover after applying
           popover.open = false;
         });
       });
     }
+
+    panel.listen(button, 'click', (e) => {
+      e.stopPropagation();
+      popover.open = !popover.open;
+      popover.classList.toggle('cds--overflow-menu--open', popover.open);
+    });
   };
 
   // Handel page size changes at server side
@@ -641,7 +608,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
 
   // Filter popover initialization - find popover with data-batch-filter attribute
   const filterPopovers = tableToolbar.querySelectorAll('cds-popover[data-batch-filter]');
-  if (filterPopovers) {
+  if (dataBinder && filterPopovers) {
     filterPopovers.forEach(initFilterPopover);
   }
 
@@ -748,6 +715,15 @@ const createPagination = (dataBinder) => {
       const MAX_PAGES_FOR_DROPDOWN = 100;
       pagination.pagesUnknown = totalPages > MAX_PAGES_FOR_DROPDOWN;
       pagination.totalItems = count;
+
+      // When using pagesUnknown mode, override the formatter to include total count
+      // Uses closure to capture 'count' from this scope
+      if (pagination.pagesUnknown) {
+        pagination.formatStatusWithIndeterminateTotal = ({start, end}) =>
+          `${start}–${end} of ${count} item${count <= 1 ? '' : 's'}`;
+      } else {
+        delete pagination.formatStatusWithIndeterminateTotal;
+      }
     }
   }
   return pagination;
