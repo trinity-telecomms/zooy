@@ -31,7 +31,42 @@ const DEFAULT_FORMATTERS = {
     }
 
     return dateToZooyStdTimeString(date);
+  },
+
+  /**
+   * Template string interpolation formatter
+   * Evaluates a template string with access to 'value' and 'data'
+   * @example:
+   *    <!-- Simple value interpolation -->
+   *    <img zoo-bind-attr="src:mno_id|tpl"
+   *      zoo-bind-attr-tpl="/static/dist/img/networks/${value}.png">
+   *
+   *    <!-- Access to nested data -->
+   *    <img zoo-bind-attr="src:mno_id|tpl"
+   *        zoo-bind-attr-tpl="/static/dist/img/${data.region}/networks/${value}.png">
+   *
+   *    <!-- Conditional logic -->
+   *    <span zoo-bind-attr="class:status|tpl"
+   *        zoo-bind-attr-tpl="status-${value === 'active' ? 'good' : 'bad'}">
+   *
+   *    <!-- Even expressions -->
+   *    <span zoo-bind="price|tpl"
+   *        zoo-bind-tpl="$${(value / 100).toFixed(2)}">
+   */
+  tpl: (value, data, element) => {
+    const template = element?.getAttribute('zoo-bind-attr-tpl');
+    if (!template) return value;
+
+    // Use Function constructor to evaluate template literal
+    // Available variables: value, data
+    try {
+      return new Function('value', 'data', `return \`${template}\`;`)(value, data);
+    } catch (e) {
+      console.warn('[Binder] Invalid template:', template, e);
+      return value;
+    }
   }
+
 };
 
 export class Binder {
@@ -208,33 +243,37 @@ export class Binder {
       if (el.closest('[zoo-template]')) return;
 
       const bindings = el.getAttribute('zoo-bind-attr');
+
       bindings.split(',').forEach(binding => {
-        const [attr, path] = binding.split(':').map(s => s.trim());
-        const value = this.#getValue(data, path, index);
+        const [attr, pathAndFormat] = binding.split(':').map(s => s.trim());
+        const [path, format] = pathAndFormat.split('|').map(s => s.trim());
+        let value = this.#getValue(data, path, index);
+        if (format && this.#formatters[format]) {
+          value = this.#formatters[format](value, data, el);
+        }
         if (isDefAndNotNull(value)) {
           el.setAttribute(attr, value);
         }
       });
-
       if (removeAttributes) {
         el.removeAttribute('zoo-bind-attr');
+        el.removeAttribute('zoo-bind-attr-tpl');
       }
     });
 
     element.querySelectorAll('[zoo-bind]').forEach(el => {
       if (el.closest('[zoo-template]')) return;
 
-      const path = el.getAttribute('zoo-bind');
-      const format = el.getAttribute('zoo-bind-format');
+      const binding = el.getAttribute('zoo-bind');
+      const [path, format] = binding.split('|').map(s => s.trim());
       let value = this.#getValue(data, path, index);
       if (format && this.#formatters[format]) {
-        value = this.#formatters[format](value, data);
+        value = this.#formatters[format](value, data, el);
       }
       el.textContent = value ?? '';
-
       if (removeAttributes) {
         el.removeAttribute('zoo-bind');
-        el.removeAttribute('zoo-bind-format');
+        el.removeAttribute('zoo-bind-tpl');
       }
     });
 
