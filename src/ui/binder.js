@@ -70,6 +70,8 @@ export class Binder {
     // Apply initial URL params if provided
     if (options.urlParams) {
       this.#setUrlParams(options.urlParams);
+    } else {
+      this.#updateBinderUrlAttributes();
     }
   }
 
@@ -93,7 +95,6 @@ export class Binder {
     return both(has('count'), has('results'))(this.#data);
   }
 
-
   #setUrlParams(params) {
     Object.entries(params).forEach(([key, value]) => {
       if (!isDefAndNotNull(value) || value === '' || (Array.isArray(value) && value.length < 1)) {
@@ -106,7 +107,23 @@ export class Binder {
       }
       this.#url.searchParams.set(key, value);
     });
+
+    this.#updateBinderUrlAttributes();
+
     return this.#url;
+  }
+
+  /**
+   * Updates all elements with zoo-bind-binderurl attribute to have the current
+   * URL path and query string as the attribute value. This allows elements to
+   * dynamically reflect the binder's URL when it changes.
+   * @private
+   */
+  #updateBinderUrlAttributes() {
+    const urlString = this.#url.href.split(this.url.origin)[1].slice(1);
+    this.#rootEl.querySelectorAll('[zoo-bind-binderurl]').forEach(el => {
+      el.setAttribute('zoo-bind-binderurl', urlString);
+    });
   }
 
   /**
@@ -161,6 +178,9 @@ export class Binder {
       console.warn('[Binder] No data to render');
       return;
     }
+
+    // Update all elements with zoo-bind-binderurl attribute
+    this.#updateBinderUrlAttributes();
 
     this.#renderSimpleBindings(this.#rootEl, this.#data, 0);
     this.#renderTemplateConsumers();

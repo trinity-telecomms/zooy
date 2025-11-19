@@ -24,21 +24,21 @@ export default {
    * @param {CDSBreadcrumb} breadcrumb - The CDSBreadcrumb custom element instance
    * @this {Panel} The panel instance
    */
-  init: function (breadcrumb)
-  {
+  init: function (breadcrumb) {
+    const panel = this;
     const breadcrumbAttrs = getSemanticAttributes(breadcrumb);
     const eventName = breadcrumbAttrs.event;
 
     if (eventName) {
       // Helper to dispatch breadcrumb event
       const dispatchBreadcrumbEvent = (itemAttrs) => {
-        this.dispatchPanelEvent(eventName, {
+        panel.dispatchPanelEvent(eventName, {
           ...breadcrumbAttrs, ...itemAttrs
         });
       };
 
       // Listen for breadcrumb link clicks (event delegation)
-      this.listen(breadcrumb, 'click', e => {
+      panel.listen(breadcrumb, 'click', e => {
         const link = e.target.closest('cds-breadcrumb-link');
         if (link) {
           e.preventDefault();
@@ -51,7 +51,7 @@ export default {
       // Listen for overflow menu item clicks (for collapsed breadcrumbs)
       const overflowMenuBody = breadcrumb.querySelector('cds-overflow-menu-body');
       if (overflowMenuBody) {
-        this.listen(overflowMenuBody, 'cds-overflow-menu-item-clicked', e => {
+        panel.listen(overflowMenuBody, 'cds-overflow-menu-item-clicked', e => {
           e.stopPropagation();
           const itemAttrs = getSemanticAttributes(e.target);
           dispatchBreadcrumbEvent(itemAttrs);

@@ -65,7 +65,7 @@ export default {
     if (eventName) {
       this.listen(button, 'click', e => {
         e.stopPropagation();
-        this.dispatchPanelEvent(eventName, attrs);
+        this.dispatchPanelEvent(eventName, getSemanticAttributes(button));
       });
     }
   }
