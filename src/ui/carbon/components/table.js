@@ -98,7 +98,8 @@ import {
 const dataTableImport = () => import('@carbon/web-components/es/components/data-table/index.js');
 // noinspection JSFileReferences
 const paginationImport = () => import('@carbon/web-components/es/components/pagination/index.js');
-
+// noinspection JSFileReferences
+const tooltipImport = () => import('@carbon/web-components/es/components/tooltip/index.js');
 /**
  * Standalone pagination component configuration.
  *
@@ -796,7 +797,7 @@ const setupDataBinderIntegration = (panel, el) => {
 
 export default {
   selector: 'cds-table',
-  import: [dataTableImport, paginationImport],
+  import: [tooltipImport, dataTableImport, paginationImport],
 
   /**
    * Initialize a Carbon data table component.

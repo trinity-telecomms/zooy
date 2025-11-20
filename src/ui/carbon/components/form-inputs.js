@@ -4,12 +4,17 @@
  * Handles text-based form inputs and search.
  */
 
-import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
-
+// noinspection JSFileReferences
+const tooltipImport = () => import('@carbon/web-components/es/components/tooltip/index.js');
+// noinspection JSFileReferences
 const textInputImport = () => import('@carbon/web-components/es/components/text-input/index.js');
+// noinspection JSFileReferences
 const textareaImport = () => import('@carbon/web-components/es/components/textarea/index.js');
+// noinspection JSFileReferences
 const numberInputImport = () => import('@carbon/web-components/es/components/number-input/index.js');
+// noinspection JSFileReferences
 const passwordInputImport = () => import('@carbon/web-components/es/components/password-input/index.js');
+// noinspection JSFileReferences
 const searchImport = () => import('@carbon/web-components/es/components/search/index.js');
 
 // Text Input
@@ -76,7 +81,7 @@ export const formInputComponents = {
 
   // Password Input
   'cds-password-input': {
-    import: passwordInputImport,
+    import: [tooltipImport, passwordInputImport],
     multiEvent: true,
     events: [
       {
