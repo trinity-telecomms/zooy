@@ -68,7 +68,7 @@ publish TYPE="patch": qa
     echo "✓ Published v$NEW_VERSION to npm"
     echo ""
     echo "Next steps:"
-    echo "  1. Commit version bump: git add package.json && git commit -m \"Bump to v$NEW_VERSION\""
+    echo "  1. Commit version bump: git add package.json package-lock.json && git commit -m \"Bump to v$NEW_VERSION\""
     echo "  2. Tag release: git tag v$NEW_VERSION"
     echo "  3. Push: git push && git push --tags"
 
