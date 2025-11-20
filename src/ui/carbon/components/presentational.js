@@ -4,77 +4,91 @@
  * Components that have no event handling, used purely for presentation.
  */
 
-const formImport = () => import('@carbon/web-components/es/components/form/index.js');
-const formGroupImport = () => import('@carbon/web-components/es/components/form-group/index.js');
-const stackImport = () => import('@carbon/web-components/es/components/stack/index.js');
-const headingImport = () => import('@carbon/web-components/es/components/heading/index.js');
-const iconImport = () => import('@carbon/web-components/es/components/icon/index.js');
-const iconIndicatorImport = () => import('@carbon/web-components/es/components/icon-indicator/index.js');
-const loadingImport = () => import('@carbon/web-components/es/components/loading/index.js');
-const skeletonTextImport = () => import('@carbon/web-components/es/components/skeleton-text/index.js');
-const skeletonPlaceholderImport = () => import('@carbon/web-components/es/components/skeleton-placeholder/index.js');
-const badgeIndicatorImport = () => import('@carbon/web-components/es/components/badge-indicator/index.js');
+/**
+ * Form
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsFormWrap = {
+  selector: 'cds-form',
+}
 
-// All presentational components (no event handling, import only)
-export const presentationalComponents = {
-  // Form structure components (presentational only - no event handling needed)
-  'cds-form': {
-    import: formImport
-    // No event handling - wraps native <form> which works naturally
-  },
+/**
+ * Form Item
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsFormItemWrap = {
+  selector: 'cds-form-item',
+}
 
-  'cds-form-item': {
-    import: formImport
-    // No event handling - presentational wrapper for form fields
-  },
+/**
+ * Form Group
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsFormGroupWrap = {
+  selector: 'cds-form-group',
+}
 
-  'cds-form-group': {
-    import: formGroupImport
-    // No event handling - presentational fieldset wrapper
-  },
+/**
+ * Stack
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsStackWrap = {
+  selector: 'cds-stack',
+}
 
-  'cds-stack': {
-    import: stackImport
-    // No event handling - layout utility for spacing items vertically or horizontally
-  },
+/**
+ * Typography & Icons (Presentational)
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsHeadingWrap = {
+  selector: 'cds-heading',
+}
 
-  // Typography & Icons (Presentational)
-  'cds-heading': {
-    import: headingImport
-    // No event handling - semantic heading component
-  },
+/**
+ * Icon
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsIconWrap = {
+  selector: 'cds-icon',
+}
 
-  'cds-icon': {
-    import: iconImport
-    // No event handling - icon display component
-  },
+/**
+ * Icon Indicator
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsIconIndicatorWrap = {
+  selector: 'cds-icon-indicator',
+}
 
-  'cds-icon-indicator': {
-    import: iconIndicatorImport
-    // No event handling - status indicator icon
-  },
+/**
+ * Badge Indicator - Status badge component (typically used in tabs/icons)
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsBadgeIndicatorWrap = {
+  selector: 'cds-badge-indicator',
+}
 
-  // Badge Indicator - Status badge component (typically used in tabs/icons)
-  'cds-badge-indicator': {
-    import: badgeIndicatorImport
-    // No event handling - presentational status indicator
-    // Typically appears as a dot on tabs or icons to show notifications/status
-  },
+/**
+ * Loading Indicator - Full-page or section loading spinner
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsLoadingWrap = {
+  selector: 'cds-loading',
+}
 
-  // Loading - Full-page or section loading spinner
-  'cds-loading': {
-    import: loadingImport
-    // No event handling - presentational loading spinner
-  },
+/**
+ * Skeleton components - Loading placeholders
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsSkeletonTextWrap = {
+  selector: 'cds-skeleton-text',
+}
 
-  // Skeleton components - Loading placeholders
-  'cds-skeleton-text': {
-    import: skeletonTextImport
-    // No event handling - presentational loading placeholder
-  },
+/**
+ * Skeleton Placeholders
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsSkeletonPlaceholderWrap = {
+  selector: 'cds-skeleton-placeholder',
+}
 
-  'cds-skeleton-placeholder': {
-    import: skeletonPlaceholderImport
-    // No event handling - presentational loading placeholder
-  }
-};

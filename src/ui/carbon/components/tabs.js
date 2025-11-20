@@ -4,7 +4,7 @@
  * Handles tabbed navigation, expandable accordions, and content switching.
  */
 
-import { getSemanticAttributes } from '../../zoo/index.js';
+import {getSemanticAttributes} from '../../zoo/index.js';
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -14,17 +14,14 @@ import { getSemanticAttributes } from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/content-switcher/content-switcher.js').default} CDSContentSwitcher
  */
 
-// noinspection JSFileReferences
-const tabsImport = () => import('@carbon/web-components/es/components/tabs/index.js');
-// noinspection JSFileReferences
-const accordionImport = () => import('@carbon/web-components/es/components/accordion/index.js');
-// noinspection JSFileReferences
-const contentSwitcherImport = () => import('@carbon/web-components/es/components/content-switcher/index.js');
 
-// Tabs
-export default {
+/**
+ * Tab Component
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSTabs): void}}
+ */
+export const cdsTabsWrap = {
   selector: 'cds-tabs',
-  import: tabsImport,
+
   /**
    * @param {CDSTabs} tabs - The CDSTabs custom element instance
    * @this {Panel} The panel instance
@@ -59,76 +56,83 @@ export default {
       });
     }
   }
-};
+}
 
-// Related navigation components
-export const navigationComponents = {
-  // Accordion
-  'cds-accordion': {
-    import: accordionImport,
-    /**
-     * @param {CDSAccordion} accordion - The CDSAccordion custom element instance
-     * @this {Panel} The panel instance
-     */
-    init: function (accordion) {
-      const CDSAccordionItem = customElements.get('cds-accordion-item');
-      const attrs = getSemanticAttributes(accordion);
 
-      // Listen for accordion item toggles
-      const items = [...accordion.querySelectorAll('cds-accordion-item')];
-      items.forEach(item => {
-        const itemAttrs = getSemanticAttributes(item);
-        const eventName = itemAttrs.event || attrs.event;
+/**
+ * Accordion
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSAccordion): void}}
+ */
+export const cdsAccordionWrap = {
+  selector: 'cds-accordion',
 
-        if (eventName) {
-          this.listen(item, CDSAccordionItem.eventToggle, e => {
-            this.dispatchPanelEvent(eventName, {
-              ...attrs,
-              ...itemAttrs,
-              open: e.detail.open
-            });
-          });
-        }
-      });
-    }
-  },
+  /**
+   * @param {CDSAccordion} accordion - The CDSAccordion custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (accordion) {
+    const CDSAccordionItem = customElements.get('cds-accordion-item');
+    const attrs = getSemanticAttributes(accordion);
 
-  // Content Switcher
-  'cds-content-switcher': {
-    import: contentSwitcherImport,
-    /**
-     * @param {CDSContentSwitcher} switcher - The CDSContentSwitcher custom element instance
-     * @this {Panel} The panel instance
-     */
-    init: function (switcher) {
-      const CDSContentSwitcher = customElements.get('cds-content-switcher');
-      const attrs = getSemanticAttributes(switcher);
+    // Listen for accordion item toggles
+    const items = [...accordion.querySelectorAll('cds-accordion-item')];
+    items.forEach(item => {
+      const itemAttrs = getSemanticAttributes(item);
+      const eventName = itemAttrs.event || attrs.event;
 
-      // Before selection event (cancelable)
-      const beforeSelectEvent = switcher.getAttribute('before-select-event');
-      if (beforeSelectEvent) {
-        this.listen(switcher, CDSContentSwitcher.eventBeforeSelect, e => {
-          this.dispatchPanelEvent(beforeSelectEvent, {
-            ...attrs,
-            value: e.detail.value,
-            cancelable: true
-          });
-        });
-      }
-
-      // After selection event
-      const selectEvent = attrs.event;
-      if (selectEvent) {
-        this.listen(switcher, CDSContentSwitcher.eventSelect, e => {
-          const selectedItem = e.detail.item;
-          const itemAttrs = getSemanticAttributes(selectedItem);
-          this.dispatchPanelEvent(selectEvent, {
+      if (eventName) {
+        this.listen(item, CDSAccordionItem.eventToggle, e => {
+          this.dispatchPanelEvent(eventName, {
             ...attrs,
             ...itemAttrs,
-            value: selectedItem.getAttribute('value')
+            open: e.detail.open
           });
         });
       }
+    });
+  }
+}
+
+
+/**
+ * Content Switcher
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSContentSwitcher): void}}
+ */
+export const cdsContentSwitcherWrap = {
+  selector: 'cds-content-switcher',
+
+  /**
+   * @param {CDSContentSwitcher} switcher - The CDSContentSwitcher custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (switcher) {
+    const CDSContentSwitcher = customElements.get('cds-content-switcher');
+    const attrs = getSemanticAttributes(switcher);
+
+    // Before selection event (cancelable)
+    const beforeSelectEvent = switcher.getAttribute('before-select-event');
+    if (beforeSelectEvent) {
+      this.listen(switcher, CDSContentSwitcher.eventBeforeSelect, e => {
+        this.dispatchPanelEvent(beforeSelectEvent, {
+          ...attrs,
+          value: e.detail.value,
+          cancelable: true
+        });
+      });
+    }
+
+    // After selection event
+    const selectEvent = attrs.event;
+    if (selectEvent) {
+      this.listen(switcher, CDSContentSwitcher.eventSelect, e => {
+        const selectedItem = e.detail.item;
+        const itemAttrs = getSemanticAttributes(selectedItem);
+        this.dispatchPanelEvent(selectEvent, {
+          ...attrs,
+          ...itemAttrs,
+          value: selectedItem.getAttribute('value')
+        });
+      });
     }
   }
-};
+}

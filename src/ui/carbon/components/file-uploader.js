@@ -6,17 +6,19 @@
 
 import { getSemanticAttributes } from '../../zoo/index.js';
 
-// noinspection JSFileReferences
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
  * @typedef {import('@carbon/web-components/es/components/file-uploader/file-uploader.js').default} CDSFileUploader
  */
 
-const fileUploaderImport = () => import('@carbon/web-components/es/components/file-uploader/index.js');
 
-export default {
+/**
+ * File Uploader
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSFileUploader): void}}
+ */
+export const cdsFileUploaderWrap = {
   selector: 'cds-file-uploader',
-  import: fileUploaderImport,
+
   /**
    * @param {CDSFileUploader} uploader - The CDSFileUploader custom element instance
    * @this {Panel} The panel instance
@@ -51,4 +53,4 @@ export default {
       });
     }
   }
-};
+}

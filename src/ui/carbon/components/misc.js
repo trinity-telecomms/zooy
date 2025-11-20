@@ -4,31 +4,29 @@
  * Handles links, code snippets, and other standalone components.
  */
 
-import { getSemanticAttributes } from '../../zoo/index.js';
 
-const linkImport = () => import('@carbon/web-components/es/components/link/index.js');
-const codeSnippetImport = () => import('@carbon/web-components/es/components/code-snippet/index.js');
-
-// Link
-export default {
+/**
+ * Link
+ * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *, *): *&{href: *}}}
+ */
+export const cdsLinkWrap = {
   selector: 'cds-link',
-  import: linkImport,
   event: 'click',
   getData: (e, attrs, element) => ({
     ...attrs,
     href: element.getAttribute('href')
   })
-};
+}
 
-// Other misc components
-export const miscComponents = {
-  // Code Snippet
-  'cds-code-snippet': {
-    import: codeSnippetImport,
-    event: 'cds-copy-button-clicked',
-    getData: (e, attrs) => ({
-      ...attrs,
-      action: 'copied'
-    })
-  }
-};
+/**
+ * Code Snippet
+ * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *): *&{action: string}}}
+ */
+export const cdsCodeSnipWrap = {
+  selector: 'cds-code-snippet',
+  event: 'cds-copy-button-clicked',
+  getData: (e, attrs) => ({
+    ...attrs,
+    action: 'copied'
+  })
+}

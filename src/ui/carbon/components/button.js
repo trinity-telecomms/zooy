@@ -4,7 +4,7 @@
  * Handles various button types including standard buttons, icon buttons, and combo buttons.
  */
 
-import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
+import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -14,19 +14,13 @@ import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/copy-button/copy-button.js').default} CDSCopyButton
  */
 
-// noinspection JSFileReferences
-const buttonImport = () => import('@carbon/web-components/es/components/button/index.js');
-// noinspection JSFileReferences
-const iconButtonImport = () => import('@carbon/web-components/es/components/icon-button/index.js');
-// noinspection JSFileReferences
-const comboButtonImport = () => import('@carbon/web-components/es/components/combo-button/index.js');
-// noinspection JSFileReferences
-const copyButtonImport = () => import('@carbon/web-components/es/components/copy-button/index.js');
-
-// Standard Button
-export default {
+/**
+ * Standard Button
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSButton): void}}
+ */
+export const cdsButtonWrap = {
   selector: 'cds-button',
-  import: buttonImport,
+
   /**
    * @param {CDSButton} button - The CDSButton custom element instance
    * @this {Panel} The panel instance
@@ -71,131 +65,159 @@ export default {
   }
 };
 
-// Button-related components configuration
-export const buttonComponents = {
-  // Icon Button (non-toggle)
-  'cds-icon-button:not([data-toggle])': {
-    import: iconButtonImport,
-    event: 'click',
-    getData: (e, attrs) => attrs
-  },
+/**
+ * Button-related components configuration
+ * Icon Button (non-toggle)
+ * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *): *}}
+ */
+export const cdsIconButWrap = {
+  selector: 'cds-icon-button:not([data-toggle])',
+  event: 'click',
+  getData: (e, attrs) => attrs
+}
 
-  // Icon Toggle - Toggles Carbon's built-in isSelected state for ghost icon buttons
-  // Visual styling (subtle background change) is handled by Carbon's CSS
-  'cds-icon-button[data-toggle]': {
-    import: iconButtonImport,
-    init: function (button) {
-      const attrs = getSemanticAttributes(button);
+/**
+ * Icon Toggle - Toggles Carbon's built-in isSelected state for ghost icon buttons
+ * Visual styling (subtle background change) is handled by Carbon's CSS
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSIconButton): void}}
+ */
+export const cdsIconButToggleWrap = {
+  selector: 'cds-icon-button[data-toggle]',
 
-      if (attrs.event) {
-        this.listen(button, 'click', e => {
-          e.stopPropagation();
+  /**
+   * @param {CDSIconButton} button - The CDSButton custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (button) {
+    const attrs = getSemanticAttributes(button);
 
-          // Toggle Carbon's isSelected property (syncs to is-selected attribute)
-          // Carbon applies cds--btn--selected class which adds a subtle background
-          button.isSelected = !button.isSelected;
+    if (attrs.event) {
+      this.listen(button, 'click', e => {
+        e.stopPropagation();
 
-          this.dispatchPanelEvent(attrs.event, {
-            ...attrs,
-            isOn: button.isSelected
-          });
+        // Toggle Carbon's isSelected property (syncs to is-selected attribute)
+        // Carbon applies cds--btn--selected class which adds a subtle background
+        button.isSelected = !button.isSelected;
+
+        this.dispatchPanelEvent(attrs.event, {
+          ...attrs,
+          isOn: button.isSelected
         });
-      }
-    }
-  },
-
-  // FAB (Floating Action Button) - just a styled button
-  'cds-button[data-fab]': {
-    import: buttonImport,
-    event: 'click',
-    getData: (e, attrs) => attrs
-  },
-
-  // Copy Button - Button that copies text to clipboard
-  'cds-copy-button': {
-    import: copyButtonImport,
-    init: function(copyButton) {
-      const attrs = getSemanticAttributes(copyButton);
-
-      // Click event - fires when button is clicked (before copy)
-      const clickEvent = attrs.event;
-      if (clickEvent) {
-        this.listen(copyButton, 'click', e => {
-          e.stopPropagation();
-          this.dispatchPanelEvent(clickEvent, {
-            ...attrs,
-            action: 'copy'
-          });
-        });
-      }
-
-      // Success event - fires after successful copy (if specified separately)
-      const successEvent = copyButton.getAttribute('success-event');
-      if (successEvent) {
-        // Monitor for the feedback text to appear (indicates successful copy)
-        const observer = new MutationObserver(() => {
-          if (copyButton.hasAttribute('feedback-shown')) {
-            this.dispatchPanelEvent(successEvent, {
-              ...attrs,
-              action: 'copied'
-            });
-          }
-        });
-
-        observer.observe(copyButton, {
-          attributes: true,
-          attributeFilter: ['feedback-shown']
-        });
-
-        copyButton._copyObserver = observer;
-      }
-    }
-  },
-
-  // Combo Button - composed of button + menu
-  'cds-combo-button': {
-    import: comboButtonImport,
-    init: function (comboButton) {
-      const attrs = getSemanticAttributes(comboButton);
-
-      // Listen for clicks on the combo button itself
-      // The click event bubbles up from the shadow DOM button
-      if (attrs.event) {
-        this.listen(comboButton, 'click', e => {
-          // Check if this is a primary button click (not menu or trigger)
-          const path = e.composedPath();
-          const isMenuItemClick = path.some(el => el.tagName === 'CDS-MENU-ITEM');
-          const isIconButtonClick = path.some(el => el.tagName === 'CDS-ICON-BUTTON');
-
-          // Only dispatch for primary button clicks
-          if (!isMenuItemClick && !isIconButtonClick) {
-            e.stopPropagation();
-            this.dispatchPanelEvent(attrs.event, {
-              ...attrs,
-              action: 'primary'
-            });
-          }
-        });
-      }
-
-      // Listen for menu item selections
-      const menu = comboButton.querySelector('cds-menu');
-      if (menu) {
-        this.listen(menu, 'click', e => {
-          if (e.target.tagName === 'CDS-MENU-ITEM') {
-            const menuItemAttrs = getSemanticAttributes(e.target);
-            const menuEventName = menuItemAttrs.event || getEventAttribute(comboButton, 'menu-event', 'event');
-
-            if (menuEventName) {
-              this.dispatchPanelEvent(menuEventName, {
-                ...attrs,
-                ...menuItemAttrs,
-                action: 'menu-item'
-              });
-            }
-          }
-        });
-      }
+      });
     }
   }
-};
+}
+
+/**
+ * FAB (Floating Action Button) - just a styled button
+ * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *): *}}
+ */
+export const cdsButFabWrap = {
+  selector: 'cds-button[data-fab]',
+  event: 'click',
+  getData: (e, attrs) => attrs
+}
+
+/**
+ * Copy Button - Button that copies text to clipboard
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSCopyButton): void}}
+ */
+export const cdsCopyButWrap = {
+  selector: 'cds-copy-button',
+
+  /**
+   * @param {CDSCopyButton} button - The CDSCopyButton custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (button) {
+    const attrs = getSemanticAttributes(button);
+
+    // Click event - fires when button is clicked (before copy)
+    const clickEvent = attrs.event;
+    if (clickEvent) {
+      this.listen(button, 'click', e => {
+        e.stopPropagation();
+        this.dispatchPanelEvent(clickEvent, {
+          ...attrs,
+          action: 'copy'
+        });
+      });
+    }
+
+    // Success event - fires after successful copy (if specified separately)
+    const successEvent = button.getAttribute('success-event');
+    if (successEvent) {
+      // Monitor for the feedback text to appear (indicates successful copy)
+      const observer = new MutationObserver(() => {
+        if (button.hasAttribute('feedback-shown')) {
+          this.dispatchPanelEvent(successEvent, {
+            ...attrs,
+            action: 'copied'
+          });
+        }
+      });
+
+      observer.observe(button, {
+        attributes: true,
+        attributeFilter: ['feedback-shown']
+      });
+
+      button._copyObserver = observer;
+    }
+  }
+}
+
+/**
+ * Combo Button - composed of button + menu
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSComboButton): void}}
+ */
+export const cdsComboButWrap = {
+  selector: 'cds-combo-button',
+
+  /**
+   * @param {CDSComboButton} button - The CDSComboButton custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (button) {
+    const attrs = getSemanticAttributes(button);
+
+    // Listen for clicks on the combo button itself
+    // The click event bubbles up from the shadow DOM button
+    if (attrs.event) {
+      this.listen(button, 'click', e => {
+        // Check if this is a primary button click (not menu or trigger)
+        const path = e.composedPath();
+        const isMenuItemClick = path.some(el => el.tagName === 'CDS-MENU-ITEM');
+        const isIconButtonClick = path.some(el => el.tagName === 'CDS-ICON-BUTTON');
+
+        // Only dispatch for primary button clicks
+        if (!isMenuItemClick && !isIconButtonClick) {
+          e.stopPropagation();
+          this.dispatchPanelEvent(attrs.event, {
+            ...attrs,
+            action: 'primary'
+          });
+        }
+      });
+    }
+
+    // Listen for menu item selections
+    const menu = button.querySelector('cds-menu');
+    if (menu) {
+      this.listen(menu, 'click', e => {
+        if (e.target.tagName === 'CDS-MENU-ITEM') {
+          const menuItemAttrs = getSemanticAttributes(e.target);
+          const menuEventName = menuItemAttrs.event || getEventAttribute(button, 'menu-event', 'event');
+
+          if (menuEventName) {
+            this.dispatchPanelEvent(menuEventName, {
+              ...attrs,
+              ...menuItemAttrs,
+              action: 'menu-item'
+            });
+          }
+        }
+      });
+    }
+  }
+}

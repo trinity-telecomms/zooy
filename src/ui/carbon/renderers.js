@@ -8,6 +8,7 @@
 
 import {getSemanticAttributes, getEventAttribute} from '../zoo/index.js';
 import { buildComponentMap } from './components/index.js';
+import { imports } from './imports.js';
 
 /**
  * Scans panel DOM once and categorizes all Carbon elements by their config selector.
@@ -54,7 +55,7 @@ export function scanForCarbonComponents(panel) {
 
 /**
  * Collects unique import functions needed based on scanned elements.
- * Supports both single imports and arrays of imports for components with dependencies.
+ * Uses the centralized selector-imports map instead of component configs.
  *
  * @param {Map<string, Element[]>} elementMap - Map from scanForCarbonComponents
  * @returns {Set<Function>} Set of unique import functions to load
@@ -64,11 +65,10 @@ export function collectImportsNeeded(elementMap) {
   const importsNeeded = new Set();
 
   for (const [selector, elements] of elementMap.entries()) {
-    const config = COMPONENT_CONFIG[selector];
-    if (config && config.import && elements.length > 0) {
-      // Handle both single import and array of imports
-      const imports = Array.isArray(config.import) ? config.import : [config.import];
-      imports.forEach(importFn => importsNeeded.add(importFn));
+    if (elements.length > 0 && imports[selector]) {
+      // Get imports from centralized map
+      const importFns = imports[selector];
+      importFns.forEach(importFn => importsNeeded.add(importFn));
     }
   }
 

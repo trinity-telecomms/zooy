@@ -1,96 +1,80 @@
 /**
  * Carbon Component Configurations
  *
- * Each component exports:
- * - selector: CSS selector for the component
- * - import: Dynamic import function for Carbon web component
- * - init: Initialization function called by CarbonRenderer
+ * Aggregates all component wrappers from individual files.
+ * Uses namespace imports to reduce verbosity.
  */
 
-// Complex components
-import tableComponent, {paginationComponent} from './table.js';
-import modalComponent, { modalSubComponents } from './modal.js';
-import menuComponent, { menuButtonComponent } from './menu.js';
-import buttonComponent, { buttonComponents } from './button.js';
-import dropdownComponent, { dropdownComponents } from './dropdown.js';
-import datePickerComponent, { timePickerComponent } from './date-picker.js';
-import fileUploaderComponent from './file-uploader.js';
-import tabsComponent, { navigationComponents } from './tabs.js';
-import breadcrumbComponent, { breadcrumbComponents } from './breadcrumb.js';
+import * as table from './table.js';
+import * as modal from './modal.js';
+import * as menu from './menu.js';
+import * as button from './button.js';
+import * as dropdown from './dropdown.js';
+import * as datePicker from './date-picker.js';
+import * as fileUploader from './file-uploader.js';
+import * as tabs from './tabs.js';
+import * as breadcrumb from './breadcrumb.js';
+import * as formInputs from './form-inputs.js';
+import * as formControls from './form-controls.js';
+import * as tags from './tags.js';
+import * as lists from './lists.js';
+import * as notifications from './notifications.js';
+import * as tiles from './tiles.js';
+import * as progress from './progress.js';
+import * as tooltips from './tooltips.js';
+import * as misc from './misc.js';
+import * as presentational from './presentational.js';
 
-// Form components
-import formInputComponent, { formInputComponents } from './form-inputs.js';
-import formControlComponent, { formControlComponents } from './form-controls.js';
+/**
+ * Extract all component wrappers from a module.
+ * Filters for objects that have a 'selector' property (component wrappers).
+ *
+ * @param {Object} module - Module namespace object
+ * @returns {Array} Array of component wrapper objects
+ */
+function extractWrappers(module) {
+  return Object.values(module).filter(
+    item => typeof item === 'object' && item !== null && item.selector
+  );
+}
 
-// UI components
-import tagComponent, { tagComponents } from './tags.js';
-import listComponent, { listComponents } from './lists.js';
-import notificationComponent, { notificationComponents } from './notifications.js';
-import tileComponent, { tileComponents } from './tiles.js';
-import progressComponent, { progressComponents } from './progress.js';
-import tooltipComponent, { tooltipComponents } from './tooltips.js';
-import miscComponent, { miscComponents } from './misc.js';
-
-// Presentational components
-import { presentationalComponents } from './presentational.js';
-
-// Collect all primary component configs
+/**
+ * All component configurations aggregated from individual files.
+ * Each wrapper must have at minimum a 'selector' property.
+ */
 export const components = [
-  tableComponent,
-  modalComponent,
-  menuComponent,
-  buttonComponent,
-  dropdownComponent,
-  datePickerComponent,
-  fileUploaderComponent,
-  tabsComponent,
-  breadcrumbComponent,
-  formInputComponent,
-  formControlComponent,
-  tagComponent,
-  listComponent,
-  notificationComponent,
-  tileComponent,
-  progressComponent,
-  tooltipComponent,
-  miscComponent
+  ...extractWrappers(table),
+  ...extractWrappers(modal),
+  ...extractWrappers(menu),
+  ...extractWrappers(button),
+  ...extractWrappers(dropdown),
+  ...extractWrappers(datePicker),
+  ...extractWrappers(fileUploader),
+  ...extractWrappers(tabs),
+  ...extractWrappers(breadcrumb),
+  ...extractWrappers(formInputs),
+  ...extractWrappers(formControls),
+  ...extractWrappers(tags),
+  ...extractWrappers(lists),
+  ...extractWrappers(notifications),
+  ...extractWrappers(tiles),
+  ...extractWrappers(progress),
+  ...extractWrappers(tooltips),
+  ...extractWrappers(misc),
+  ...extractWrappers(presentational),
 ];
 
-// Build the component map including all sub-components and variants
+/**
+ * Build a Map of selector → component config.
+ * Used by renderers.js for fast component lookup.
+ *
+ * @returns {Map<string, Object>} Map from CSS selector to component config
+ */
 export function buildComponentMap() {
   const componentMap = new Map();
 
-  // Add primary components
   components.forEach(component => {
     componentMap.set(component.selector, component);
-  });
-
-  // Add all component variants and sub-components
-  const componentCollections = [
-    modalSubComponents,
-    menuButtonComponent,
-    buttonComponents,
-    dropdownComponents,
-    timePickerComponent,
-    navigationComponents,
-    breadcrumbComponents,
-    paginationComponent,
-    formInputComponents,
-    formControlComponents,
-    tagComponents,
-    listComponents,
-    notificationComponents,
-    tileComponents,
-    progressComponents,
-    tooltipComponents,
-    miscComponents,
-    presentationalComponents
-  ];
-
-  componentCollections.forEach(collection => {
-    Object.entries(collection).forEach(([selector, config]) => {
-      componentMap.set(selector, config);
-    });
   });
 
   return componentMap;

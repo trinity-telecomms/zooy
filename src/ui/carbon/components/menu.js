@@ -4,7 +4,7 @@
  * Handles menu and menu-button components with item selection.
  */
 
-import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
+import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -13,13 +13,14 @@ import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/menu/menu-item.js').default} CDSMenuItem
  */
 
-// noinspection JSFileReferences
-const menuImport = () => import('@carbon/web-components/es/components/menu/index.js');
 
-// Main Menu component
-export default {
+/**
+ * Menu Component
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSMenu): void}}
+ */
+export const cdsMenuWrap = {
   selector: 'cds-menu',
-  import: menuImport,
+
   /**
    * @param {CDSMenu} menu - The CDSMenu custom element instance
    * @this {Panel} The panel instance
@@ -80,37 +81,38 @@ export default {
       }
     });
   }
-};
+}
 
-// Menu Button component configuration
-export const menuButtonComponent = {
-  'cds-menu-button': {
-    import: menuImport,
-    /**
-     * @param {CDSMenuButton} menuButton - The CDSMenuButton custom element instance
-     * @this {Panel} The panel instance
-     */
-    init: function (menuButton) {
-      const attrs = getSemanticAttributes(menuButton);
+/**
+ * Menu Button component
+ */
+export const cdsMenuButtonWrap ={
+  selector: 'cds-menu-button',
 
-      // Listen for menu item selections
-      const menu = menuButton.querySelector('cds-menu');
-      if (menu) {
-        this.listen(menu, 'click', e => {
-          if (e.target.tagName === 'CDS-MENU-ITEM') {
-            const menuItemAttrs = getSemanticAttributes(e.target);
-            const eventName = menuItemAttrs.event || attrs.event;
+  /**
+   * @param {CDSMenuButton} menuButton - The CDSMenuButton custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (menuButton) {
+    const attrs = getSemanticAttributes(menuButton);
 
-            if (eventName) {
-              e.stopPropagation();
-              this.dispatchPanelEvent(eventName, {
-                ...attrs,
-                ...menuItemAttrs
-              });
-            }
+    // Listen for menu item selections
+    const menu = menuButton.querySelector('cds-menu');
+    if (menu) {
+      this.listen(menu, 'click', e => {
+        if (e.target.tagName === 'CDS-MENU-ITEM') {
+          const menuItemAttrs = getSemanticAttributes(e.target);
+          const eventName = menuItemAttrs.event || attrs.event;
+
+          if (eventName) {
+            e.stopPropagation();
+            this.dispatchPanelEvent(eventName, {
+              ...attrs,
+              ...menuItemAttrs
+            });
           }
-        });
-      }
+        }
+      });
     }
   }
-};
+}

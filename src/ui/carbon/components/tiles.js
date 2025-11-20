@@ -4,7 +4,7 @@
  * Handles clickable, expandable, selectable, and radio tiles.
  */
 
-import { getSemanticAttributes } from '../../zoo/index.js';
+import {getSemanticAttributes} from '../../zoo/index.js';
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -13,13 +13,13 @@ import { getSemanticAttributes } from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/tile/selectable-tile.js').default} CDSSelectableTile
  * @typedef {import('@carbon/web-components/es/components/tile/radio-tile.js').default} CDSRadioTile
  */
-// noinspection JSFileReferences
-const tileImport = () => import('@carbon/web-components/es/components/tile/index.js');
 
-// Clickable Tile
-export default {
+/**
+ * Clickable Tile
+ * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *): *&{href: *}}}
+ */
+export const cdsClickableTileWrap = {
   selector: 'cds-clickable-tile',
-  import: tileImport,
   event: 'click',
   getData: (e, attrs) => ({
     ...attrs,
@@ -27,62 +27,72 @@ export default {
   })
 };
 
-// Other tile components
-export const tileComponents = {
-  // Expandable Tile
-  'cds-expandable-tile': {
-    import: tileImport,
-    /**
-     * @param {CDSExpandableTile} tile - The CDSExpandableTile custom element instance
-     * @this {Panel} The panel instance
-     */
-    init: function (tile) {
-      const attrs = getSemanticAttributes(tile);
+/**
+ * Expandable Tile
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSExpandableTile): void}}
+ */
+export const cdsExpandableTileWrap = {
+  selector: 'cds-expandable-tile',
 
-      // Before toggle event (cancelable)
-      const beforeToggleEvent = tile.getAttribute('before-toggle-event');
-      if (beforeToggleEvent) {
-        this.listen(tile, 'cds-expandable-tile-beingtoggled', e => {
-          this.dispatchPanelEvent(beforeToggleEvent, {
-            ...attrs,
-            expanded: e.detail.expanded,
-            cancelable: true
-          });
-        });
-      }
+  /**
+   * @param {CDSExpandableTile} tile - The CDSExpandableTile custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (tile) {
+    const attrs = getSemanticAttributes(tile);
 
-      // After toggle event
-      const toggleEvent = attrs.event;
-      if (toggleEvent) {
-        this.listen(tile, 'cds-expandable-tile-toggled', e => {
-          this.dispatchPanelEvent(toggleEvent, {
-            ...attrs,
-            expanded: e.detail.expanded
-          });
+    // Before toggle event (cancelable)
+    const beforeToggleEvent = tile.getAttribute('before-toggle-event');
+    if (beforeToggleEvent) {
+      this.listen(tile, 'cds-expandable-tile-beingtoggled', e => {
+        this.dispatchPanelEvent(beforeToggleEvent, {
+          ...attrs,
+          expanded: e.detail.expanded,
+          cancelable: true
         });
-      }
+      });
     }
-  },
 
-  // Selectable Tile
-  'cds-selectable-tile': {
-    import: tileImport,
-    event: 'cds-selectable-tile-changed',
-    getData: (e, attrs, element) => ({
-      ...attrs,
-      selected: e.detail.selected,
-      value: element.value
-    })
-  },
-
-  // Radio Tile
-  'cds-radio-tile': {
-    import: tileImport,
-    event: 'cds-selectable-tile-changed',
-    getData: (e, attrs, element) => ({
-      ...attrs,
-      selected: e.detail.selected,
-      value: element.value
-    })
+    // After toggle event
+    const toggleEvent = attrs.event;
+    if (toggleEvent) {
+      this.listen(tile, 'cds-expandable-tile-toggled', e => {
+        this.dispatchPanelEvent(toggleEvent, {
+          ...attrs,
+          expanded: e.detail.expanded
+        });
+      });
+    }
   }
-};
+}
+
+
+/**
+ * Selectable Tile
+ * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *, *): *&{selected: *, value: *}}}
+ */
+export const cdsSelectableTileWrap = {
+  selector: 'cds-selectable-tile',
+  event: 'cds-selectable-tile-changed',
+  getData: (e, attrs, element) => ({
+    ...attrs,
+    selected: e.detail.selected,
+    value: element.value
+  })
+}
+
+
+/**
+ * Radio Tile
+ * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *, *): *&{selected: *, value: *}}}
+ */
+export const cdsRadioTileWrap = {
+  selector: 'cds-radio-tile',
+  event: 'cds-selectable-tile-changed',
+  getData: (e, attrs, element) => ({
+    ...attrs,
+    selected: e.detail.selected,
+    value: element.value
+  })
+}
+

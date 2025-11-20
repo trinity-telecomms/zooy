@@ -4,7 +4,7 @@
  * Handles date and time selection with support for range pickers.
  */
 
-import { getSemanticAttributes } from '../../zoo/index.js';
+import {getSemanticAttributes} from '../../zoo/index.js';
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -13,15 +13,14 @@ import { getSemanticAttributes } from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/time-picker/time-picker.js').default} CDSTimePicker
  */
 
-// noinspection JSFileReferences
-const datePickerImport = () => import('@carbon/web-components/es/components/date-picker/index.js');
-// noinspection JSFileReferences
-const timePickerImport = () => import('@carbon/web-components/es/components/time-picker/index.js');
 
-// Date Picker
-export default {
+/**
+ * Date Picker
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSDatePicker): void}}
+ */
+export const cdsDatePickerWrap = {
   selector: 'cds-date-picker',
-  import: datePickerImport,
+
   /**
    * @param {CDSDatePicker} datePicker - The CDSDatePicker custom element instance
    * @this {Panel} The panel instance
@@ -69,16 +68,17 @@ export default {
       });
     }
   }
-};
+}
 
-// Time Picker component
-export const timePickerComponent = {
-  'cds-time-picker': {
-    import: timePickerImport,
-    event: 'cds-time-picker-changed',
-    getData: (e, attrs, element) => ({
-      ...attrs,
-      value: element.value
-    })
-  }
-};
+/**
+ * Time Picker component
+ * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *, *): *&{value: *}}}
+ */
+export const cdsTimePickerWrap = {
+  selector: 'cds-time-picker',
+  event: 'cds-time-picker-changed',
+  getData: (e, attrs, element) => ({
+    ...attrs,
+    value: element.value
+  })
+}

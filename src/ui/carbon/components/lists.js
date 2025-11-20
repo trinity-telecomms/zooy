@@ -4,7 +4,8 @@
  * Handles overflow menus, structured lists, and tree views.
  */
 
-import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
+import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
+
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -13,19 +14,16 @@ import { getSemanticAttributes, getEventAttribute } from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/tree-view/tree-view.js').default} CDSTreeView
  */
 
-// noinspection JSFileReferences
-const overflowMenuImport = () => import('@carbon/web-components/es/components/overflow-menu/index.js');
-// noinspection JSFileReferences
-const structuredListImport = () => import('@carbon/web-components/es/components/structured-list/index.js');
-// noinspection JSFileReferences
-const treeViewImport = () => import('@carbon/web-components/es/components/tree-view/index.js');
 
-// Overflow Menu
-export default {
+/**
+ * Overflow Menu
+ * We collect the menu attributes from the menu, but we listen for the
+ * events on the menu body.
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSOverflowMenu): void}}
+ */
+export const cdsOverflowMenuWrap = {
   selector: 'cds-overflow-menu',
-  import: overflowMenuImport,
-  // We collect the menu attributes from the menu, but we listen for the
-  // events on the menu body.
+
   /**
    * @param {CDSOverflowMenu} overflowMenu - The CDSOverflowMenu custom element instance
    * @this {Panel} The panel instance
@@ -39,98 +37,96 @@ export default {
         e.stopPropagation();
         const itemAttrs = getSemanticAttributes(e.target);
         this.dispatchPanelEvent(eventName, {
-          ...menuAttrs,
-          ...itemAttrs
+          ...menuAttrs, ...itemAttrs
         });
       });
     }
   }
-};
+}
 
-// Other list components
-export const listComponents = {
-  // Structured List
-  'cds-structured-list': {
-    import: structuredListImport,
-    /**
-     * @param {CDSStructuredList} list - The CDSStructuredList custom element instance
-     * @this {Panel} The panel instance
-     */
-    init: function (list) {
-      const listAttrs = getSemanticAttributes(list);
+/**
+ * Structured List
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSStructuredList): void}}
+ */
+export const cdsStructuredListWrap = {
+  selector: 'cds-structured-list',
 
-      // Row clicks
-      const rows = [...list.querySelectorAll('cds-structured-list-row')];
-      rows.forEach(row => {
-        const rowAttrs = getSemanticAttributes(row);
-        const eventName = rowAttrs.event || listAttrs.event;
+  /**
+   * @param {CDSStructuredList} list - The CDSStructuredList custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (list) {
+    const listAttrs = getSemanticAttributes(list);
 
-        if (eventName) {
-          this.listen(row, 'click', e => {
-            e.stopPropagation();
-            this.dispatchPanelEvent(eventName, {
-              ...listAttrs,
-              ...rowAttrs
-            });
-          });
-        }
-      });
+    // Row clicks
+    const rows = [...list.querySelectorAll('cds-structured-list-row')];
+    rows.forEach(row => {
+      const rowAttrs = getSemanticAttributes(row);
+      const eventName = rowAttrs.event || listAttrs.event;
 
-      // Selection changes (if selection enabled)
-      if (list.hasAttribute('selection')) {
-        this.listen(list, 'cds-structured-list-selected', e => {
-          const selectedRow = e.detail.row;
-          const rowAttrs = getSemanticAttributes(selectedRow);
-          const selectionEvent = listAttrs.event;
-
-          if (selectionEvent) {
-            this.dispatchPanelEvent(selectionEvent, {
-              ...listAttrs,
-              ...rowAttrs
-            });
-          }
-        });
-      }
-    }
-  },
-
-  // Tree View
-  'cds-tree-view': {
-    import: treeViewImport,
-    /**
-     * @param {CDSTreeView} tree - The CDSTreeView custom element instance
-     * @this {Panel} The panel instance
-     */
-    init: function (tree) {
-      const attrs = getSemanticAttributes(tree);
-
-      // Listen for node selection
-      this.listen(tree, 'cds-tree-node-selected', e => {
-        const node = e.detail.node;
-        const nodeAttrs = getSemanticAttributes(node);
-        const eventName = nodeAttrs.event || attrs.event;
-
-        if (eventName) {
+      if (eventName) {
+        this.listen(row, 'click', e => {
+          e.stopPropagation();
           this.dispatchPanelEvent(eventName, {
-            ...attrs,
-            ...nodeAttrs,
-            nodeId: node.id,
-            label: node.getAttribute('label')
-          });
-        }
-      });
-
-      // Listen for node expansion
-      const expandEvent = getEventAttribute(tree, 'expand-event');
-      if (expandEvent) {
-        this.listen(tree, 'cds-tree-node-expanded', e => {
-          this.dispatchPanelEvent(expandEvent, {
-            ...attrs,
-            nodeId: e.detail.node.id,
-            expanded: e.detail.expanded
+            ...listAttrs, ...rowAttrs
           });
         });
       }
+    });
+
+    // Selection changes (if selection enabled)
+    if (list.hasAttribute('selection')) {
+      this.listen(list, 'cds-structured-list-selected', e => {
+        const selectedRow = e.detail.row;
+        const rowAttrs = getSemanticAttributes(selectedRow);
+        const selectionEvent = listAttrs.event;
+
+        if (selectionEvent) {
+          this.dispatchPanelEvent(selectionEvent, {
+            ...listAttrs, ...rowAttrs
+          });
+        }
+      });
     }
   }
-};
+}
+
+
+/**
+ * Tree Component
+ * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSTreeView): void}}
+ */
+export const cdsTreeViewWrap = {
+  selector: 'cds-tree-view',
+
+  /**
+   * @param {CDSTreeView} tree - The CDSTreeView custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (tree) {
+    const attrs = getSemanticAttributes(tree);
+
+    // Listen for node selection
+    this.listen(tree, 'cds-tree-node-selected', e => {
+      const node = e.detail.node;
+      const nodeAttrs = getSemanticAttributes(node);
+      const eventName = nodeAttrs.event || attrs.event;
+
+      if (eventName) {
+        this.dispatchPanelEvent(eventName, {
+          ...attrs, ...nodeAttrs, nodeId: node.id, label: node.getAttribute('label')
+        });
+      }
+    });
+
+    // Listen for node expansion
+    const expandEvent = getEventAttribute(tree, 'expand-event');
+    if (expandEvent) {
+      this.listen(tree, 'cds-tree-node-expanded', e => {
+        this.dispatchPanelEvent(expandEvent, {
+          ...attrs, nodeId: e.detail.node.id, expanded: e.detail.expanded
+        });
+      });
+    }
+  }
+}

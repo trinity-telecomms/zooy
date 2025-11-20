@@ -13,13 +13,38 @@ import {getSemanticAttributes} from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/breadcrumb/breadcrumb-link.js').default} CDSBreadcrumbLink
  */
 
-// noinspection JSFileReferences
-const breadcrumbImport = () => import('@carbon/web-components/es/components/breadcrumb/index.js');
 
-// Breadcrumb - Navigation trail component
-export default {
+/**
+ * Breadcrumb sub-components
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
+ */
+export const cdsBreadcrumbItemWrap = {
+  selector: 'cds-breadcrumb-item',
+}
+
+/**
+ * Breadcrumb sub-components
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[], event: string, getData: function(*, *, *): *&{href: *}}}
+ */
+export const cdsBreadcrumbLinkWrap = {
+  selector: 'cds-breadcrumb-link',
+  event: 'click',
+  getData: (e, attrs, element) => {
+    e.preventDefault();
+    return {
+      ...attrs, href: element.getAttribute('href')
+    };
+  }
+}
+
+
+/**
+ * Breadcrumb - Navigation trail component
+ * @type {{selector: string, import: ((function(): Promise<*>)|*)[], init: function(CDSBreadcrumb): void}}
+ */
+export const cdsBreadCrumbWrap = {
   selector: 'cds-breadcrumb',
-  import: breadcrumbImport,
+
   /**
    * @param {CDSBreadcrumb} breadcrumb - The CDSBreadcrumb custom element instance
    * @this {Panel} The panel instance
@@ -59,27 +84,5 @@ export default {
       }
     }
   }
-};
-
-// Breadcrumb sub-components
-export const breadcrumbComponents = {
-  // Breadcrumb Item - Wrapper for breadcrumb links
-  'cds-breadcrumb-item': {
-    import: breadcrumbImport
-    // No event handling - presentational wrapper
-  },
-
-  // Breadcrumb Link - Individual breadcrumb link
-  'cds-breadcrumb-link': {
-    import: breadcrumbImport,
-    event: 'click',
-    getData: (e, attrs, element) => {
-      e.preventDefault();
-      return {
-        ...attrs, href: element.getAttribute('href')
-      };
-    }
-  }
-};
-
+}
 

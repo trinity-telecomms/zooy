@@ -1,3 +1,5 @@
+// noinspection JSValidateJSDoc
+
 /**
  * Carbon Data Table Component
  *
@@ -89,17 +91,13 @@ import {
  * These are type-only imports that don't affect runtime behavior
  * @typedef {import('@carbon/web-components/es/components/data-table/table.js').default} CDSTable
  * @typedef {import('@carbon/web-components/es/components/pagination/pagination.js').default} CDSPagination
+ * @typedef {import('@carbon/web-components/es/components/data-table/table-toolbar.js').default} CDSTableToolbar
  * @typedef {import('@carbon/web-components/es/components/data-table/table-batch-actions.js').default} CDSTableBatchActions
  * @typedef {import('@carbon/web-components/es/components/data-table/table-skeleton.js').default} CDSTableSkeleton
  * @typedef {import('@carbon/web-components/es/components/popover/index.js').default} CDSPopover
  */
 
-// noinspection JSFileReferences
-const dataTableImport = () => import('@carbon/web-components/es/components/data-table/index.js');
-// noinspection JSFileReferences
-const paginationImport = () => import('@carbon/web-components/es/components/pagination/index.js');
-// noinspection JSFileReferences
-const tooltipImport = () => import('@carbon/web-components/es/components/tooltip/index.js');
+
 /**
  * Standalone pagination component configuration.
  *
@@ -109,63 +107,56 @@ const tooltipImport = () => import('@carbon/web-components/es/components/tooltip
  *
  * This is separate from table-integrated pagination which handles data fetching.
  * Standalone pagination dispatches panel events that application code can listen to.
+ *
+ * @type {{selector: string, import: ((function(): Promise<*>)|*|(function(): Promise<*>))[], init: function(CDSPagination): void}}
  */
-export const paginationComponent = {
-  'cds-pagination': {
-    import: paginationImport, /**
-     * Initialize a standalone pagination component.
-     *
-     * Note: The pagination parameter is a CDSPagination instance from @carbon/web-components.
-     * To access the CDSPagination class and its static properties:
-     *   const CDSPagination = customElements.get('cds-pagination');
-     *   // or
-     *   const CDSPagination = pagination.constructor;
-     *
-     * @param {CDSPagination} pagination - The CDSPagination custom element instance
-     * @this {Panel} The panel instance
-     */
-    init: function (pagination) {
-      const panel = this;
+export const cdsPaginationWrap = {
+  selector: 'cds-pagination',
 
-      // Get Carbon component class for type-safe event names
-      const CDSPagination = customElements.get('cds-pagination');
+  /**
+   * Initialize a standalone pagination component.
+   *
+   * Note: The pagination parameter is a CDSPagination instance from @carbon/web-components.
+   * To access the CDSPagination class and its static properties:
+   *   const CDSPagination = customElements.get('cds-pagination');
+   *   // or
+   *   const CDSPagination = pagination.constructor;
+   *
+   * @param {CDSPagination} pagination - The CDSPagination custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (pagination) {
+    const panel = this;
+    const CDSPagination = customElements.get('cds-pagination');
+    let lastNavigationOffset = null;
 
-      // Carbon Web Components fires cds-pagination-changed-current twice per navigation.
-      // Track last offset to deduplicate panel events.
-      let lastNavigationOffset = null;
+    panel.listen(pagination, CDSPagination.eventChangeCurrent, e => {
+      const page = e.detail.page;
+      const pageSize = pagination.pageSize;
+      const offset = (page - 1) * pageSize;
 
-      // Listen for user navigation and dispatch navigation events
-      panel.listen(pagination, CDSPagination.eventChangeCurrent, e => {
-        const page = e.detail.page;
-        const pageSize = pagination.pageSize;
-        const offset = (page - 1) * pageSize;
-
-        // Only dispatch if we're actually navigating to a different offset
-        if (offset !== lastNavigationOffset) {
-          lastNavigationOffset = offset;
-          panel.dispatchPanelEvent("pagination-changed-current", {
-            detail: {
-              page, pageSize, action: 'page-change'
-            }
-          });
-        }
-      });
-
-      // Listen for page size changes and dispatch navigation events
-      panel.listen(pagination, CDSPagination.eventPageSizeChanged, _ => {
-        const newPageSize = pagination.pageSize;
-        // Reset the navigation offset when page size changes
-        lastNavigationOffset = null;
-        panel.dispatchPanelEvent("pagination-changed-page-size", {
+      if (offset !== lastNavigationOffset) {
+        lastNavigationOffset = offset;
+        panel.dispatchPanelEvent("pagination-changed-current", {
           detail: {
-            page: 1, // Reset to page 1 when changing size
-            pageSize: newPageSize, action: 'page-size-change'
+            page, pageSize, action: 'page-change'
           }
         });
+      }
+    });
+
+    panel.listen(pagination, CDSPagination.eventPageSizeChanged, _ => {
+      const newPageSize = pagination.pageSize;
+      lastNavigationOffset = null;
+      panel.dispatchPanelEvent("pagination-changed-page-size", {
+        detail: {
+          page: 1, // Reset to page 1 when changing size
+          pageSize: newPageSize, action: 'page-size-change'
+        }
       });
-    }
+    });
   }
-};
+}
 
 /**
  * Initialize all event handlers for a data table.
@@ -232,7 +223,10 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   const onAllRowsChecked = Symbol();
   const userEventsMap = new Map();
 
-  // Issue a user defined event when a row is clicked.
+  /**
+   * Issue a user defined event when a row is clicked.
+   * @param {String} customEventName
+   */
   const onRowClickEvent = customEventName => {
     panel.listen(cdsTable, 'click', e => {
       const target = e.target.closest(CDSTable.selectorTableRow);
@@ -245,7 +239,10 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
-  // Issue a user defined panel event after a row was un/expanded
+  /**
+   * Issue a user defined panel event after a row was un/expanded
+   * @param  {String}  customEventName
+   */
   const onRowExpandEvent = customEventName => {
     panel.listen(cdsTable, CDSTable.eventExpandoToggle, e => {
       const target = e.target;
@@ -259,14 +256,20 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
-  // Issue a user defined panel event after sorting a column
+  /**
+   * Issue a user defined panel event after sorting a column
+   * @param  {String} customEventName
+   */
   const onColSortEvent = customEventName => {
     userEventsMap.set(onColSorted, payload => {
       panel.dispatchPanelEvent(customEventName, payload);
     });
   }
 
-  // Issue a panel event when all rows are un/checked.
+  /**
+   * Issue a panel event when all rows are un/checked.
+   * @param {String}  customEventName
+   */
   const onRowCheckAllEvent = customEventName => {
     userEventsMap.set(onAllRowsChecked, e => {
       const selectedRows = e.detail.selectedRows;
@@ -281,7 +284,10 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     })
   }
 
-  // Issue a panel event when one row is un/checked
+  /**
+   * Issue a panel event when one row is un/checked
+   * @param  {String}  customEventName
+   */
   const onRowCheckOneEvent = customEventName => {
     // Table-level synthetic event for row selection
     // Fires with the table as the target. Contains all the selected rows, in an array
@@ -300,9 +306,10 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
-  // Server side sorting is sorts on the server. Ha!
+  /**
+   * Server side sorting is sorts on the server. Ha!
+   */
   const initServerSideSorting = () => {
-
     panel.listen(cdsTable, CDSTable.eventBeforeSort, e => {
       const target = e.target;
       const sortWas = e.detail.oldSortDirection;
@@ -346,16 +353,18 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
 
   }
 
-  // Table-level synthetic event when all rows are checked from the header row.
-  // We listen for this event regardless of whether the user has a
-  // custom event to fire on this event. That is because we have housekeeping to do
-  // on this to deal with the select TOTAL button
-  // This is housekeeping for when the sure de-selects the *all* rows
-  // checkbox AFTER the "select all (TOTAL)" button was pressed.
-  // This just clears both the disabled state - set when the user selects
-  // total, and clearing the checked display for all the rows.
-  // Because all the rows are disabled when the user selects TOTAL, unchecking it
-  // does nothing for them, and we need to uncheck them by hand here.
+  /**
+   * Table-level synthetic event when all rows are checked from the header row.
+   * We listen for this event regardless of whether the user has a
+   * custom event to fire on this event. That is because we have housekeeping to do
+   * on this to deal with the select TOTAL button
+   * This is housekeeping for when the sure de-selects the *all* rows
+   * checkbox AFTER the "select all (TOTAL)" button was pressed.
+   * This just clears both the disabled state - set when the user selects
+   * total, and clearing the checked display for all the rows.
+   * Because all the rows are disabled when the user selects TOTAL, unchecking it
+   * does nothing for them, and we need to uncheck them by hand here.
+   */
   const initSelectAllFunctionality = () => {
     panel.listen(cdsTable, CDSTable.eventTableRowSelectAll, e => {
       if (e.detail.selectedRows.length === 0) {
@@ -369,11 +378,13 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
-  // This is only housekeeping. It listens for the synthetic event generated
-  // by clicking on the TOTAL button, and then executes the callback passed
-  // along in the event to disables all the checkboxes
-  // on all the visible rows, and update the display of the total number of
-  // selected records to the TOTAL value.
+  /**
+   * This is only housekeeping. It listens for the synthetic event generated
+   * by clicking on the TOTAL button, and then executes the callback passed
+   * along in the event to disables all the checkboxes
+   * on all the visible rows, and update the display of the total number of
+   * selected records to the TOTAL value.
+   */
   const initBatchActionHousekeeping = () => {
     panel.listen(cdsTable, CDSTable.eventBeforeChangeSelectionAll, e => {
       e.stopPropagation()
@@ -383,12 +394,15 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
-  // This listens on the batch toolbar for the TOTAL button press, and then
-  // fires a synthetic "select all checkbox" event to check all the boxes.
-  // There is a reciprocal housekeeping receiver that listens for this, who
-  // executes the callback defined here. This callback disables all the checkboxes
-  // on all the visible rows, and also updates the display of the total number of
-  // selected records to the TOTAL value.
+  /**
+   * This listens on the batch toolbar for the TOTAL button press, and then
+   * fires a synthetic "select all checkbox" event to check all the boxes.
+   * There is a reciprocal housekeeping receiver that listens for this, who
+   * executes the callback defined here. This callback disables all the checkboxes
+   * on all the visible rows, and also updates the display of the total number of
+   * selected records to the TOTAL value.
+   * @param {CDSTableBatchActions} batActToolbar
+   */
   const initBatchActions = (batActToolbar) => {
     const headerRow = cdsTable.querySelector("cds-table-header-row");
     panel.listen(batActToolbar, CDSTableBatchActions.eventClickSelectAll, e => {
@@ -406,8 +420,11 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
-  // Server-side search: Filters as the user types, and executes a server side
-  // search when enter is pressed
+  /**
+   * Server-side search: Filters as the user types, and executes a server side
+   * search when enter is pressed
+   * @param searchElement
+   */
   const initSearchOnEnter = (searchElement) => {
     panel.listen(searchElement, 'keydown', e => {
       if (e.key === 'Enter') {
@@ -424,7 +441,10 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
-  // Handle clear button click (value becomes empty)
+  /**
+   * Handle clear button click (value becomes empty)
+   * @param searchElement
+   */
   const initClearSearch = (searchElement) => {
     panel.listen(searchElement, CDSTable.eventSearchInput, e => {
       const searchValue = e.detail.value || '';
@@ -488,7 +508,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
 
     const actionButtonReset = Symbol();
     const actionButtonApply = Symbol();
-    const actionButtonMap = [...actionButtons].reduce((p, c, i) => {
+    const actionButtonMap = [...actionButtons].reduce((p, c, _) => {
       if (c.hasAttribute('reset-filter')) {
         p.set(actionButtonReset, c);
       }
@@ -556,8 +576,11 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   };
 
-  // Handel page size changes at server side
-  // When page sizes change, we reset our pagination nav back to page 1
+  /**
+   * Handel page size changes at server side
+   * When page sizes change, we reset our pagination nav back to page 1
+   * @private
+   */
   const initPageSizeChangeFunctionality = () => {
     panel.listen(pagination, CDSPagination.eventPageSizeChanged, _ => {
       const pageSize = pagination.pageSize;
@@ -571,11 +594,14 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     });
   }
 
-  // Carbon Web Components fires cds-pagination-changed-current twice per navigation.
-  // This happens because the click handler sets this.page++ (triggering LitElement's
-  // reactive update) and then explicitly calls _handleUserInitiatedChangeStart(),
-  // and then updated() lifecycle also calls _handleUserInitiatedChangeStart() when
-  // it detects the page property changed. Track last fetched offset to deduplicate.
+  /**
+   * Carbon Web Components fires cds-pagination-changed-current twice per navigation.
+   * This happens because the click handler sets this.page++ (triggering LitElement's
+   * reactive update) and then explicitly calls _handleUserInitiatedChangeStart(),
+   * and then updated() lifecycle also calls _handleUserInitiatedChangeStart() when
+   * it detects the page property changed. Track last fetched offset to deduplicate.
+   * @private
+   */
   const initPageNavFunctionality = () => {
     let lastFetchedOffset = null;
     panel.listen(pagination, CDSPagination.eventChangeCurrent, e => {
@@ -733,7 +759,6 @@ const createPagination = (dataBinder) => {
   return pagination;
 }
 
-
 /**
  * Create and configure a skeleton loader that matches the table structure.
  * @param {CDSTable} cdsTable - The table element to create a skeleton for
@@ -795,9 +820,9 @@ const setupDataBinderIntegration = (panel, el) => {
   }
 }
 
-export default {
+
+export const cdsTableWrap = {
   selector: 'cds-table',
-  import: [tooltipImport, dataTableImport, paginationImport],
 
   /**
    * Initialize a Carbon data table component.
