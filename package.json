@@ -1,7 +1,7 @@
 {
   "name": "@trintel/zooy",
   "description": "UI Building Blocks",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "./dist/zooy.cjs.js",
   "module": "./dist/zooy.es.js",
   "type": "module",
