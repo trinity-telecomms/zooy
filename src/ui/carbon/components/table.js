@@ -218,7 +218,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
 
   const searchElement = cdsTable.querySelector(CDSTable.selectorTableToolbarSearch);
   const batActToolbar = cdsTable.querySelector(CDSTable.selectorTableBatchActions);
-  const tableToolbar = cdsTable.querySelector(CDSTable.selectorTableToolbarContent);
+
   const tableBody = cdsTable.querySelector(CDSTable.selectorTableBody);
   const noNavEls = ['button', 'a', 'input', 'select', 'textarea', '[role="button"]', '.cds--table-expand', '.cds--table-column-checkbox',].join(',');
   const sortableHeaders = cdsTable.querySelectorAll(CDSTable.selectorHeaderCell + '[is-sortable]')
@@ -607,9 +607,12 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   }
 
   // Filter popover initialization - find popover with data-batch-filter attribute
-  const filterPopovers = tableToolbar.querySelectorAll('cds-popover[data-batch-filter]');
-  if (dataBinder && filterPopovers) {
-    filterPopovers.forEach(initFilterPopover);
+  const tableToolbar = cdsTable.querySelector(CDSTable.selectorTableToolbarContent);
+  if (tableToolbar) {
+    const filterPopovers = tableToolbar.querySelectorAll('cds-popover[data-batch-filter]');
+    if (dataBinder && filterPopovers) {
+      filterPopovers.forEach(initFilterPopover);
+    }
   }
 
   // If the table is selectable, then we want to listen to the batch action toolbar.
