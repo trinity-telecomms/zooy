@@ -5,3 +5,4 @@
  */
 
 export { ZooTag } from './tag.js';
+export { ZooTimestamp } from './timestamp.js';

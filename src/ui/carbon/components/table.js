@@ -97,67 +97,6 @@ import {
  * @typedef {import('@carbon/web-components/es/components/popover/index.js').default} CDSPopover
  */
 
-
-/**
- * Standalone pagination component configuration.
- *
- * Registers standalone <cds-pagination> elements (not created by tables) with the
- * component system. Includes Carbon double-fire bug workaround to prevent duplicate
- * panel event dispatches.
- *
- * This is separate from table-integrated pagination which handles data fetching.
- * Standalone pagination dispatches panel events that application code can listen to.
- *
- * @type {{selector: string, import: ((function(): Promise<*>)|*|(function(): Promise<*>))[], init: function(CDSPagination): void}}
- */
-export const cdsPaginationWrap = {
-  selector: 'cds-pagination',
-
-  /**
-   * Initialize a standalone pagination component.
-   *
-   * Note: The pagination parameter is a CDSPagination instance from @carbon/web-components.
-   * To access the CDSPagination class and its static properties:
-   *   const CDSPagination = customElements.get('cds-pagination');
-   *   // or
-   *   const CDSPagination = pagination.constructor;
-   *
-   * @param {CDSPagination} pagination - The CDSPagination custom element instance
-   * @this {Panel} The panel instance
-   */
-  init: function (pagination) {
-    const panel = this;
-    const CDSPagination = customElements.get('cds-pagination');
-    let lastNavigationOffset = null;
-
-    panel.listen(pagination, CDSPagination.eventChangeCurrent, e => {
-      const page = e.detail.page;
-      const pageSize = pagination.pageSize;
-      const offset = (page - 1) * pageSize;
-
-      if (offset !== lastNavigationOffset) {
-        lastNavigationOffset = offset;
-        panel.dispatchPanelEvent("pagination-changed-current", {
-          detail: {
-            page, pageSize, action: 'page-change'
-          }
-        });
-      }
-    });
-
-    panel.listen(pagination, CDSPagination.eventPageSizeChanged, _ => {
-      const newPageSize = pagination.pageSize;
-      lastNavigationOffset = null;
-      panel.dispatchPanelEvent("pagination-changed-page-size", {
-        detail: {
-          page: 1, // Reset to page 1 when changing size
-          pageSize: newPageSize, action: 'page-size-change'
-        }
-      });
-    });
-  }
-}
-
 /**
  * Initialize all event handlers for a data table.
  *

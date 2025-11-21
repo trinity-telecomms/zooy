@@ -5,6 +5,7 @@
  *
  * Components:
  * - ZooTag: Generic tag/badge component styled via CSS custom properties
+ * - ZooTimestamp: Timestamp display component with multiple modes (relative, datetime, date, both)
  *
  * Utilities:
  * - Semantic attribute helpers (from attributes.js)

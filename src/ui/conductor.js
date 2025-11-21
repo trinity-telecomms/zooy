@@ -42,6 +42,13 @@ export default class Conductor extends Evt {
       this.navTo(event.state);
     });
 
+    // Emit time ticks every 60 seconds for time-based components
+    this.doOnBeat(() => {
+      document.dispatchEvent(new CustomEvent('zoo-tick-60', {
+        detail: { timestamp: Date.now() }
+      }));
+    }, 60000);
+
   };
 
   set split(split) {

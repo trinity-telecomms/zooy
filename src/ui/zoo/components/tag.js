@@ -14,7 +14,7 @@
  *   // Looks for --zoo-tag-state-123-active-bg
  *
  * With Binder:
- *   <zoo-tag zoo-bind__attr="token:state" prefix="lc-" zoo-bind="description">
+ *   <zoo-tag zoo-bind-attr="token:state" prefix="lc-" zoo-bind="description">
  *     Status
  *   </zoo-tag>
  *   // If state=52, looks for --zoo-tag-lc-52-bg

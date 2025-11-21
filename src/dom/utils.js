@@ -1,7 +1,51 @@
-import {format} from 'timeago.js';
 import {
   identity, isArray, isDefAndNotNull, isNumber, isString, pathOr, toNumber
 } from 'badu';
+
+/**
+ * Native implementation to format a date as relative time (e.g., "5 minutes ago")
+ * Replaces timeago.js dependency
+ * @param {Date} date - The date to format
+ * @returns {string} Formatted relative time string
+ */
+const format = (date) => {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  const units = [
+    { name: 'year', seconds: 31536000 },
+    { name: 'month', seconds: 2592000 },
+    { name: 'week', seconds: 604800 },
+    { name: 'day', seconds: 86400 },
+    { name: 'hour', seconds: 3600 },
+    { name: 'minute', seconds: 60 },
+    { name: 'second', seconds: 1 }
+  ];
+
+  // Handle future dates
+  if (diffInSeconds < 0) {
+    const absDiff = Math.abs(diffInSeconds);
+    for (const unit of units) {
+      const value = Math.floor(absDiff / unit.seconds);
+      if (value >= 1) {
+        const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+        return rtf.format(value, unit.name);
+      }
+    }
+    return 'just now';
+  }
+
+  // Handle past dates
+  for (const unit of units) {
+    const value = Math.floor(diffInSeconds / unit.seconds);
+    if (value >= 1) {
+      const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+      return rtf.format(-value, unit.name);
+    }
+  }
+
+  return 'just now';
+};
 
 /**
  * Gets the current value of a check-able input element.

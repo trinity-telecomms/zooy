@@ -1,0 +1,17 @@
+/**
+ * Zoo Components Styles
+ *
+ * CSS custom properties and base styles for zooy's native components.
+ */
+
+:root {
+  // Zoo Timestamp Component
+  // Default values - inherit from parent by default for flexibility
+  --zoo-timestamp-relative-color: inherit;
+  --zoo-timestamp-relative-weight: inherit;
+  --zoo-timestamp-relative-size: inherit;
+  --zoo-timestamp-static-color: inherit;
+  --zoo-timestamp-static-weight: inherit;
+  --zoo-timestamp-static-size: inherit;
+  --zoo-timestamp-separator-color: inherit;
+}

@@ -6,6 +6,7 @@
  */
 
 import * as table from './table.js';
+import * as pagination from './table-pagination.js';
 import * as modal from './modal.js';
 import * as menu from './menu.js';
 import * as button from './button.js';
@@ -43,6 +44,7 @@ function extractWrappers(module) {
  * Each wrapper must have at minimum a 'selector' property.
  */
 export const components = [
+  ...extractWrappers(pagination),
   ...extractWrappers(table),
   ...extractWrappers(modal),
   ...extractWrappers(menu),
