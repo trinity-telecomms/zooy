@@ -7,10 +7,16 @@
  * Usage:
  *   import { registerCarbonLibrary } from './ui/carbon/register.js';
  *   registerCarbonLibrary();
+ *
+ *   // With preloaded components (for programmatic use):
+ *   registerCarbonLibrary({
+ *     preload: ['cds-toast-notification', 'cds-actionable-notification']
+ *   });
  */
 
 import {ComponentLibraryRegistry} from '../component-library-registry.js';
 import {renderCarbonComponents} from './renderers.js';
+import {imports} from './imports.js';
 
 
 /**
@@ -19,11 +25,41 @@ import {renderCarbonComponents} from './renderers.js';
  *
  * Call this once at application startup.
  *
+ * @param {Object} [options={}] - Configuration options
+ * @param {string[]} [options.preload=[]] - Component selectors to load immediately.
+ *   Use this for components you'll create programmatically (e.g., notifications).
+ *   These won't need to wait for lazy-loading when created via JavaScript.
+ *
  * @example
- * import { registerCarbonLibrary } from './ui/carbon/register.js';
+ * // Basic registration (all components lazy-loaded)
  * registerCarbonLibrary();
+ *
+ * @example
+ * // With preloaded components for programmatic use
+ * registerCarbonLibrary({
+ *   preload: ['cds-toast-notification', 'cds-actionable-notification']
+ * });
  */
-const registerCarbonLibrary = () => {
+const registerCarbonLibrary = (options = {}) => {
+  const {preload = []} = options;
+
+  // Preload specified components immediately (fire-and-forget)
+  if (preload.length > 0) {
+    const validSelectors = preload.filter(selector => {
+      if (!imports[selector]) {
+        console.warn(`[Carbon] No import found for selector: ${selector}`);
+        return false;
+      }
+      return true;
+    });
+
+    const preloadPromises = validSelectors
+      .flatMap(selector => imports[selector].map(fn => fn()));
+
+    Promise.all(preloadPromises)
+      .then(() => console.debug(`[Carbon] Preloaded: ${validSelectors.join(', ')}`))
+      .catch(err => console.warn('[Carbon] Preload error:', err));
+  }
   ComponentLibraryRegistry.register('carbon', {
     /**
      * Main render function that orchestrates Carbon component initialization.

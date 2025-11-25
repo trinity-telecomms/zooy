@@ -21,11 +21,13 @@ export * as zoo from './ui/zoo/index.js';
  * Uses dynamic import to avoid bundling Carbon code in main bundle.
  * Carbon code is only loaded when this function is called.
  *
+ * @param {Object} [options={}] - Configuration options
+ * @param {string[]} [options.preload=[]] - Component selectors to load immediately
  * @returns {Promise<void>}
  */
-export async function registerCarbonLibrary() {
+export async function registerCarbonLibrary(options = {}) {
   const { registerCarbonLibrary: register } = await import('./ui/carbon/register.js');
-  return register();
+  return register(options);
 }
 
 /**

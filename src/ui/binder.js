@@ -1,6 +1,5 @@
 import {isDefAndNotNull} from 'badu';
 import {both, has, path} from 'ramda';
-import {dateToZooyStdTimeString} from '../dom/utils.js';
 
 /**
  * Default formatters (minimal - add as needed).
@@ -12,25 +11,6 @@ const DEFAULT_FORMATTERS = {
    */
   json: (value) => {
     return JSON.stringify(value, null, 2);
-  },
-
-  /**
-   * Format date as "DD MMM YY HH:mm:ss" (e.g., "10 Nov 25 11:27:49")
-   * Accepts ISO date strings, timestamps, or Date objects.
-   * Returns empty string for null/undefined values.
-   */
-  date: (value) => {
-    if (!value) return '';
-
-    const date = value instanceof Date ? value : new Date(value);
-
-    // Validate date
-    if (isNaN(date.getTime())) {
-      console.warn('[Binder] Invalid date value:', value);
-      return '';
-    }
-
-    return dateToZooyStdTimeString(date);
   },
 
   /**
@@ -54,7 +34,7 @@ const DEFAULT_FORMATTERS = {
    *        zoo-bind-tpl="$${(value / 100).toFixed(2)}">
    */
   tpl: (value, data, element) => {
-    const template = element?.getAttribute('zoo-bind-attr-tpl');
+    const template = element?.getAttribute('zoo-bind-attr-tpl') || element?.getAttribute('zoo-bind-tpl');
     if (!template) return value;
 
     // Use Function constructor to evaluate template literal
