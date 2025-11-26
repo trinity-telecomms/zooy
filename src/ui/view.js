@@ -21,6 +21,7 @@ export default class View extends Evt {
 
   #recordHistory = void 0;
 
+  #conductorUtils = {};
 
   //--[ Static ]--
   /**
@@ -78,6 +79,14 @@ export default class View extends Evt {
 
   get registerViewConstructor() {
     return this.#registerViewConstructor;
+  }
+
+  set utils(funcMap) {
+    this.#conductorUtils = funcMap;
+  }
+
+  get utils() {
+    return this.#conductorUtils;
   }
 
   set split(split) {

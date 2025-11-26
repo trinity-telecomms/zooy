@@ -426,9 +426,9 @@ export default class UserManager {
    * @param {AbortSignal|undefined} signal
    * @return {Promise}
    */
-  async fetchJson(uri, signal = void 0) {
+  async fetchJson(uri, signal = void 0, onCatchReturn = void 0) {
     const req = new Request(uri.toString());
-    const catchClause = genCatchClause(`fetchJson: ${uri}`, {});
+    const catchClause = genCatchClause(`fetchJson: ${uri}`, onCatchReturn);
     const opts = basicGetInit(this.jwt, signal);
 
     await startSpin();

@@ -1,6 +1,7 @@
 import UserManager from '../user/usermanager.js';
 import Evt from './evt.js';
 import View from './view.js';
+import {mergeRight} from 'ramda';
 
 /**
  * The Conductor orchestrates view management and navigation in the application.
@@ -27,6 +28,13 @@ export default class Conductor extends Evt {
   #viewEventMap = new Map();
 
   /**
+   * This is a userspace map where consuming applications can register shared functions
+   * that are available to all views and panels.
+   * @type {{}}
+   */
+  #funcMap = {};
+
+  /**
    * Creates a new Conductor instance. Sets up browser history listening
    * and initializes view event handling.
    */
@@ -45,7 +53,7 @@ export default class Conductor extends Evt {
     // Emit time ticks every 60 seconds for time-based components
     this.doOnBeat(() => {
       document.dispatchEvent(new CustomEvent('zoo-tick-60', {
-        detail: { timestamp: Date.now() }
+        detail: {timestamp: Date.now()}
       }));
     }, 60000);
 
@@ -73,7 +81,6 @@ export default class Conductor extends Evt {
     }
   };
 
-
   /**
    * @return {!UserManager}
    */
@@ -83,6 +90,24 @@ export default class Conductor extends Evt {
     }
     return this.#user;
   };
+
+  get utils() {
+    return this.#funcMap;
+  }
+
+  /**
+   * Register utility functions that will be made available to all views.
+   * @Example:
+   *    const myUtil = () => {console.log("hello")};
+   *    c.registerUtil({myUtil});
+   *
+   *    // Elsewhere in the panel or view code:
+   *    view.utils.myUtil(); // Prints "hello"
+   * @param obj
+   */
+  registerUtil(obj) {
+    this.#funcMap = mergeRight(this.#funcMap, obj);
+  }
 
   /**
    * Initializes the internal view event map with default event handlers.
@@ -156,6 +181,7 @@ export default class Conductor extends Evt {
   initView(view) {
     view.user = this.user;
     view.split = this.split;
+    view.utils = this.utils;
     view.recordHistory = this.recordHistory.bind(this);
     view.registerViewConstructor = this.registerViewConstructor.bind(this);
     this.listen(view, View.viewEventCode(), this.onViewEvent.bind(this));
