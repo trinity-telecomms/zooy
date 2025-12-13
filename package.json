@@ -38,14 +38,14 @@
     "url": "git+https://github.com/trinity-telecomms/zooy.git"
   },
   "dependencies": {
-    "@carbon/icons": "^11.70.0",
+    "@carbon/icons": "^11.71.0",
     "@carbon/web-components": "^2.43.0",
     "@ibm/plex": "^6.4.1",
     "badu": "^8.6.0",
     "material-components-web": "^14.0.0"
   },
   "devDependencies": {
-    "eslint": "^9.38.0",
+    "eslint": "^9.39.2",
     "esm": "^3.2.25",
     "husky": "^9.1.7",
     "ramda": "^0.32.0",

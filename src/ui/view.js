@@ -3,7 +3,7 @@ import {UiEventType} from '../events/uieventtype.js';
 import ZooyEventData from '../events/zooyeventdata.js';
 import UserManager from '../user/usermanager.js';
 import Panel from './panel.js';
-import {identity} from 'badu';
+import {identity, isDefAndNotNull} from 'badu';
 // Temporary imports for backwards compatibility - will be removed as apps migrate
 import {SearchHandlers, QueryParamHandlers} from './handlers/index.js';
 
@@ -313,8 +313,14 @@ export default class View extends Evt {
    */
   onPanelEvent(e) {
     let eventValue = e.detail.getValue();
+    this.debugMe(`PanelEvent Value: ${eventValue}`);
+    if (!isDefAndNotNull(eventValue)) {
+      this.debugMe(`The panel received an event without a value. 
+      There is nothing we can do with that.`);
+      return;
+    }
     const eventData = e.detail.getData();
-    if (eventValue.startsWith('switch_view:')) {
+    if (eventValue?.startsWith('switch_view:')) {
       eventData.view = eventValue.split(':')[1];
       eventValue = 'switch_view';
     }
