@@ -1,7 +1,7 @@
 {
   "name": "@trintel/zooy",
   "description": "UI Building Blocks",
-  "version": "1.0.16",
+  "version": "1.0.19",
   "main": "./dist/zooy.cjs.js",
   "module": "./dist/zooy.es.js",
   "type": "module",
@@ -38,18 +38,20 @@
     "url": "git+https://github.com/trinity-telecomms/zooy.git"
   },
   "dependencies": {
-    "@carbon/icons": "^11.71.0",
-    "@carbon/web-components": "^2.43.0",
+    "@carbon/icons": "^11.77.1",
+    "@carbon/web-components": "^2.51.1",
     "@ibm/plex": "^6.4.1",
     "badu": "^8.6.0",
     "material-components-web": "^14.0.0"
   },
   "devDependencies": {
-    "eslint": "^9.39.2",
+    "@eslint/js": "^10.0.1",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.2.0",
     "esm": "^3.2.25",
     "husky": "^9.1.7",
     "ramda": "^0.32.0",
-    "sass": "^1.93.2",
-    "vite": "^7.1.12"
+    "sass": "^1.99.0",
+    "vite": "^8.0.5"
   }
 }

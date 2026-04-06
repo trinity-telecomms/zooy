@@ -432,7 +432,7 @@ export default class UserManager {
     const opts = basicGetInit(this.jwt, signal);
 
     await startSpin();
-    let json = {};
+    let json;
     try {
       const response = await fetch(req, opts);
       json = await response.json();
