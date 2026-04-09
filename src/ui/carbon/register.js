@@ -43,6 +43,9 @@ import {imports} from './imports.js';
 const registerCarbonLibrary = (options = {}) => {
   const {preload = []} = options;
 
+  // Create the import cache upfront so preloading shares it with panel rendering.
+  const cache = new Map();
+
   // Preload specified components immediately (fire-and-forget)
   if (preload.length > 0) {
     const validSelectors = preload.filter(selector => {
@@ -54,13 +57,19 @@ const registerCarbonLibrary = (options = {}) => {
     });
 
     const preloadPromises = validSelectors
-      .flatMap(selector => imports[selector].map(fn => fn()));
+      .flatMap(selector => imports[selector].map(fn => {
+        if (!cache.has(fn)) {
+          cache.set(fn, fn());
+        }
+        return cache.get(fn);
+      }));
 
     Promise.all(preloadPromises)
       .then(() => console.debug(`[Carbon] Preloaded: ${validSelectors.join(', ')}`))
       .catch(err => console.warn('[Carbon] Preload error:', err));
   }
   ComponentLibraryRegistry.register('carbon', {
+    cache,
     /**
      * Main render function that orchestrates Carbon component initialization.
      * Called by Panel.parseContent() for each panel that enters the document.

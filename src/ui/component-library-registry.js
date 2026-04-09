@@ -61,7 +61,7 @@ export class ComponentLibraryRegistry {
     this.#libraries.set(name, {
       ...library, // Preserve all library properties (utils, helpers, etc.)
       dispose: library.dispose || null, // Optional disposal function
-      cache: new Map(), // Each library gets its own import cache
+      cache: library.cache || new Map(), // Use provided cache or create new one
       config: library.config || {}
     });
 

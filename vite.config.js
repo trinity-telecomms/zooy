@@ -13,6 +13,19 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
+      // Don't bundle dependencies — let the consuming project resolve them.
+      // This prevents Rollup from creating wrapper chunks with side-effect
+      // imports that can silently fail in Vite dev mode.
+      external: [
+        'badu',
+        'ramda',
+        'lit',
+        /^lit\//,
+        /^@carbon\/web-components/,
+        /^@carbon\/icons/,
+        /^@ibm\/plex/,
+        /^material-components-web/,
+      ],
       // Suppress warnings for intentional design patterns
       onwarn(warning, warn) {
         // Ignore eval warning - used intentionally in evalScripts for dynamic script execution
