@@ -20,11 +20,31 @@ import {getSemanticAttributes} from '../../zoo/index.js';
  */
 export const cdsClickableTileWrap = {
   selector: 'cds-clickable-tile',
-  event: 'click',
-  getData: (e, attrs) => ({
-    ...attrs,
-    href: e.currentTarget.getAttribute('href')
-  })
+
+  /**
+   * @param {CDSClickableTile} tile - The CDSClickableTile custom element instance
+   * @this {Panel} The panel instance
+   */
+  init: function (tile) {
+    const attrs = getSemanticAttributes(tile);
+    const eventName = attrs.event;
+
+    if (eventName) {
+      // Capture the intended href before removing it from the tile.
+      // cds-clickable-tile extends CDSLink which renders a shadow <a> —
+      // the reflected href property feeds into that anchor and causes
+      // navigation even when we preventDefault on the host click.
+      const href = attrs.href || tile.getAttribute('href') || '';
+      tile.removeAttribute('href');
+
+      // Use capture phase to intercept before the shadow anchor acts.
+      tile.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.dispatchPanelEvent(eventName, {...attrs, href});
+      }, true);
+    }
+  }
 };
 
 /**

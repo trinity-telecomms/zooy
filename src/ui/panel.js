@@ -416,7 +416,7 @@ class Panel extends Component {
     // Hijack elements with a straight-up 'href' attribute.
     // Make them emit a 'href' event with the original
     // href or a href data attribute.
-    [...panel.querySelectorAll('[href]:not(.external)')].forEach(el => {
+    [...panel.querySelectorAll('[href]:not(.external):not([event])')].forEach(el => {
       this.listen(el, EV.CLICK, e => {
         const trg = e.currentTarget;
         e.preventDefault();
