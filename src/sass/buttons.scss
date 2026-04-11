@@ -1,0 +1,60 @@
+// ============================================================================
+// Zooy Button Styles
+// ============================================================================
+// Styles for Carbon button variants used by zooy panels. Currently houses
+// the icon-button toggle modes (icon-swap + optional colour-swap) driven
+// by data-toggle / data-toggle-color on <cds-icon-button>.
+//
+// Example usage in Django template:
+//   <cds-icon-button data-toggle data-toggle-color kind="ghost"
+//                    event="favorite_toggled" record-id="123">
+//     {% carbon_icon "favorite" 16 slot="icon"
+//                    toggle_to="favorite--filled" %}
+//   </cds-icon-button>
+// ============================================================================
+
+:root {
+  // Fill applied to a <cds-icon-button> icon while the button is in its
+  // selected (isselected) state AND has opted into colour-swap via
+  // data-toggle-color. Kept as its own token so it cannot collapse with
+  // --cds-icon-primary, which Carbon already paints the default icon with.
+  --zoo-button-toggle-color: var(--cds-link-primary, #0f62fe);
+}
+
+cds-icon-button {
+  // Icon toggle wrapper - makes container invisible to layout
+  .icon-toggle-wrapper {
+    display: contents;
+  }
+
+  // Icon swap visibility controls (only for toggle_to mode)
+  .off-icon {
+    display: inline;
+  }
+
+  .on-icon {
+    display: none;
+  }
+
+  // When button is selected, swap icon visibility.
+  // Note: the attribute is 'isselected' (no hyphen) in the actual DOM because
+  // Lit lowercases the reflected 'isSelected' property with no explicit
+  // attribute override (see @carbon/web-components button.js).
+  &[isselected] {
+    // Icon-swap mode: toggle visibility
+    .off-icon {
+      display: none;
+    }
+
+    .on-icon {
+      display: inline;
+    }
+
+    // Optional colour swap on selection (opt-in via data-toggle-color).
+    // Uses --zoo-button-toggle-color rather than --cds-icon-primary so the
+    // "on" colour can be themed independently of Carbon's default icon fill.
+    &[data-toggle-color] svg {
+      fill: var(--zoo-button-toggle-color);
+    }
+  }
+}

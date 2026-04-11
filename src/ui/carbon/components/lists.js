@@ -1,7 +1,7 @@
 /**
  * Carbon List Components
  *
- * Handles overflow menus, structured lists, and tree views.
+ * Handles overflow menus, structured lists, contained lists, and tree views.
  */
 
 import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
@@ -11,6 +11,8 @@ import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
  * Type definitions for Carbon Web Components (for IDE intellisense)
  * @typedef {import('@carbon/web-components/es/components/overflow-menu/overflow-menu.js').default} CDSOverflowMenu
  * @typedef {import('@carbon/web-components/es/components/structured-list/structured-list.js').default} CDSStructuredList
+ * @typedef {import('@carbon/web-components/es/components/contained-list/contained-list.js').default} CDSContainedList
+ * @typedef {import('@carbon/web-components/es/components/contained-list/contained-list-item.js').default} CDSContainedListItem
  * @typedef {import('@carbon/web-components/es/components/tree-view/tree-view.js').default} CDSTreeView
  */
 
@@ -89,6 +91,45 @@ export const cdsStructuredListWrap = {
       });
     }
   }
+}
+
+
+/**
+ * Contained List — container.
+ * Presentational: the container itself emits no events. Listed so the module
+ * gets imported when a panel contains it.
+ * @type {{selector: string}}
+ */
+export const cdsContainedListWrap = {
+  selector: 'cds-contained-list',
+}
+
+/**
+ * Contained List Description — optional descriptive text slot content.
+ * Presentational.
+ * @type {{selector: string}}
+ */
+export const cdsContainedListDescriptionWrap = {
+  selector: 'cds-contained-list-description',
+}
+
+/**
+ * Contained List Item.
+ *
+ * Carbon fires `cds-contained-list-item-click` (bubbling, composed) only when
+ * the item has the `clickable` attribute set. Templates opt in by setting
+ * both `clickable` and `event="..."` on the item:
+ *
+ *   <cds-contained-list-item clickable event="select_thing" record-id="123">
+ *     Thing
+ *   </cds-contained-list-item>
+ *
+ * @type {{selector: string, event: string, getData: function(*, *): *}}
+ */
+export const cdsContainedListItemWrap = {
+  selector: 'cds-contained-list-item',
+  event: 'cds-contained-list-item-click',
+  getData: (e, attrs) => attrs
 }
 
 

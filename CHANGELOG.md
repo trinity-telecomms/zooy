@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`src/sass/buttons.scss`**: New button-focused stylesheet. Extracted the `cds-icon-button` toggle rules (icon-swap + optional colour-swap) out of `carbon.scss` so button styling has a clear home.
+- **`--zoo-button-toggle-color` token**: Controls the SVG `fill` for `cds-icon-button[data-toggle][data-toggle-color]` in its selected state. Defaults to `var(--cds-link-primary, #0f62fe)`. Override at `:root` in your app's theme to rebrand the toggle "on" colour.
+- **`docs/guides/cds-icon-button.md`**: Template-author guide covering stateless click, toggle mode, icon-swap, colour-swap, and — importantly — the `slot="icon"` vs default-slot colour quirk that makes Carbon paint the same SVG two different colours depending on one attribute.
+
+### Changed
+- **`src/sass/carbon.scss`** no longer owns the icon-button toggle block. It lives in `buttons.scss` now, and `main.scss` imports both.
+
+### Fixed
+- **Colour-swap no longer collapses to a no-op.** The old rule used `var(--cds-icon-primary, #0f62fe)` for the selected-state fill, which is the same token Carbon already paints the default icon with — so any consumer theming `--cds-icon-primary` silently killed the toggle's visible "on" colour. The "on" colour now has its own `--zoo-button-toggle-color` token that can't collide with Carbon's default.
+
 ## [1.0.1-beta.7] - 2025-11-10
 
 ### Changed

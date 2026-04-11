@@ -15,6 +15,7 @@ const accordionImport = () => import('@carbon/web-components/es/components/accor
 const breadcrumbImport = () => import('@carbon/web-components/es/components/breadcrumb/index.js');
 const stackImport = () => import('@carbon/web-components/es/components/stack/index.js');
 const structuredListImport = () => import('@carbon/web-components/es/components/structured-list/index.js');
+const containedListImport = () => import('@carbon/web-components/es/components/contained-list/index.js');
 const tileImport = () => import('@carbon/web-components/es/components/tile/index.js');
 const treeViewImport = () => import('@carbon/web-components/es/components/tree-view/index.js');
 
@@ -143,6 +144,9 @@ export const imports = {
   // Lists
   'cds-overflow-menu': [overflowMenuImport],
   'cds-structured-list': [structuredListImport],
+  'cds-contained-list': [containedListImport],
+  'cds-contained-list-item': [containedListImport],
+  'cds-contained-list-description': [containedListImport],
   'cds-tree-view': [treeViewImport],
 
   // Modals
