@@ -1,0 +1,38 @@
+// ============================================================================
+// Zooy List Styles
+// ============================================================================
+// Styles for Carbon list variants used by zooy panels. Currently houses the
+// "current page" indicator for <cds-contained-list> used as a navigation list.
+//
+// Example usage in Django template:
+//   <cds-contained-list kind="on-page" aria-label="Ops navigation">
+//     <cds-contained-list-item clickable event="overview" ... >…</cds-contained-list-item>
+//     …
+//   </cds-contained-list>
+//
+// and from JS, toggle aria-current="page" on the item representing the
+// current route (e.g. from the view's setActiveRoute helper):
+//   item.toggleAttribute('aria-current', isActive ? 'page' : null);
+// ============================================================================
+
+// Navigation "current page" indicator.
+//
+// Three visual cues stacked on the host:
+//   1. A subtle background tint via --cds-background-selected.
+//   2. A 3px inline-start indicator bar via --cds-border-interactive, drawn
+//      as an inset box-shadow so it stays inside the host box and doesn't
+//      shift any of the sibling items' layout.
+//   3. Bold text, which cascades through the flat tree into the slotted
+//      label content inside cds-contained-list-item's shadow DOM.
+//
+// Caveat: cds-contained-list-item's hover background lives in shadow DOM on
+// .cds--contained-list-item__content, which paints over the host. While
+// actively hovering the current item the tint and stripe are temporarily
+// covered; both return as soon as the pointer leaves. Styling inside the
+// shadow button is not reachable from here without ::part (which Carbon
+// doesn't expose on this element), so this hover quirk is accepted.
+cds-contained-list-item[aria-current="page"] {
+  background-color: var(--cds-background-selected, hsla(0, 0%, 55%, 0.2));
+  box-shadow: inset 3px 0 0 0 var(--cds-border-interactive, #0f62fe);
+  font-weight: 600;
+}
