@@ -50,8 +50,15 @@ publish TYPE="patch": qa
     #!/usr/bin/env bash
     set -e
 
+    # Verify npm login before doing any work
+    if ! npm whoami &>/dev/null; then
+        echo "❌ Not logged in to npm. Running 'npm login'..."
+        npm login
+    fi
+
     echo "=== Publishing to npm ==="
     echo ""
+    echo "Logged in as: $(npm whoami)"
     echo "Current version: $(npm pkg get version | tr -d '\"')"
     echo "Bump type: {{ TYPE }}"
     echo ""
@@ -74,19 +81,29 @@ publish TYPE="patch": qa
 
     echo ""
     echo "✓ Published v$NEW_VERSION to npm"
-    echo ""
-    echo "Next steps:"
-    echo "  1. Commit version bump: git add package.json package-lock.json && git commit -m \"Bump to v$NEW_VERSION\""
-    echo "  2. Tag release: git tag v$NEW_VERSION"
-    echo "  3. Push: git push && git push --tags"
+
+    echo "Committing version bump..."
+    git add package.json package-lock.json
+    git commit -m "Bump to v$NEW_VERSION"
+    git tag "v$NEW_VERSION"
+    git push && git push --tags
+
+    echo "✓ v$NEW_VERSION published, committed, tagged, and pushed"
 
 # Quick publish without version bump (use with caution)
 publish-current:
     #!/usr/bin/env bash
     set -e
 
+    # Verify npm login before doing any work
+    if ! npm whoami &>/dev/null; then
+        echo "❌ Not logged in to npm. Running 'npm login'..."
+        npm login
+    fi
+
     echo "=== Publishing current version to npm ==="
     echo ""
+    echo "Logged in as: $(npm whoami)"
     echo "Version: $(npm pkg get version | tr -d '\"')"
     echo ""
     read -p "Publish WITHOUT version bump? (y/N): " -n 1 -r
@@ -99,6 +116,18 @@ publish-current:
     just build
     npm publish
     echo "✓ Published to npm"
+
+# Commit version bump, tag, and push (use after publish if git step failed)
+tag-and-push:
+    #!/usr/bin/env bash
+    set -e
+    VERSION=$(npm pkg get version | tr -d '"')
+    echo "Committing and tagging v$VERSION..."
+    git add package.json package-lock.json
+    git commit -m "Bump to v$VERSION"
+    git tag "v$VERSION"
+    git push && git push --tags
+    echo "✓ v$VERSION committed, tagged, and pushed"
 
 # Show current version
 version:
