@@ -14,10 +14,9 @@
  *   });
  */
 
-import {ComponentLibraryRegistry} from '../component-library-registry.js';
-import {renderCarbonComponents} from './renderers.js';
-import {imports} from './imports.js';
-
+import { ComponentLibraryRegistry } from "../component-library-registry.js";
+import { renderCarbonComponents } from "./renderers.js";
+import { imports } from "./imports.js";
 
 /**
  * Registers the Carbon Design System library with the ComponentLibraryRegistry.
@@ -41,14 +40,14 @@ import {imports} from './imports.js';
  * });
  */
 const registerCarbonLibrary = (options = {}) => {
-  const {preload = []} = options;
+  const { preload = [] } = options;
 
   // Create the import cache upfront so preloading shares it with panel rendering.
   const cache = new Map();
 
   // Preload specified components immediately (fire-and-forget)
   if (preload.length > 0) {
-    const validSelectors = preload.filter(selector => {
+    const validSelectors = preload.filter((selector) => {
       if (!imports[selector]) {
         console.warn(`[Carbon] No import found for selector: ${selector}`);
         return false;
@@ -56,19 +55,20 @@ const registerCarbonLibrary = (options = {}) => {
       return true;
     });
 
-    const preloadPromises = validSelectors
-      .flatMap(selector => imports[selector].map(fn => {
+    const preloadPromises = validSelectors.flatMap((selector) =>
+      imports[selector].map((fn) => {
         if (!cache.has(fn)) {
           cache.set(fn, fn());
         }
         return cache.get(fn);
-      }));
+      }),
+    );
 
     Promise.all(preloadPromises)
-      .then(() => console.debug(`[Carbon] Preloaded: ${validSelectors.join(', ')}`))
-      .catch(err => console.warn('[Carbon] Preload error:', err));
+      .then(() => console.debug(`[Carbon] Preloaded: ${validSelectors.join(", ")}`))
+      .catch((err) => console.warn("[Carbon] Preload error:", err));
   }
-  ComponentLibraryRegistry.register('carbon', {
+  ComponentLibraryRegistry.register("carbon", {
     cache,
     /**
      * Main render function that orchestrates Carbon component initialization.
@@ -83,7 +83,7 @@ const registerCarbonLibrary = (options = {}) => {
         // Scan, collect, load, and attach Carbon Web Components
         await renderCarbonComponents.call(this, panel, cache);
       } catch (error) {
-        console.error('[Carbon] Initialization error:', error);
+        console.error("[Carbon] Initialization error:", error);
         // Fail gracefully - panel should still work without Carbon components
       }
     },
@@ -104,14 +104,12 @@ const registerCarbonLibrary = (options = {}) => {
     },
 
     config: {
-      version: '2.0',
-      description: 'IBM Carbon Design System Web Components'
-    }
+      version: "2.0",
+      description: "IBM Carbon Design System Web Components",
+    },
   });
 
-  console.debug('[Zooy] Carbon Design System library registered');
-}
+  console.debug("[Zooy] Carbon Design System library registered");
+};
 
-export {
-  registerCarbonLibrary,
-}
+export { registerCarbonLibrary };

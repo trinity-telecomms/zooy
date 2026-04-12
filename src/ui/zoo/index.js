@@ -12,7 +12,7 @@
  */
 
 // Export semantic attributes utilities
-export * from './attributes.js';
+export * from "./attributes.js";
 
 // Export zoo components
-export * from './components/index.js';
+export * from "./components/index.js";

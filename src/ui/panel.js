@@ -1,24 +1,13 @@
-import Component from './component.js';
-import {identity, isDefAndNotNull, isNumber, isUndefined, toNumber} from 'badu';
-import {
-  evalModules,
-  evalScripts,
-  formToJSON,
-  getElDataMap,
-  splitScripts
-} from '../dom/utils.js';
-import UserManager from '../user/usermanager.js';
-import {UiEventType} from '../events/uieventtype.js';
-import ZooyEventData from '../events/zooyeventdata.js';
-import Evt from './evt.js';
-import {EV} from '../events/mouseandtouchevents.js';
-import {ComponentLibraryRegistry} from './component-library-registry.js';
-import {
-  getPath,
-  getQueryData,
-  objectToUrlParms,
-  queryDataToMap
-} from '../uri/uri.js';
+import Component from "./component.js";
+import { identity, isDefAndNotNull, isNumber, isUndefined, toNumber } from "badu";
+import { evalModules, evalScripts, formToJSON, getElDataMap, splitScripts } from "../dom/utils.js";
+import UserManager from "../user/usermanager.js";
+import { UiEventType } from "../events/uieventtype.js";
+import ZooyEventData from "../events/zooyeventdata.js";
+import Evt from "./evt.js";
+import { EV } from "../events/mouseandtouchevents.js";
+import { ComponentLibraryRegistry } from "./component-library-registry.js";
+import { getPath, getQueryData, objectToUrlParms, queryDataToMap } from "../uri/uri.js";
 
 /**
  * A Panel represents a UI component that can fetch and display content from a URI.
@@ -29,7 +18,6 @@ import {
  * @extends {Component}
  */
 class Panel extends Component {
-
   /**
    * Returns the panel event type code used for dispatching panel events.
    * @return {string} The PANEL event type
@@ -54,7 +42,7 @@ class Panel extends Component {
     super();
 
     this.qParamMap_ = new Map();
-    this.uri_ = '';
+    this.uri_ = "";
     if (uri) {
       this.parseUri(uri);
     }
@@ -77,7 +65,7 @@ class Panel extends Component {
     /**
      * @type {{html:?Element, scripts:?NodeList}}
      */
-    this.responseObject = {html: null, scripts: null};
+    this.responseObject = { html: null, scripts: null };
 
     /**
      * @type {!UserManager|undefined}
@@ -86,24 +74,22 @@ class Panel extends Component {
     this.user_ = void 0;
 
     // Feature detect
-    if ('AbortController' in window) {
+    if ("AbortController" in window) {
       this.abortController = new AbortController();
     } else {
       this.abortController = {
         signal: void 0,
-        abort: () => void 0
+        abort: () => void 0,
       };
     }
 
     this.listMap = new Map();
-
-  };
+  }
 
   //--[ Getters and Setters ]--
   get uri() {
-    const params = this.qParamMap_.size > 0
-      ? '?' + objectToUrlParms(Object.fromEntries(this.qParamMap_))
-      : '';
+    const params =
+      this.qParamMap_.size > 0 ? "?" + objectToUrlParms(Object.fromEntries(this.qParamMap_)) : "";
     return this.uri_ + params;
   }
 
@@ -122,7 +108,7 @@ class Panel extends Component {
       this.user_ = new UserManager();
     }
     return this.user_;
-  };
+  }
 
   /**
    * Parses a URI into its path and query parameters. Updates the panel's
@@ -141,7 +127,7 @@ class Panel extends Component {
    */
   addToQParams(k, v) {
     this.qParamMap_.set(k, v);
-  };
+  }
 
   /**
    * Removes a query parameter from the panel's query parameter map.
@@ -186,14 +172,13 @@ class Panel extends Component {
     }
 
     for (const elements of this.carbonComponents.values()) {
-      const found = elements.find(el => el.id === id);
+      const found = elements.find((el) => el.id === id);
       if (found) {
         return found;
       }
     }
     return undefined;
   }
-
 
   //--[ Template Render ]-----
   /**
@@ -205,8 +190,7 @@ class Panel extends Component {
       this.placeholderDom = placeholder;
       this.target.insertBefore(this.placeholderDom, null);
     }
-  };
-
+  }
 
   /**
    * Expects HTML data from a call to the back.
@@ -219,25 +203,30 @@ class Panel extends Component {
   renderWithTemplate(opt_callback) {
     const usr = this.user;
     if (usr) {
-      return usr.fetch(this.uri, this.abortController.signal).then(s => {
-        this.assertCanRenderAsync();
-        if (opt_callback) {
-          opt_callback(this);
-        }
-        this.onRenderWithTemplateReply(s).catch(err => {
-          if (err.message !== Component.compErrors().ALREADY_DISPOSED) {
-            console.error('RenderWithTemplate Err:', err);
+      return usr
+        .fetch(this.uri, this.abortController.signal)
+        .then((s) => {
+          this.assertCanRenderAsync();
+          if (opt_callback) {
+            opt_callback(this);
           }
+          this.onRenderWithTemplateReply(s).catch((err) => {
+            if (err.message !== Component.compErrors().ALREADY_DISPOSED) {
+              console.error("RenderWithTemplate Err:", err);
+            }
+          });
+          return this;
+        })
+        .catch((err) => {
+          console.error("Panel.renderWithTemplate fetch failed:", err);
+          throw err;
         });
-        return this;
-      }).catch(err => {
-        console.error('Panel.renderWithTemplate fetch failed:', err);
-        throw err;
-      });
     } else {
-      return Promise.reject(new Error('No UserManager instance available for Panel.renderWithTemplate()'));
+      return Promise.reject(
+        new Error("No UserManager instance available for Panel.renderWithTemplate()"),
+      );
     }
-  };
+  }
 
   /**
    * @param {string} s
@@ -249,7 +238,7 @@ class Panel extends Component {
     this.domFunc = () => /** @type {!Element} */ (this.responseObject.html);
     this.render();
     return Promise.resolve(this);
-  };
+  }
 
   /**
    * Partially replace panel's content.
@@ -269,23 +258,22 @@ class Panel extends Component {
    * @param qs
    */
   onReplacePartialDom(content, qs) {
-
     const panelEl = this.getElement();
     if (isUndefined(panelEl)) {
       return;
     }
     const hyperText = content.html;
 
-    if (qs.startsWith('.')) {
+    if (qs.startsWith(".")) {
       [...panelEl.querySelectorAll(qs)]
-        .filter(e => isDefAndNotNull(e.id))
-        .map(e => [e, hyperText.querySelector(`#${e.id}`)])
+        .filter((e) => isDefAndNotNull(e.id))
+        .map((e) => [e, hyperText.querySelector(`#${e.id}`)])
         .filter(([_target, replace]) => isDefAndNotNull(replace))
         .forEach(([target, replace]) => {
           target.parentNode.replaceChild(replace, target);
           this.parseContent(replace);
         });
-    } else if (qs.startsWith('#')) {
+    } else if (qs.startsWith("#")) {
       const replacementContent = hyperText.querySelector(qs);
       const target = panelEl.querySelector(qs);
       target.parentNode.replaceChild(replacementContent, target);
@@ -306,23 +294,25 @@ class Panel extends Component {
   renderWithJSON(opt_callback) {
     const usr = this.user;
     if (usr) {
-      return this.user.fetchJson(this.uri_, this.abortController.signal)
-        .then(json => {
+      return this.user
+        .fetchJson(this.uri_, this.abortController.signal)
+        .then((json) => {
           this.assertCanRenderAsync();
           if (opt_callback) {
             opt_callback(json, this);
           }
           this.onRenderWithJSON(json).then(identity);
-        }).catch(err => {
-          console.error('Panel.renderWithJSON fetch failed:', err);
+        })
+        .catch((err) => {
+          console.error("Panel.renderWithJSON fetch failed:", err);
           throw err;
         });
     } else {
-      return Promise.reject(new Error('No UserManager instance available for Panel.renderWithJSON()'));
+      return Promise.reject(
+        new Error("No UserManager instance available for Panel.renderWithJSON()"),
+      );
     }
-
-  };
-
+  }
 
   /**
    * On reply from a GET call to the panel URI
@@ -332,8 +322,7 @@ class Panel extends Component {
    */
   onRenderWithJSON(_json) {
     return Promise.resolve(this);
-  };
-
+  }
 
   /**
    * @param {Element} _el
@@ -342,7 +331,7 @@ class Panel extends Component {
    */
   onAsyncJsonReply(_el, _elDataMap, _json) {
     // Stub
-  };
+  }
 
   /**
    * Called on each async HTML response, after the content is in the DOM
@@ -352,7 +341,7 @@ class Panel extends Component {
    */
   onAsyncHtmlReply(_el, _elDataMap) {
     // Stub
-  };
+  }
 
   /**
    * Hook method called when the view broadcasts data to all its panels.
@@ -361,154 +350,170 @@ class Panel extends Component {
    */
   onViewDataBroadcast(_data) {
     // Stub
-  };
+  }
 
   //--[ JSON Render ]-----
   /**
    * @param {Element} panel
    */
   parseContent(panel) {
-    this.debugMe('Enable interactions. Panel:', panel);
+    this.debugMe("Enable interactions. Panel:", panel);
 
     // Initialize component libraries via pluggable architecture
     // Carbon Web Components (lazy-loaded, async)
-    if (typeof window.customElements !== 'undefined') {
-      if (ComponentLibraryRegistry.has('carbon')) {
-        const carbonLib = ComponentLibraryRegistry.get('carbon');
-        carbonLib.render.call(this, panel, carbonLib.cache)
-          .catch(err => console.error('[Zooy] Carbon initialization failed:', err));
+    if (typeof window.customElements !== "undefined") {
+      if (ComponentLibraryRegistry.has("carbon")) {
+        const carbonLib = ComponentLibraryRegistry.get("carbon");
+        carbonLib.render
+          .call(this, panel, carbonLib.cache)
+          .catch((err) => console.error("[Zooy] Carbon initialization failed:", err));
       }
     }
 
     // MDC (legacy, synchronous initialization)
-    if (ComponentLibraryRegistry.has('mdc')) {
-      const mdcLib = ComponentLibraryRegistry.get('mdc');
+    if (ComponentLibraryRegistry.has("mdc")) {
+      const mdcLib = ComponentLibraryRegistry.get("mdc");
       mdcLib.render.call(this, panel, mdcLib.cache);
     }
 
     // If I am a modal cover (.zoo__modal-base), and have the
     // .close_on_click class, then close myself on click.
-    if (panel.classList.contains('zoo__modal-base') &&
-      panel.classList.contains('close_on_click')) {
-      this.listen(panel, EV.CLICK, e => {
+    if (panel.classList.contains("zoo__modal-base") && panel.classList.contains("close_on_click")) {
+      this.listen(panel, EV.CLICK, (e) => {
         if (e.target === panel) {
-          this.dispatchPanelEvent('destroy_me');
+          this.dispatchPanelEvent("destroy_me");
         }
       });
     }
 
     // Maker zoo-buttons issue panel events.
-    [...panel.querySelectorAll(
-      '.zoo__button:not(.external):not(.mdc-data-table__row)'
-    )].forEach(el => {
-      this.listen(el, EV.CLICK, e => {
-        e.stopPropagation();
-        const trg = e.currentTarget;
-        const elDataMap = getElDataMap(trg);
-        this.dispatchPanelEvent(elDataMap['zv'], Object.assign({
-          orgEvt: e,
-          trigger: trg,
-          href: trg.href || elDataMap['href']
-        }, elDataMap));
-      });
-    });
+    [...panel.querySelectorAll(".zoo__button:not(.external):not(.mdc-data-table__row)")].forEach(
+      (el) => {
+        this.listen(el, EV.CLICK, (e) => {
+          e.stopPropagation();
+          const trg = e.currentTarget;
+          const elDataMap = getElDataMap(trg);
+          this.dispatchPanelEvent(
+            elDataMap["zv"],
+            Object.assign(
+              {
+                orgEvt: e,
+                trigger: trg,
+                href: trg.href || elDataMap["href"],
+              },
+              elDataMap,
+            ),
+          );
+        });
+      },
+    );
 
     // Hijack elements with a straight-up 'href' attribute.
     // Make them emit a 'href' event with the original
     // href or a href data attribute.
-    [...panel.querySelectorAll('[href]:not(.external):not([event])')].forEach(el => {
-      this.listen(el, EV.CLICK, e => {
+    [...panel.querySelectorAll("[href]:not(.external):not([event])")].forEach((el) => {
+      this.listen(el, EV.CLICK, (e) => {
         const trg = e.currentTarget;
         e.preventDefault();
         e.stopPropagation();
         const elDataMap = getElDataMap(trg);
-        const v = elDataMap['zv'] || 'href';
-        this.dispatchPanelEvent(v, Object.assign({
-          orgEvt: e,
-          trigger: e.target,
-          href: trg.href || elDataMap['href']
-        }, elDataMap));
+        const v = elDataMap["zv"] || "href";
+        this.dispatchPanelEvent(
+          v,
+          Object.assign(
+            {
+              orgEvt: e,
+              trigger: e.target,
+              href: trg.href || elDataMap["href"],
+            },
+            elDataMap,
+          ),
+        );
       });
     });
 
     // Hijack forms submit events for forms with a 'intercept_submit' class
-    [...panel.querySelectorAll('form.intercept_submit')].forEach(el => {
+    [...panel.querySelectorAll("form.intercept_submit")].forEach((el) => {
       el.noValidate = true;
-      this.listen(el, EV.SUBMIT, e => {
+      this.listen(el, EV.SUBMIT, (e) => {
         e.preventDefault();
         e.stopPropagation();
         const elDataMap = getElDataMap(el);
         const data = formToJSON(el.elements);
-        this.dispatchPanelEvent(elDataMap['zv'], Object.assign({
-          orgEvt: e,
-          trigger: e.target,
-          formData: data,
-          href: elDataMap['href']
-        }, elDataMap));
+        this.dispatchPanelEvent(
+          elDataMap["zv"],
+          Object.assign(
+            {
+              orgEvt: e,
+              trigger: e.target,
+              formData: data,
+              href: elDataMap["href"],
+            },
+            elDataMap,
+          ),
+        );
       });
-
     });
 
     // Get all elements with class swapping functionality.
-    [...panel.querySelectorAll('.zoo__toggle_class_driver')].forEach(
-      el => {
-        const elDataMap = getElDataMap(el);
-        const toggleTarget = elDataMap['toggle_class_target_id'];
-        const toggleClass = elDataMap['toggle_class'];
-        const targetEl = panel.querySelector(`#${toggleTarget}`);
-        if (targetEl && toggleClass) {
-          el.addEventListener(EV.CLICK, e => {
-            e.stopPropagation();
-            targetEl.classList.toggle(toggleClass);
-          });
-        }
-      });
+    [...panel.querySelectorAll(".zoo__toggle_class_driver")].forEach((el) => {
+      const elDataMap = getElDataMap(el);
+      const toggleTarget = elDataMap["toggle_class_target_id"];
+      const toggleClass = elDataMap["toggle_class"];
+      const targetEl = panel.querySelector(`#${toggleTarget}`);
+      if (targetEl && toggleClass) {
+        el.addEventListener(EV.CLICK, (e) => {
+          e.stopPropagation();
+          targetEl.classList.toggle(toggleClass);
+        });
+      }
+    });
 
     //--[ Drag Drop ]--
-    const dropEls = Array.from(panel.querySelectorAll('.folder_drop_zone'));
-    const dragEls = Array.from(panel.querySelectorAll('[draggable]'));
+    const dropEls = Array.from(panel.querySelectorAll(".folder_drop_zone"));
+    const dragEls = Array.from(panel.querySelectorAll("[draggable]"));
 
-    const activate = e => {
+    const activate = (e) => {
       e.preventDefault();
-      e.target.classList.add('drag_over');
+      e.target.classList.add("drag_over");
     };
-    const onDragOver = e => {
+    const onDragOver = (e) => {
       e.preventDefault();
     };
-    const onDragLeave = e => {
+    const onDragLeave = (e) => {
       e.preventDefault();
-      e.target.classList.remove('drag_over');
+      e.target.classList.remove("drag_over");
     };
-    const onDragExit = e => {
+    const onDragExit = (e) => {
       e.preventDefault();
-      e.target.classList.remove('drag_over');
+      e.target.classList.remove("drag_over");
     };
-    const deactivate = e => {
+    const deactivate = (e) => {
       e.preventDefault();
-      e.target.classList.remove('drag_over');
+      e.target.classList.remove("drag_over");
     };
-    const onDragStart = e => {
-      e.dataTransfer.dropEffect = 'move';
+    const onDragStart = (e) => {
+      e.dataTransfer.dropEffect = "move";
       const o = getElDataMap(e.target);
-      e.dataTransfer.setData('text/plain', JSON.stringify(o));
-      e.target.classList.add('drag_in_progress');
+      e.dataTransfer.setData("text/plain", JSON.stringify(o));
+      e.target.classList.add("drag_in_progress");
     };
-    const onDragend = e => {
-      e.target.classList.remove('drag_in_progress');
+    const onDragend = (e) => {
+      e.target.classList.remove("drag_in_progress");
     };
 
-    const onDrop = e => {
+    const onDrop = (e) => {
       deactivate(e);
       e.stopPropagation();
-      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
       const o = getElDataMap(e.target);
-      this.dispatchPanelEvent('drop_on', {
-        custom: {'on': o, 'from': data}
+      this.dispatchPanelEvent("drop_on", {
+        custom: { on: o, from: data },
       });
       return false;
     };
 
-    dropEls.forEach(el => {
+    dropEls.forEach((el) => {
       this.listen(el, EV.DRAGOVER, onDragOver);
       this.listen(el, EV.DRAGENTER, activate);
       this.listen(el, EV.DRAGEXIT, onDragExit);
@@ -516,7 +521,7 @@ class Panel extends Component {
       this.listen(el, EV.DROP, onDrop);
     });
 
-    dragEls.forEach(el => {
+    dragEls.forEach((el) => {
       this.listen(el, EV.DRAGSTART, onDragStart);
       this.listen(el, EV.DRAGEND, onDragend);
     });
@@ -524,13 +529,13 @@ class Panel extends Component {
     //--[ Async Populate ]--
     // Grab all elements with a 'zoo_async_json' class.
     // Call the given url, and then dispatch a panel event with the results.
-    [...panel.querySelectorAll('.zoo_async_json')].forEach(el => {
+    [...panel.querySelectorAll(".zoo_async_json")].forEach((el) => {
       const elDataMap = getElDataMap(el);
-      const href = elDataMap['href'];
+      const href = elDataMap["href"];
       const onReply = this.onAsyncJsonReply.bind(this, el, elDataMap);
       this.user.fetchJson(href, this.abortController.signal).then(onReply);
 
-      const reusableJson = elDataMap['z_json_reusable'];
+      const reusableJson = elDataMap["z_json_reusable"];
       if (reusableJson) {
         this.jsonCallFuncs = this.jsonCallFuncs || {};
         this.jsonCallFuncs[reusableJson] = () => {
@@ -538,46 +543,51 @@ class Panel extends Component {
         };
       }
 
-      const repeat = toNumber(elDataMap['z_interval']);
+      const repeat = toNumber(elDataMap["z_interval"]);
       if (isNumber(repeat)) {
-        this.doOnBeat(() => {
-          this.user.fetchJson(href, this.abortController.signal).then(onReply);
-        }, repeat * 60 * 1000);
+        this.doOnBeat(
+          () => {
+            this.user.fetchJson(href, this.abortController.signal).then(onReply);
+          },
+          repeat * 60 * 1000,
+        );
       }
     });
 
     // Grab all elements with a 'zoo_async_html' class.
     // Call the given url, and then populate the calling element with the
     // results. Parse the content and scripts in the context of this panel.
-    [...panel.querySelectorAll('.zoo_async_html')].forEach(
+    [...panel.querySelectorAll(".zoo_async_html")].forEach(
       /**
        * @param {Element} el
        */
-      el => {
+      (el) => {
         const elDataMap = getElDataMap(el);
-        const href = elDataMap['href'];
-        this.user.fetchAndSplit(href, this.abortController.signal)
-          .then(data => {
-            el.appendChild(data.html);
-            this.parseContent(el);
-            this.evalScripts(data.scripts);
-            this.evalModules(data.modules);
-            this.onAsyncHtmlReply(el, elDataMap);
-          });
-        const repeat = toNumber(elDataMap['z_interval']);
+        const href = elDataMap["href"];
+        this.user.fetchAndSplit(href, this.abortController.signal).then((data) => {
+          el.appendChild(data.html);
+          this.parseContent(el);
+          this.evalScripts(data.scripts);
+          this.evalModules(data.modules);
+          this.onAsyncHtmlReply(el, elDataMap);
+        });
+        const repeat = toNumber(elDataMap["z_interval"]);
         if (isNumber(repeat)) {
-          this.doOnBeat(() => {
-            this.user.fetchAndSplit(href, this.abortController.signal)
-              .then(data => {
+          this.doOnBeat(
+            () => {
+              this.user.fetchAndSplit(href, this.abortController.signal).then((data) => {
                 el.replaceChildren(data.html);
                 this.parseContent(el);
                 this.evalScripts(data.scripts);
                 this.evalModules(data.modules);
               });
-          }, repeat * 60 * 1000);
+            },
+            repeat * 60 * 1000,
+          );
         }
-      });
-  };
+      },
+    );
+  }
 
   /**
    * @inheritDoc
@@ -596,7 +606,7 @@ class Panel extends Component {
     // However, note that the async populate is async, and my thus not be
     // completed by the time this fires.
     super.enterDocument();
-  };
+  }
 
   /**
    * @inheritDoc
@@ -617,7 +627,7 @@ class Panel extends Component {
     if (this.redirected && url) {
       this.uri_ = url;
     }
-  };
+  }
 
   //--[ Built in events ]--
   /**
@@ -643,9 +653,7 @@ class Panel extends Component {
       value:${value}
       data:${opt_data}`);
     return this.dispatchEvent(event);
-  };
-
+  }
 }
-
 
 export default Panel;

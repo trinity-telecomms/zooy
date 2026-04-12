@@ -4,7 +4,7 @@
  * Handles clickable, expandable, selectable, and radio tiles.
  */
 
-import {getSemanticAttributes} from '../../zoo/index.js';
+import { getSemanticAttributes } from "../../zoo/index.js";
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -19,7 +19,7 @@ import {getSemanticAttributes} from '../../zoo/index.js';
  * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *): *&{href: *}}}
  */
 export const cdsClickableTileWrap = {
-  selector: 'cds-clickable-tile',
+  selector: "cds-clickable-tile",
 
   /**
    * @param {CDSClickableTile} tile - The CDSClickableTile custom element instance
@@ -34,17 +34,21 @@ export const cdsClickableTileWrap = {
       // cds-clickable-tile extends CDSLink which renders a shadow <a> —
       // the reflected href property feeds into that anchor and causes
       // navigation even when we preventDefault on the host click.
-      const href = attrs.href || tile.getAttribute('href') || '';
-      tile.removeAttribute('href');
+      const href = attrs.href || tile.getAttribute("href") || "";
+      tile.removeAttribute("href");
 
       // Use capture phase to intercept before the shadow anchor acts.
-      tile.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.dispatchPanelEvent(eventName, {...attrs, href});
-      }, true);
+      tile.addEventListener(
+        "click",
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.dispatchPanelEvent(eventName, { ...attrs, href });
+        },
+        true,
+      );
     }
-  }
+  },
 };
 
 /**
@@ -52,7 +56,7 @@ export const cdsClickableTileWrap = {
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSExpandableTile): void}}
  */
 export const cdsExpandableTileWrap = {
-  selector: 'cds-expandable-tile',
+  selector: "cds-expandable-tile",
 
   /**
    * @param {CDSExpandableTile} tile - The CDSExpandableTile custom element instance
@@ -62,13 +66,13 @@ export const cdsExpandableTileWrap = {
     const attrs = getSemanticAttributes(tile);
 
     // Before toggle event (cancelable)
-    const beforeToggleEvent = tile.getAttribute('before-toggle-event');
+    const beforeToggleEvent = tile.getAttribute("before-toggle-event");
     if (beforeToggleEvent) {
-      this.listen(tile, 'cds-expandable-tile-beingtoggled', e => {
+      this.listen(tile, "cds-expandable-tile-beingtoggled", (e) => {
         this.dispatchPanelEvent(beforeToggleEvent, {
           ...attrs,
           expanded: e.detail.expanded,
-          cancelable: true
+          cancelable: true,
         });
       });
     }
@@ -76,43 +80,40 @@ export const cdsExpandableTileWrap = {
     // After toggle event
     const toggleEvent = attrs.event;
     if (toggleEvent) {
-      this.listen(tile, 'cds-expandable-tile-toggled', e => {
+      this.listen(tile, "cds-expandable-tile-toggled", (e) => {
         this.dispatchPanelEvent(toggleEvent, {
           ...attrs,
-          expanded: e.detail.expanded
+          expanded: e.detail.expanded,
         });
       });
     }
-  }
-}
-
+  },
+};
 
 /**
  * Selectable Tile
  * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *, *): *&{selected: *, value: *}}}
  */
 export const cdsSelectableTileWrap = {
-  selector: 'cds-selectable-tile',
-  event: 'cds-selectable-tile-changed',
+  selector: "cds-selectable-tile",
+  event: "cds-selectable-tile-changed",
   getData: (e, attrs, element) => ({
     ...attrs,
     selected: e.detail.selected,
-    value: element.value
-  })
-}
-
+    value: element.value,
+  }),
+};
 
 /**
  * Radio Tile
  * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *, *): *&{selected: *, value: *}}}
  */
 export const cdsRadioTileWrap = {
-  selector: 'cds-radio-tile',
-  event: 'cds-selectable-tile-changed',
+  selector: "cds-radio-tile",
+  event: "cds-selectable-tile-changed",
   getData: (e, attrs, element) => ({
     ...attrs,
     selected: e.detail.selected,
-    value: element.value
-  })
-}
-
+    value: element.value,
+  }),
+};

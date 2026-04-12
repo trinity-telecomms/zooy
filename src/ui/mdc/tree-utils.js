@@ -11,7 +11,7 @@
  * @module ui/mdc/tree-utils
  */
 
-import {enableClass, toggleClass} from '../../dom/utils.js';
+import { enableClass, toggleClass } from "../../dom/utils.js";
 
 /**
  * Determine if an element is in the viewport.
@@ -20,10 +20,10 @@ import {enableClass, toggleClass} from '../../dom/utils.js';
  * @return {Function} Returns a function that checks if an element is below the viewport
  * @private
  */
-const needsToScroll = parent => {
+const needsToScroll = (parent) => {
   const parentRect = parent.getBoundingClientRect();
   const bottomMustBeLessThan = parentRect.bottom;
-  return elem => {
+  return (elem) => {
     const distance = elem.getBoundingClientRect();
     return distance.bottom > bottomMustBeLessThan;
   };
@@ -40,14 +40,14 @@ const needsToScroll = parent => {
  * const selectNode = treeNodeSelect(panel);
  * selectNode('folder-123'); // Selects node with id="tree-node_folder-123"
  */
-export const treeNodeSelect = panel => id => {
-  const treeContainer = panel.getElement().querySelector('.zv_tree_container');
+export const treeNodeSelect = (panel) => (id) => {
+  const treeContainer = panel.getElement().querySelector(".zv_tree_container");
   const isHidden = needsToScroll(treeContainer);
-  const allNodes = panel.getElement().querySelectorAll('.tree-node');
+  const allNodes = panel.getElement().querySelectorAll(".tree-node");
   let targetNode = undefined;
-  [...allNodes].forEach(n => {
+  [...allNodes].forEach((n) => {
     // MDC-specific class for activated state
-    enableClass(n, 'mdc-deprecated-list-item--activated', n.id === `tree-node_${id}`);
+    enableClass(n, "mdc-deprecated-list-item--activated", n.id === `tree-node_${id}`);
     if (n.id === `tree-node_${id}`) {
       targetNode = n;
     }
@@ -70,14 +70,12 @@ export const toggleTree = (eventData, panel) => {
   // it's nicer if we don't close these. If we did, the tree *always* ends
   // up with only one element revealed. So we keep the first level children
   // open at all times.
-  const fc = panel.getElement().querySelector('.children');
+  const fc = panel.getElement().querySelector(".children");
   const isOn = /**@type {boolean} */ (eventData.isOn);
-  const children = panel.getElement().querySelectorAll('.children');
-  const revealIcons = panel.getElement().querySelectorAll('.zoo__reveal_icon');
-  [...children].forEach(e => enableClass(
-    e, 'zoo__tree-children__hidden', e !== fc && !isOn));
-  [...revealIcons].forEach(e => enableClass(
-    e, 'zoo__icon_rotated', e !== fc && !isOn));
+  const children = panel.getElement().querySelectorAll(".children");
+  const revealIcons = panel.getElement().querySelectorAll(".zoo__reveal_icon");
+  [...children].forEach((e) => enableClass(e, "zoo__tree-children__hidden", e !== fc && !isOn));
+  [...revealIcons].forEach((e) => enableClass(e, "zoo__icon_rotated", e !== fc && !isOn));
 };
 
 /**
@@ -88,24 +86,8 @@ export const toggleTree = (eventData, panel) => {
  */
 export const toggleTreeChildren = (panel, eventData) => {
   const revealIcon = eventData.trigger;
-  const elId = revealIcon.getAttribute('data-child-id');
+  const elId = revealIcon.getAttribute("data-child-id");
   const child = panel.getElement().querySelector(`#${elId}`);
-  toggleClass(child, 'zoo__tree-children__hidden');
-  toggleClass(revealIcon, 'zoo__icon_rotated');
-};
-
-/**
- * Open all tree nodes from the given element up to the root.
- * Recursive function that walks up the DOM tree.
- *
- * @param {!Panel} _panel - The panel containing the tree (unused but kept for signature compatibility)
- * @param {!HTMLElement} n - The node to start from
- * @private
- */
-export const _openTreeFromNodeUp = (_panel, n) => {
-  const parentNode = n.parentElement;
-  if (parentNode.classList.contains('children')) {
-    enableClass(parentNode, 'zoo__tree-children__hidden', false);
-    _openTreeFromNodeUp(_panel, parentNode);
-  }
+  toggleClass(child, "zoo__tree-children__hidden");
+  toggleClass(revealIcon, "zoo__icon_rotated");
 };

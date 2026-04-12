@@ -4,7 +4,7 @@
  * Handles regular tags, dismissible tags, and filter tags.
  */
 
-import {getSemanticAttributes} from '../../zoo/index.js';
+import { getSemanticAttributes } from "../../zoo/index.js";
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -18,18 +18,17 @@ import {getSemanticAttributes} from '../../zoo/index.js';
  * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *): *}}
  */
 export const cdsTagsWrap = {
-  selector: 'cds-tag',
-  event: 'click',
-  getData: (e, attrs) => attrs
+  selector: "cds-tag",
+  event: "click",
+  getData: (e, attrs) => attrs,
 };
-
 
 /**
  * Dismissible tags (closeable tags with X button)
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSDismissibleTag): void}}
  */
 export const cdsSDismissibleTagWrap = {
-  selector: 'cds-dismissible-tag',
+  selector: "cds-dismissible-tag",
 
   /**
    * @param {CDSDismissibleTag} tag - The CDSDismissibleTag custom element instance
@@ -39,15 +38,15 @@ export const cdsSDismissibleTagWrap = {
     const attrs = getSemanticAttributes(tag);
 
     // Click event (when tag body is clicked)
-    const clickEvent = tag.getAttribute('click-event');
+    const clickEvent = tag.getAttribute("click-event");
     if (clickEvent) {
-      this.listen(tag, 'click', e => {
+      this.listen(tag, "click", (e) => {
         // Don't fire if clicking the close button
-        if (e.target.closest('button')) {
+        if (e.target.closest("button")) {
           return;
         }
         this.dispatchPanelEvent(clickEvent, {
-          ...attrs
+          ...attrs,
         });
       });
     }
@@ -55,27 +54,25 @@ export const cdsSDismissibleTagWrap = {
     // Close event (when X button is clicked)
     const closeEvent = attrs.event;
     if (closeEvent) {
-      this.listen(tag, 'cds-dismissible-tag-closed', _ => {
+      this.listen(tag, "cds-dismissible-tag-closed", (_) => {
         this.dispatchPanelEvent(closeEvent, {
           ...attrs,
-          action: 'closed'
+          action: "closed",
         });
       });
     }
-  }
-}
+  },
+};
 
 /**
  * Filter tags (closeable tags used for filters)
  * @type {{selector: string, import: (function(): Promise<*>)|*, event: string, getData: function(*, *): *&{action: string}}}
  */
 export const cdsFilterTagWrap = {
-    selector: 'cds-filter-tag',
-    event: 'cds-filter-tag-closed',
-    getData:
-      (e, attrs) => ({
-        ...attrs,
-        action: 'remove'
-      })
-  }
-;
+  selector: "cds-filter-tag",
+  event: "cds-filter-tag-closed",
+  getData: (e, attrs) => ({
+    ...attrs,
+    action: "remove",
+  }),
+};

@@ -20,7 +20,7 @@
  * @module ui/handlers/mdc-tree-handlers
  */
 
-import {toggleTree, toggleTreeChildren} from '../mdc/tree-utils.js';
+import { toggleTree, toggleTreeChildren } from "../mdc/tree-utils.js";
 
 /**
  * Collection of MDC tree-related panel event handlers.
@@ -36,7 +36,7 @@ export const MdcTreeHandlers = {
    * @param {Object} eventData - Event data with isOn boolean
    * @param {Panel} ePanel - The panel containing the tree
    */
-  'toggle_tree': function(eventData, ePanel) {
+  toggle_tree: function (eventData, ePanel) {
     toggleTree(eventData, ePanel);
   },
 
@@ -46,7 +46,7 @@ export const MdcTreeHandlers = {
    * @param {Object} eventData - Event data with trigger element
    * @param {Panel} ePanel - The panel containing the tree
    */
-  'tree_toggle-children': function(eventData, ePanel) {
+  "tree_toggle-children": function (eventData, ePanel) {
     toggleTreeChildren(ePanel, eventData);
-  }
+  },
 };

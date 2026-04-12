@@ -18,8 +18,8 @@
  *   await registerMdcLibrary();  // Now async!
  */
 
-import { ComponentLibraryRegistry } from '../component-library-registry.js';
-import { isDefAndNotNull } from 'badu';
+import { ComponentLibraryRegistry } from "../component-library-registry.js";
+import { isDefAndNotNull } from "badu";
 import {
   renderButtons as renderMdcButtons,
   renderCheckBoxes,
@@ -40,9 +40,9 @@ import {
   renderSwitches,
   renderTabBars,
   renderTextFieldIcons,
-  renderTextFields
-} from './mdc.js';
-import * as treeUtils from './tree-utils.js';
+  renderTextFields,
+} from "./mdc.js";
+import * as treeUtils from "./tree-utils.js";
 
 /**
  * Cached promise for loading material-components-web.js
@@ -58,15 +58,13 @@ let mdcLoadPromise = null;
  * @returns {Promise<void>} Resolves when window.mdc is ready
  */
 function loadMdcLibrary() {
-
   // Return cached promise if already loading/loaded
   if (mdcLoadPromise) {
     return mdcLoadPromise;
   }
 
   // Check if already loaded (e.g., via script tag in template)
-  if (isDefAndNotNull(window.mdc) &&
-      Object.prototype.hasOwnProperty.call(window.mdc, 'autoInit')) {
+  if (isDefAndNotNull(window.mdc) && Object.prototype.hasOwnProperty.call(window.mdc, "autoInit")) {
     mdcLoadPromise = Promise.resolve();
     return mdcLoadPromise;
   }
@@ -74,20 +72,23 @@ function loadMdcLibrary() {
   // Create and cache the loading promise
   mdcLoadPromise = new Promise((resolve, reject) => {
     // Allow customization of CDN URL via global variable (useful for local development)
-    const cdnUrl = window.__MDC_CDN_URL__ ||
-                   'https://unpkg.com/material-components-web@14.0.0/dist/material-components-web.min.js';
+    const cdnUrl =
+      window.__MDC_CDN_URL__ ||
+      "https://unpkg.com/material-components-web@14.0.0/dist/material-components-web.min.js";
 
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = cdnUrl;
     script.async = true;
 
     script.onload = () => {
       // Verify window.mdc is available
-      if (isDefAndNotNull(window.mdc) &&
-          Object.prototype.hasOwnProperty.call(window.mdc, 'autoInit')) {
+      if (
+        isDefAndNotNull(window.mdc) &&
+        Object.prototype.hasOwnProperty.call(window.mdc, "autoInit")
+      ) {
         resolve();
       } else {
-        reject(new Error('MDC library loaded but window.mdc is not available'));
+        reject(new Error("MDC library loaded but window.mdc is not available"));
       }
     };
 
@@ -114,15 +115,10 @@ function loadMdcLibrary() {
  * await registerMdcLibrary();  // Now async - waits for library to load
  */
 export async function registerMdcLibrary() {
-
   // Load the MDC library before registering
-  try {
-    await loadMdcLibrary();
-  } catch (error) {
-    throw error;
-  }
+  await loadMdcLibrary();
 
-  ComponentLibraryRegistry.register('mdc', {
+  ComponentLibraryRegistry.register("mdc", {
     /**
      * Renders all MDC components in a panel.
      * This is the exact same logic that was previously in Panel.parseContent(),
@@ -131,12 +127,13 @@ export async function registerMdcLibrary() {
      * @param {Element} panel - The panel DOM element to scan and initialize
      * @param {Map} _cache - Unused (MDC doesn't use dynamic imports)
      */
-    render: function(panel, _cache) {
+    render: function (panel, _cache) {
       // Legacy MDC support (synchronous initialization)
       // Requires window.mdc to be loaded globally (not ESM)
-      if (isDefAndNotNull(window.mdc) &&
-          Object.prototype.hasOwnProperty.call(window.mdc, 'autoInit')) {
-
+      if (
+        isDefAndNotNull(window.mdc) &&
+        Object.prototype.hasOwnProperty.call(window.mdc, "autoInit")
+      ) {
         renderRipples.call(this, panel);
         renderMdcButtons.call(this, panel);
         renderFloatingActionButtons.call(this, panel);
@@ -167,12 +164,12 @@ export async function registerMdcLibrary() {
      *
      * @param {Element} element - The element being disposed
      */
-    dispose: function(element) {
-      const els = element.querySelectorAll('[data-mdc-auto-init]');
-      [...els].forEach(e => {
+    dispose: function (element) {
+      const els = element.querySelectorAll("[data-mdc-auto-init]");
+      [...els].forEach((e) => {
         try {
-          e[e.getAttribute('data-mdc-auto-init')].destroy();
-        } catch (error) {
+          e[e.getAttribute("data-mdc-auto-init")].destroy();
+        } catch {
           // MDC cleanup errors are expected during disposal
           // Component may have been partially initialized or already cleaned up
         }
@@ -180,16 +177,16 @@ export async function registerMdcLibrary() {
     },
 
     config: {
-      version: '1.0',
-      description: 'Google Material Design Components (legacy, being phased out)'
+      version: "1.0",
+      description: "Google Material Design Components (legacy, being phased out)",
     },
 
     /**
      * MDC-specific utilities exposed for use in applications.
      * These are tightly coupled to MDC DOM structures.
      */
-    utils: treeUtils
+    utils: treeUtils,
   });
 
-  console.debug('[Zooy] MDC library registered');
+  console.debug("[Zooy] MDC library registered");
 }

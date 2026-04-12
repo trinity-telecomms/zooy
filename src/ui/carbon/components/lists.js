@@ -4,8 +4,7 @@
  * Handles overflow menus, structured lists, contained lists, and tree views.
  */
 
-import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
-
+import { getSemanticAttributes, getEventAttribute } from "../../zoo/index.js";
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -16,7 +15,6 @@ import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/tree-view/tree-view.js').default} CDSTreeView
  */
 
-
 /**
  * Overflow Menu
  * We collect the menu attributes from the menu, but we listen for the
@@ -24,7 +22,7 @@ import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSOverflowMenu): void}}
  */
 export const cdsOverflowMenuWrap = {
-  selector: 'cds-overflow-menu',
+  selector: "cds-overflow-menu",
 
   /**
    * @param {CDSOverflowMenu} overflowMenu - The CDSOverflowMenu custom element instance
@@ -33,25 +31,26 @@ export const cdsOverflowMenuWrap = {
   init: function (overflowMenu) {
     const menuAttrs = getSemanticAttributes(overflowMenu);
     const eventName = menuAttrs.event;
-    const menuBody = overflowMenu.querySelector('cds-overflow-menu-body');
+    const menuBody = overflowMenu.querySelector("cds-overflow-menu-body");
     if (eventName && menuBody) {
-      this.listen(menuBody, 'cds-overflow-menu-item-clicked', e => {
+      this.listen(menuBody, "cds-overflow-menu-item-clicked", (e) => {
         e.stopPropagation();
         const itemAttrs = getSemanticAttributes(e.target);
         this.dispatchPanelEvent(eventName, {
-          ...menuAttrs, ...itemAttrs
+          ...menuAttrs,
+          ...itemAttrs,
         });
       });
     }
-  }
-}
+  },
+};
 
 /**
  * Structured List
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSStructuredList): void}}
  */
 export const cdsStructuredListWrap = {
-  selector: 'cds-structured-list',
+  selector: "cds-structured-list",
 
   /**
    * @param {CDSStructuredList} list - The CDSStructuredList custom element instance
@@ -61,38 +60,39 @@ export const cdsStructuredListWrap = {
     const listAttrs = getSemanticAttributes(list);
 
     // Row clicks
-    const rows = [...list.querySelectorAll('cds-structured-list-row')];
-    rows.forEach(row => {
+    const rows = [...list.querySelectorAll("cds-structured-list-row")];
+    rows.forEach((row) => {
       const rowAttrs = getSemanticAttributes(row);
       const eventName = rowAttrs.event || listAttrs.event;
 
       if (eventName) {
-        this.listen(row, 'click', e => {
+        this.listen(row, "click", (e) => {
           e.stopPropagation();
           this.dispatchPanelEvent(eventName, {
-            ...listAttrs, ...rowAttrs
+            ...listAttrs,
+            ...rowAttrs,
           });
         });
       }
     });
 
     // Selection changes (if selection enabled)
-    if (list.hasAttribute('selection')) {
-      this.listen(list, 'cds-structured-list-selected', e => {
+    if (list.hasAttribute("selection")) {
+      this.listen(list, "cds-structured-list-selected", (e) => {
         const selectedRow = e.detail.row;
         const rowAttrs = getSemanticAttributes(selectedRow);
         const selectionEvent = listAttrs.event;
 
         if (selectionEvent) {
           this.dispatchPanelEvent(selectionEvent, {
-            ...listAttrs, ...rowAttrs
+            ...listAttrs,
+            ...rowAttrs,
           });
         }
       });
     }
-  }
-}
-
+  },
+};
 
 /**
  * Contained List — container.
@@ -101,8 +101,8 @@ export const cdsStructuredListWrap = {
  * @type {{selector: string}}
  */
 export const cdsContainedListWrap = {
-  selector: 'cds-contained-list',
-}
+  selector: "cds-contained-list",
+};
 
 /**
  * Contained List Description — optional descriptive text slot content.
@@ -110,8 +110,8 @@ export const cdsContainedListWrap = {
  * @type {{selector: string}}
  */
 export const cdsContainedListDescriptionWrap = {
-  selector: 'cds-contained-list-description',
-}
+  selector: "cds-contained-list-description",
+};
 
 /**
  * Contained List Item.
@@ -127,18 +127,17 @@ export const cdsContainedListDescriptionWrap = {
  * @type {{selector: string, event: string, getData: function(*, *): *}}
  */
 export const cdsContainedListItemWrap = {
-  selector: 'cds-contained-list-item',
-  event: 'cds-contained-list-item-click',
-  getData: (e, attrs) => attrs
-}
-
+  selector: "cds-contained-list-item",
+  event: "cds-contained-list-item-click",
+  getData: (e, attrs) => attrs,
+};
 
 /**
  * Tree Component
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSTreeView): void}}
  */
 export const cdsTreeViewWrap = {
-  selector: 'cds-tree-view',
+  selector: "cds-tree-view",
 
   /**
    * @param {CDSTreeView} tree - The CDSTreeView custom element instance
@@ -148,26 +147,31 @@ export const cdsTreeViewWrap = {
     const attrs = getSemanticAttributes(tree);
 
     // Listen for node selection
-    this.listen(tree, 'cds-tree-node-selected', e => {
+    this.listen(tree, "cds-tree-node-selected", (e) => {
       const node = e.detail.node;
       const nodeAttrs = getSemanticAttributes(node);
       const eventName = nodeAttrs.event || attrs.event;
 
       if (eventName) {
         this.dispatchPanelEvent(eventName, {
-          ...attrs, ...nodeAttrs, nodeId: node.id, label: node.getAttribute('label')
+          ...attrs,
+          ...nodeAttrs,
+          nodeId: node.id,
+          label: node.getAttribute("label"),
         });
       }
     });
 
     // Listen for node expansion
-    const expandEvent = getEventAttribute(tree, 'expand-event');
+    const expandEvent = getEventAttribute(tree, "expand-event");
     if (expandEvent) {
-      this.listen(tree, 'cds-tree-node-expanded', e => {
+      this.listen(tree, "cds-tree-node-expanded", (e) => {
         this.dispatchPanelEvent(expandEvent, {
-          ...attrs, nodeId: e.detail.node.id, expanded: e.detail.expanded
+          ...attrs,
+          nodeId: e.detail.node.id,
+          expanded: e.detail.expanded,
         });
       });
     }
-  }
-}
+  },
+};

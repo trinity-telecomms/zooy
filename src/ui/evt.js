@@ -1,4 +1,4 @@
-import {isDef} from 'badu';
+import { isDef } from "badu";
 
 /*
 EVENT LISTENER LEAK DETECTOR
@@ -26,7 +26,6 @@ var listenerCount = 0;
  * events while maintaining proper lifecycle management.
  */
 export default class Evt extends EventTarget {
-
   /**
    * Set this to true to get some debug in the console.
    * @type {boolean}
@@ -40,7 +39,6 @@ export default class Evt extends EventTarget {
    * @private
    */
   #disposed = false;
-
 
   /**
    * A map of listener targets to an object of zoo-event functions
@@ -59,7 +57,6 @@ export default class Evt extends EventTarget {
    */
   #isObservedBy = new Set();
 
-
   /**
    * A set of interval timers as defined by setInterval.
    * Use this to store the timers created particular to this component.
@@ -69,7 +66,6 @@ export default class Evt extends EventTarget {
    */
   #activeIntervals = new Set();
 
-
   //--[ Static ]--
   /**
    * Creates a CustomEvent with the given type and data payload.
@@ -78,8 +74,8 @@ export default class Evt extends EventTarget {
    * @return {!CustomEvent} A new CustomEvent instance
    */
   static makeEvent(event, data) {
-    return new CustomEvent(event, {detail: data});
-  };
+    return new CustomEvent(event, { detail: data });
+  }
 
   /**
    * Sets debug mode for this component. When enabled, debug messages
@@ -88,8 +84,8 @@ export default class Evt extends EventTarget {
    * @throws {Error} If the value is not a boolean
    */
   set debugMode(bool) {
-    if ((typeof bool) !== 'boolean') {
-      throw new Error('This must be a boolean');
+    if (typeof bool !== "boolean") {
+      throw new Error("This must be a boolean");
     }
     this.#debugMode = bool;
   }
@@ -129,10 +125,9 @@ export default class Evt extends EventTarget {
    */
   debugMe(...s) {
     if (this.#debugMode) {
-      console.log.apply(null, [this.constructor.name, 'DEBUG:', ...s]);
+      console.log.apply(null, [this.constructor.name, "DEBUG:", ...s]);
     }
   }
-
 
   //--[ Listeners and Listening ]--
   /**
@@ -161,7 +156,7 @@ export default class Evt extends EventTarget {
     if (isDef(target.isListenedToBy)) {
       target.isListenedToBy(this);
     }
-  };
+  }
 
   /**
    * Remove self from all components tt are listening to me.
@@ -183,27 +178,23 @@ export default class Evt extends EventTarget {
       return;
     }
     if (this.listeningTo.has(target)) {
-
       if (isDef(target.isObservedBy)) {
         target.isObservedBy.delete(this);
       }
 
       if (isDef(opt_event)) {
-        Object
-          .entries(this.listeningTo.get(target))
-          .forEach(([key, value]) => {
-            if (key === opt_event) {
-              /** @type {!Function} */(value)();
-            }
-          });
+        Object.entries(this.listeningTo.get(target)).forEach(([key, value]) => {
+          if (key === opt_event) {
+            /** @type {!Function} */ (value)();
+          }
+        });
         if (!Object.keys(this.listeningTo.get(target)).length) {
           this.listeningTo.delete(target);
         }
       } else {
-        Object.values(this.listeningTo.get(target)).forEach(e => e());
+        Object.values(this.listeningTo.get(target)).forEach((e) => e());
         this.listeningTo.delete(target);
       }
-
     }
   }
 
@@ -251,7 +242,7 @@ export default class Evt extends EventTarget {
     this.removeAllListener();
     this.clearAllIntervals();
     this.#disposed = true;
-  };
+  }
 
   /**
    * Public method to dispose of this component. Calls disposeInternal()
@@ -261,5 +252,4 @@ export default class Evt extends EventTarget {
   dispose() {
     this.disposeInternal();
   }
-
 }

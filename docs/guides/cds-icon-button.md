@@ -6,9 +6,9 @@ Upstream: [Carbon Icon Button](https://web-components.carbondesignsystem.com/?pa
 
 ## Elements
 
-| Element | Purpose |
-|---|---|
-| `<cds-icon-button>` | The button. Ships with a `<cds-tooltip>` in its shadow DOM, so tooltip content is built-in. |
+| Element                    | Purpose                                                                                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<cds-icon-button>`        | The button. Ships with a `<cds-tooltip>` in its shadow DOM, so tooltip content is built-in.                                                                            |
 | `{% carbon_icon "name" %}` | Django tag from `django-zooy`. Renders an inline Carbon SVG. Defaults to `slot="icon"` so the SVG lands in Carbon's icon slot without every caller having to remember. |
 
 Slots:
@@ -20,12 +20,12 @@ Slots:
 
 Defined in `src/ui/carbon/components/button.js`. Two distinct selectors route a `cds-icon-button` to different behaviour:
 
-| Selector | Mode | Panel event | Event detail |
-|---|---|---|---|
-| `cds-icon-button:not([data-toggle])` | Stateless click | whatever the template sets via `event` on the button | all semantic attributes from the button |
-| `cds-icon-button[data-toggle]` | Toggle (stateful) | same — template's `event` | semantic attributes **plus** `isOn: <bool>` reflecting the new state |
+| Selector                             | Mode              | Panel event                                          | Event detail                                                         |
+| ------------------------------------ | ----------------- | ---------------------------------------------------- | -------------------------------------------------------------------- |
+| `cds-icon-button:not([data-toggle])` | Stateless click   | whatever the template sets via `event` on the button | all semantic attributes from the button                              |
+| `cds-icon-button[data-toggle]`       | Toggle (stateful) | same — template's `event`                            | semantic attributes **plus** `isOn: <bool>` reflecting the new state |
 
-In toggle mode, zooy does *not* store state anywhere — it just flips Carbon's `isSelected` property on click and forwards the new value to the panel event. The panel decides what to persist.
+In toggle mode, zooy does _not_ store state anywhere — it just flips Carbon's `isSelected` property on click and forwards the new value to the panel event. The panel decides what to persist.
 
 **Key naming quirk:** `isSelected` is a reflected Lit property. `@carbon/web-components` doesn't set an explicit `attribute:` name on it, so Lit lowercases the property for the reflected attribute. The actual DOM attribute is `isselected` (no hyphen). Zooy's CSS in `src/sass/buttons.scss` selects on `cds-icon-button[isselected]`.
 
@@ -94,7 +94,7 @@ When selected, the SVG `fill` switches to `var(--zoo-button-toggle-color)` (defa
 
 ```scss
 :root {
-  --zoo-button-toggle-color: #d81b60;  // hot pink
+  --zoo-button-toggle-color: #d81b60; // hot pink
 }
 ```
 
@@ -104,29 +104,29 @@ The icon-swap and colour-swap modes are orthogonal. Use neither, either, or both
 
 ### Zooy semantic (light DOM, read by the renderer)
 
-| Attribute | Required? | Notes |
-|---|---|---|
-| `event` | yes (for interactive) | Panel event name to dispatch on click. |
-| `data-toggle` | — | Opt into toggle mode. Presence-only; no value. |
-| `data-toggle-color` | — | Opt into the colour-swap CSS rule. Presence-only; no value. Has no effect without `data-toggle` *and* a slotted-icon SVG for the rule to reach. |
-| `record-id`, `endpoint`, `action`, … | — | Any semantic attribute; forwarded into the event detail. |
+| Attribute                            | Required?             | Notes                                                                                                                                           |
+| ------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `event`                              | yes (for interactive) | Panel event name to dispatch on click.                                                                                                          |
+| `data-toggle`                        | —                     | Opt into toggle mode. Presence-only; no value.                                                                                                  |
+| `data-toggle-color`                  | —                     | Opt into the colour-swap CSS rule. Presence-only; no value. Has no effect without `data-toggle` _and_ a slotted-icon SVG for the rule to reach. |
+| `record-id`, `endpoint`, `action`, … | —                     | Any semantic attribute; forwarded into the event detail.                                                                                        |
 
 ### Carbon-native
 
-| Attribute | Values | Notes |
-|---|---|---|
-| `kind` | `primary` \| `secondary` \| `tertiary` \| `ghost` \| `danger` \| `danger-ghost` | `ghost` is the most common for icon-only buttons. Carbon's `cds--btn--selected` background tint is **gated on `kind="ghost"`** — other kinds still flip `isSelected` but won't draw a selected background. |
-| `size` | `sm` \| `md` \| `lg` | Button (and tooltip trigger) size. |
-| `align` | `top` \| `right` \| `bottom` \| `left` | Tooltip alignment. |
-| `disabled` | boolean | Suppresses click handling and the toggle state flip. |
-| `isSelected` | boolean, reflected as `isselected` | You can set this server-side to render the button in the "on" state on first paint. |
+| Attribute    | Values                                                                          | Notes                                                                                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kind`       | `primary` \| `secondary` \| `tertiary` \| `ghost` \| `danger` \| `danger-ghost` | `ghost` is the most common for icon-only buttons. Carbon's `cds--btn--selected` background tint is **gated on `kind="ghost"`** — other kinds still flip `isSelected` but won't draw a selected background. |
+| `size`       | `sm` \| `md` \| `lg`                                                            | Button (and tooltip trigger) size.                                                                                                                                                                         |
+| `align`      | `top` \| `right` \| `bottom` \| `left`                                          | Tooltip alignment.                                                                                                                                                                                         |
+| `disabled`   | boolean                                                                         | Suppresses click handling and the toggle state flip.                                                                                                                                                       |
+| `isSelected` | boolean, reflected as `isselected`                                              | You can set this server-side to render the button in the "on" state on first paint.                                                                                                                        |
 
 ## Caveats
 
 1. **`slot="icon"` changes how Carbon paints the SVG.** This is the single most confusing gotcha. Carbon's icon-button shadow stylesheet contains this rule:
 
    ```css
-   :host(cds-icon-button[kind=ghost]) ::slotted([slot=icon]) {
+   :host(cds-icon-button[kind="ghost"]) ::slotted([slot="icon"]) {
      color: var(--cds-icon-primary, #161616);
    }
    ```

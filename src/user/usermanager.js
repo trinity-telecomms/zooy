@@ -1,13 +1,15 @@
-import {getPath} from '../uri/uri.js';
-import {handleTemplateProm} from '../dom/utils.js';
-import {stripLeadingChar, identity} from 'badu';
+import { getPath } from "../uri/uri.js";
+import { handleTemplateProm } from "../dom/utils.js";
+import { stripLeadingChar, identity } from "badu";
 
-const stripLeadingSpace = stripLeadingChar(' ');
-const stripLeadingSlash = stripLeadingChar('/');
-const getCookieByName = name => document.cookie.split(';')
-  .map(v => v.split('='))
-  .reduce((p, c) => p.set(stripLeadingSpace(c[0]), c[1]), new Map())
-  .get(name);
+const stripLeadingSpace = stripLeadingChar(" ");
+const stripLeadingSlash = stripLeadingChar("/");
+const getCookieByName = (name) =>
+  document.cookie
+    .split(";")
+    .map((v) => v.split("="))
+    .reduce((p, c) => p.set(stripLeadingSpace(c[0]), c[1]), new Map())
+    .get(name);
 
 /**
  * The spinner should not be started or stopped by fetch calls while there
@@ -15,7 +17,7 @@ const getCookieByName = name => document.cookie.split(';')
  * that only acts when it changes to and from 0
  * @return {function(number)}
  */
-const spinner = id => {
+const spinner = (id) => {
   /**
    * @type {number}
    */
@@ -30,31 +32,30 @@ const spinner = id => {
    * @param {number} v
    * @return {boolean}
    */
-  const change = v => {
+  const change = (v) => {
     const inc = v > 0;
-    inc ? wrapped += 1 : wrapped -= 1;
+    inc ? (wrapped += 1) : (wrapped -= 1);
     return inc ? wrapped === 1 : wrapped === 0;
   };
 
-  return val => {
+  return (val) => {
     e = e || document.getElementById(id);
-    e && change(val) && e.classList.toggle('viz', wrapped > 0);
+    e && change(val) && e.classList.toggle("viz", wrapped > 0);
   };
 };
 
-const spin = spinner('the_loader');
+const spin = spinner("the_loader");
 const startSpin = () => Promise.resolve(spin(1));
-const stopSpin = x => {
+const stopSpin = (x) => {
   spin(0);
   return Promise.resolve(x);
 };
-
 
 /**
  * @param {Response} response
  * @return {!Promise<?>}
  */
-const checkStatus = response => {
+const checkStatus = (response) => {
   if (response.ok) {
     return Promise.resolve(response);
   } else {
@@ -62,27 +63,24 @@ const checkStatus = response => {
   }
 };
 
-
 /**
  * @param {Panel} panel
  * @return {function(!Response): !Promise<?>}
  */
-const checkStatusTwo = panel => response => {
-
-  if (response.type === 'opaqueredirect' || response.redirected) {
+const checkStatusTwo = (panel) => (response) => {
+  if (response.type === "opaqueredirect" || response.redirected) {
     const redirect = stripLeadingSlash(getPath(response.url));
     panel.setIsRedirected(true, redirect);
-    console.log('Redirect detected', redirect);
+    console.log("Redirect detected", redirect);
   }
   return checkStatus(response);
 };
-
 
 /**
  * @param {Response} response
  * @return {Promise}
  */
-const getJson = response => {
+const getJson = (response) => {
   // if (response.status === 204) {
   //   return Promise.resolve({});
   // }
@@ -93,32 +91,29 @@ const getJson = response => {
   return response.json();
 };
 
-
 /**
  * @param {Response} response
  * @return {Promise}
  */
-const getText = response => {
+const getText = (response) => {
   return response.text().then(
-    text => Promise.resolve(text),
-    err => Promise.reject(new Error(`Could not get text from response: ${err}`))
+    (text) => Promise.resolve(text),
+    (err) => Promise.reject(new Error(`Could not get text from response: ${err}`)),
   );
 };
 
-
 /**
  * @param {Response} response
  * @return {Promise}
  */
-const getTextOrJson = response => {
-  const contentType = response.headers.get('Content-Type');
-  if (contentType === 'application/json') {
+const getTextOrJson = (response) => {
+  const contentType = response.headers.get("Content-Type");
+  if (contentType === "application/json") {
     return getJson(response);
   } else {
     return getText(response);
   }
 };
-
 
 /**
  * @param {string} jwt A JWT token
@@ -127,20 +122,17 @@ const getTextOrJson = response => {
  * @param {AbortSignal|undefined} signal
  * @return {!RequestInit}
  */
-const jsonInit = (
-  jwt, obj, method = 'POST',
-  signal = void 0) => {
-
+const jsonInit = (jwt, obj, method = "POST", signal = void 0) => {
   const h = new Headers();
-  h.append('Content-type', 'application/json');
-  h.append('X-Requested-With', 'XMLHttpRequest');
-  jwt && jwt !== '' && h.append('Authorization', `Bearer ${jwt}`);
+  h.append("Content-type", "application/json");
+  h.append("X-Requested-With", "XMLHttpRequest");
+  jwt && jwt !== "" && h.append("Authorization", `Bearer ${jwt}`);
   const options = {
-    cache: 'no-cache',
+    cache: "no-cache",
     method: method,
     headers: h,
-    credentials: 'include',
-    body: JSON.stringify(obj)
+    credentials: "include",
+    body: JSON.stringify(obj),
   };
   if (signal) {
     options.signal = signal;
@@ -159,30 +151,26 @@ const jsonInit = (
  * @param {AbortSignal|undefined} signal
  * @return {!RequestInit}
  */
-const basicPutPostPatchInit = (
-  method, jwt, useDocumentCookies = false,
-  signal = void 0) => {
-
+const basicPutPostPatchInit = (method, jwt, useDocumentCookies = false, signal = void 0) => {
   const h = new Headers();
-  jwt && jwt !== '' && h.append('Authorization', `Bearer ${jwt}`);
-  h.append('X-Requested-With', 'XMLHttpRequest');
+  jwt && jwt !== "" && h.append("Authorization", `Bearer ${jwt}`);
+  h.append("X-Requested-With", "XMLHttpRequest");
   if (useDocumentCookies) {
-    const token = getCookieByName('csrftoken');
-    token && useDocumentCookies && h.append('X-CSRFToken', token);
+    const token = getCookieByName("csrftoken");
+    token && useDocumentCookies && h.append("X-CSRFToken", token);
   }
   const options = {
-    cache: 'no-cache',
+    cache: "no-cache",
     method: method,
     headers: h,
-    redirect: 'follow',  // This is anyway the default.
-    credentials: 'include'
+    redirect: "follow", // This is anyway the default.
+    credentials: "include",
   };
   if (signal) {
     options.signal = signal;
   }
   return options;
 };
-
 
 /**
  * @param {string} jwt A JWT token
@@ -192,11 +180,10 @@ const basicPutPostPatchInit = (
  */
 const formPostInit = (jwt, formPanel, signal = void 0) => {
   const useDocumentCookies = false;
-  const resp = basicPutPostPatchInit('POST', jwt, useDocumentCookies, signal);
-  resp['body'] = new FormData(formPanel.formEl);
+  const resp = basicPutPostPatchInit("POST", jwt, useDocumentCookies, signal);
+  resp["body"] = new FormData(formPanel.formEl);
   return resp;
 };
-
 
 /**
  * @param {string} jwt A JWT token
@@ -205,17 +192,18 @@ const formPostInit = (jwt, formPanel, signal = void 0) => {
  */
 const basicGetInit = (jwt, signal = void 0) => {
   const h = new Headers();
-  h.append('Authorization', `Bearer ${jwt}`);
-  h.append('X-Requested-With', 'XMLHttpRequest');
+  h.append("Authorization", `Bearer ${jwt}`);
+  h.append("X-Requested-With", "XMLHttpRequest");
   const options = {
-    cache: 'no-cache', headers: h, credentials: 'include'
+    cache: "no-cache",
+    headers: h,
+    credentials: "include",
   };
   if (signal) {
     options.signal = signal;
   }
   return options;
 };
-
 
 /**
  * @param {string} uri
@@ -224,9 +212,7 @@ const basicGetInit = (jwt, signal = void 0) => {
  */
 const putPostPatchNobody = (uri, init) => {
   const req = new Request(uri);
-  return fetch(req, init)
-    .then(checkStatus)
-    .then(getText);
+  return fetch(req, init).then(checkStatus).then(getText);
 };
 
 /**
@@ -234,16 +220,17 @@ const putPostPatchNobody = (uri, init) => {
  * @param {*} returnValue
  * @returns {function(*): *}
  */
-const genCatchClause = (debugString, returnValue = void 0) => err => {
-  stopSpin('').then(identity);
-  if (err.name === 'AbortError') {
-    console.info(debugString, 'ABORTED!');
-  } else {
-    console.error(debugString, err);
-  }
-  return returnValue;
-};
-
+const genCatchClause =
+  (debugString, returnValue = void 0) =>
+  (err) => {
+    stopSpin("").then(identity);
+    if (err.name === "AbortError") {
+      console.info(debugString, "ABORTED!");
+    } else {
+      console.error(debugString, err);
+    }
+    return returnValue;
+  };
 
 /** @typedef {{
  *     first_name: (string|undefined),
@@ -256,15 +243,12 @@ const genCatchClause = (debugString, returnValue = void 0) => err => {
  *     is_superuser: (boolean|undefined)
  *     }}
  */
-let UserLikeType;
-
+let _UserLikeType;
 
 /**
  * A class to manage the setting and getting of permissions.
  */
 export default class UserManager {
-
-
   /**
    * @param {!Object=} opt_data
    */
@@ -279,14 +263,12 @@ export default class UserManager {
      * @type {string}
      * @private
      */
-    this.jwt = '';
+    this.jwt = "";
 
     if (opt_data) {
-      this.updateProfileFromJwt(opt_data).then(() => {
-      });
+      this.updateProfileFromJwt(opt_data).then(() => {});
     }
-  };
-
+  }
 
   /**
    * @param {Object} data
@@ -295,58 +277,52 @@ export default class UserManager {
    * @private
    */
   updateProfileFromJwt(data, opt_onlyIfNoneExists = false) {
-    if (opt_onlyIfNoneExists && this.jwt !== '') {
-      return Promise.resolve('User Profile Already exists');
+    if (opt_onlyIfNoneExists && this.jwt !== "") {
+      return Promise.resolve("User Profile Already exists");
     }
-    if (data['non_field_errors']) {
-      return Promise.reject(new Error(`JWT ${data['non_field_errors']}`));
+    if (data["non_field_errors"]) {
+      return Promise.reject(new Error(`JWT ${data["non_field_errors"]}`));
     } else {
-      this.updateToken(data['token']);
-      this.updateProfile(data['user']);
-      return Promise.resolve('User Profile Updated');
+      this.updateToken(data["token"]);
+      this.updateProfile(data["user"]);
+      return Promise.resolve("User Profile Updated");
     }
-  };
-
+  }
 
   /**
    * @param {UserLikeType} data
    */
   updateProfile(data) {
     this.user_ = data;
-  };
-
+  }
 
   /**
    * @param {string} t
    */
   updateToken(t) {
     this.jwt = t;
-  };
-
+  }
 
   /**
    * @return {number|undefined}
    */
   get id() {
-    return this.user_['id'];
-  };
-
+    return this.user_["id"];
+  }
 
   /**
    * @return {string|undefined}
    */
   get name() {
-    return this.user_['name'];
-  };
-
+    return this.user_["name"];
+  }
 
   /**
    * @return {string|undefined}
    */
   get surname() {
-    return this.user_['surname'];
-  };
-
+    return this.user_["surname"];
+  }
 
   /**
    * @return {string|undefined}
@@ -355,11 +331,10 @@ export default class UserManager {
     let salutation = this.name;
     const surname = this.surname;
     if (surname) {
-      salutation = salutation + ' ' + surname;
+      salutation = salutation + " " + surname;
     }
     return salutation;
-  };
-
+  }
 
   /**
    * @param {FormPanel} formPanel
@@ -368,16 +343,15 @@ export default class UserManager {
   formSubmit(formPanel) {
     const req = new Request(formPanel.uri.toString());
     const processSubmitReply = formPanel.processSubmitReply.bind(formPanel);
-    const catchClause = genCatchClause('Form submit error');
+    const catchClause = genCatchClause("Form submit error");
     return startSpin()
-      .then(() => fetch(req, formPostInit(
-        this.jwt, formPanel, formPanel.abortController.signal)))
+      .then(() => fetch(req, formPostInit(this.jwt, formPanel, formPanel.abortController.signal)))
       .then(checkStatusTwo(formPanel))
       .then(stopSpin)
       .then(getTextOrJson)
       .then(processSubmitReply)
       .catch(catchClause);
-  };
+  }
 
   /**
    * @param {string} uri
@@ -386,12 +360,10 @@ export default class UserManager {
    * @return {Promise}
    */
   putNoBody(uri, signal = void 0, useDocumentCookies = false) {
-    const catchClause = genCatchClause('putNobody error');
-    const opts = basicPutPostPatchInit(
-      'PUT', this.jwt, useDocumentCookies, signal);
-    return putPostPatchNobody(uri, opts)
-      .catch(catchClause);
-  };
+    const catchClause = genCatchClause("putNobody error");
+    const opts = basicPutPostPatchInit("PUT", this.jwt, useDocumentCookies, signal);
+    return putPostPatchNobody(uri, opts).catch(catchClause);
+  }
 
   /**
    * @param {string} uri
@@ -407,7 +379,7 @@ export default class UserManager {
       .then(stopSpin)
       .then(getText)
       .catch(catchClause);
-  };
+  }
 
   /**
    * Use this if you want to directly get a parsed template that does not go
@@ -419,7 +391,7 @@ export default class UserManager {
   fetchAndSplit(uri, signal = void 0) {
     const catchClause = genCatchClause(`fetchAndSplit: ${uri}`);
     return this.fetch(uri, signal).then(handleTemplateProm).catch(catchClause);
-  };
+  }
 
   /**
    * @param {string} uri
@@ -448,7 +420,7 @@ export default class UserManager {
     //   .then(stopSpin)
     //   .then(getJson)
     //   .catch(catchClause);
-  };
+  }
 
   /**
    * @param {string} uri
@@ -459,12 +431,9 @@ export default class UserManager {
   patchJson(uri, payload, signal = void 0) {
     const req = new Request(uri.toString());
     const catchClause = genCatchClause(`patchJson: ${uri}`);
-    const opts = jsonInit(this.jwt, payload, 'PATCH', signal);
-    return fetch(req, opts)
-      .then(checkStatus)
-      .then(getJson)
-      .catch(catchClause);
-  };
+    const opts = jsonInit(this.jwt, payload, "PATCH", signal);
+    return fetch(req, opts).then(checkStatus).then(getJson).catch(catchClause);
+  }
 
   /**
    * @param {string} uri
@@ -475,12 +444,9 @@ export default class UserManager {
   postJson(uri, payload, signal = void 0) {
     const req = new Request(uri.toString());
     const catchClause = genCatchClause(`postJson: ${uri}`);
-    const opts = jsonInit(this.jwt, payload, 'POST', signal);
-    return fetch(req, opts)
-      .then(checkStatus)
-      .then(getJson)
-      .catch(catchClause);
-  };
+    const opts = jsonInit(this.jwt, payload, "POST", signal);
+    return fetch(req, opts).then(checkStatus).then(getJson).catch(catchClause);
+  }
 
   /**
    * @param {string} uri
@@ -491,12 +457,9 @@ export default class UserManager {
   putJson(uri, payload, signal = void 0) {
     const req = new Request(uri.toString());
     const catchClause = genCatchClause(`putJson: ${uri}`);
-    const opts = jsonInit(this.jwt, payload, 'PUT', signal);
-    return fetch(req, opts)
-      .then(checkStatus)
-      .then(getJson)
-      .catch(catchClause);
-  };
+    const opts = jsonInit(this.jwt, payload, "PUT", signal);
+    return fetch(req, opts).then(checkStatus).then(getJson).catch(catchClause);
+  }
 
   /**
    * @param {string} uri
@@ -507,10 +470,7 @@ export default class UserManager {
   delJson(uri, payload, signal = void 0) {
     const req = new Request(uri.toString());
     const catchClause = genCatchClause(`delJson: ${uri}`);
-    const opts = jsonInit(this.jwt, payload, 'DELETE', signal);
-    return fetch(req, opts)
-      .then(checkStatus)
-      .then(getJson)
-      .catch(catchClause);
-  };
+    const opts = jsonInit(this.jwt, payload, "DELETE", signal);
+    return fetch(req, opts).then(checkStatus).then(getJson).catch(catchClause);
+  }
 }

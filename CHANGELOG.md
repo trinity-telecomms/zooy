@@ -8,19 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - **`src/sass/buttons.scss`**: New button-focused stylesheet. Extracted the `cds-icon-button` toggle rules (icon-swap + optional colour-swap) out of `carbon.scss` so button styling has a clear home.
 - **`--zoo-button-toggle-color` token**: Controls the SVG `fill` for `cds-icon-button[data-toggle][data-toggle-color]` in its selected state. Defaults to `var(--cds-link-primary, #0f62fe)`. Override at `:root` in your app's theme to rebrand the toggle "on" colour.
 - **`docs/guides/cds-icon-button.md`**: Template-author guide covering stateless click, toggle mode, icon-swap, colour-swap, and — importantly — the `slot="icon"` vs default-slot colour quirk that makes Carbon paint the same SVG two different colours depending on one attribute.
 
 ### Changed
+
 - **`src/sass/carbon.scss`** no longer owns the icon-button toggle block. It lives in `buttons.scss` now, and `main.scss` imports both.
 
 ### Fixed
+
 - **Colour-swap no longer collapses to a no-op.** The old rule used `var(--cds-icon-primary, #0f62fe)` for the selected-state fill, which is the same token Carbon already paints the default icon with — so any consumer theming `--cds-icon-primary` silently killed the toggle's visible "on" colour. The "on" colour now has its own `--zoo-button-toggle-color` token that can't collide with Carbon's default.
 
 ## [1.0.1-beta.7] - 2025-11-10
 
 ### Changed
+
 - **Table Skeleton Loader Architecture**: Refactored skeleton overlay system for better performance
   - New `.zoo-datatable-skeleton-wrapper` uses CSS Grid for overlay positioning
   - Skeleton and table occupy same grid cell with z-index layering
@@ -37,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved readability and maintainability
 
 ### Fixed
+
 - **Table Search State Management**: Search now properly resets pagination and shows skeleton
   - Skeleton displays during search to indicate loading state
   - Pagination resets to page 1 when search is triggered
@@ -44,12 +49,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Skeleton hidden after successful data load
 
 ### Dependencies
+
 - **@carbon/web-components**: Updated to 2.42.0 (from 2.41.0)
 - **@carbon/styles**: Updated to 1.94.0 (from 1.93.1)
 
 ## [1.0.1-beta.6] - 2025-11-09
 
 ### Added
+
 - **Server-Side Table Search**: Tables with `zoo-url__api` now support server-side search via `cds-table-toolbar-search`
   - Search triggers on Enter key press (prevents API spam from every keystroke)
   - Search triggers when clear button (X) is clicked to reset results
@@ -58,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Backend requires `SearchFilter` in `filter_backends` and `search_fields` attribute
 
 ### Changed
+
 - **Table Search Behavior**: Different search behavior based on table configuration
   - **Server-side** (with `zoo-url__api`): Enter key or clear button triggers API call
   - **Client-side with custom events** (with `search-event` attribute): Keystroke events dispatched to panel
@@ -66,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-beta.5] - 2025-11-09
 
 ### Fixed
+
 - **Table Pagination Double Fetch**: Fixed duplicate API calls on initial table load and pagination navigation
   - **Initial Load**: Event handlers now registered after initial data fetch completes, preventing pagination property updates from triggering duplicate fetches
   - **Navigation**: Added offset-based deduplication to handle Carbon Web Components bug where `cds-pagination-changed-current` fires twice per navigation
@@ -91,6 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-beta.4] - 2025-11-09
 
 ### Fixed
+
 - **Pagination Performance for Large Datasets**: Fixed browser freeze when paginating tables with tens of thousands of pages
   - Carbon pagination component was generating 33k+ `<option>` elements for the page dropdown
   - Now automatically uses `pagesUnknown` mode for datasets with >100 pages
@@ -99,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Significantly improves performance for large datasets (e.g., 332,550 items = 33,255 pages)
 
 ### Changed
+
 - **Pagination Page Dropdown**: Adaptive behavior based on dataset size
   - Small datasets (≤100 pages): Full dropdown with all page numbers
   - Large datasets (>100 pages): Text display showing current page and total pages
@@ -107,6 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-beta.3] - 2025-11-08
 
 ### Added
+
 - **Automatic Table Pagination**: Tables with `zoo-url__api` now automatically create and configure pagination components
   - Pagination component created dynamically when table has paginated data
   - Automatically wired to DataBinder for page navigation
@@ -120,6 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Uses application-level cache (Conductor) and browser module cache
 
 ### Changed
+
 - **Automatic Server-Side Sorting**: DataBinder tables now automatically sort on the backend
   - No longer requires `sort-event` attribute on table
   - Tables with `zoo-url__api` automatically do server-side sorting
@@ -136,12 +149,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Backward compatible - single imports still work
 
 ### Fixed
+
 - **Numeric Column Sorting**: Fixed tables sorting numeric columns alphabetically
   - Server-side sorting now properly enabled for DataBinder tables
   - Django backend performs correct numeric/text sorting based on field type
   - Removed client-side sorting that was treating numbers as strings
 
 ### Removed
+
 - **Debug Logging**: Removed all debug console.log statements from production code
   - Cleaned up DataBinder debug logs (`templateId`, `dataPath`, etc.)
   - Cleaned up table pagination debug logs (`DING`, `DONG`)
@@ -150,6 +165,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-beta.2] - 2025-11-07
 
 ### Changed
+
 - **DataBinder Architecture**: Complete refactor to single-binder pattern (BREAKING CHANGE)
   - Constructor now requires URL and root element: `new DataBinder(url, root, options)`
   - One binder instance per root element (stored on `element.dataBinder`)
@@ -183,6 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supports `data-pagination-event` attribute for event matching
 
 ### Added
+
 - **Simple Property Binding**: DataBinder now supports direct property binding without templates
   - Use `zoo-bind` on existing elements to bind JSON properties to textContent
   - Use `zoo-bind__attr` to bind properties to element attributes
@@ -199,12 +216,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Documented pagination support and event flow
 
 ### Removed
+
 - **DataBinder Static Methods**: Removed deprecated provider/consumer pattern methods (BREAKING CHANGE)
   - `DataBinder.initializeFromProvider()` - replaced by `new DataBinder(url, root, options)`
   - `DataBinder.initializeAll()` - no longer needed with new architecture
   - Component integrations now create single binder instance directly
 
 ### Fixed
+
 - **Carbon Table Interactions**: Fixed table sorting, searching, and pagination after refactor
   - Handlers now use stored `table.dataBinder` instance instead of static methods
   - All table operations work correctly with new single-binder pattern
@@ -212,6 +231,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-beta.1] - 2025-11-06
 
 ### Added
+
 - **Zoo Components**: New namespace for native zooy components styled via CSS custom properties
   - `zoo-tag` - Generic tag/badge component with token-based styling
   - Components organized in `src/ui/zoo/components/` directory
@@ -226,6 +246,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - No registration required (unlike third-party libraries)
 
 ### Changed
+
 - **Zoo Tag Token Type**: Changed from `Number` to `String` for maximum flexibility
   - Supports numeric tokens: `<zoo-tag token="52">`
   - Supports named tokens: `<zoo-tag token="error">`
@@ -241,13 +262,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Carbon Semantic Attributes**: Enhanced semantic attribute handling across components
   - `getSemanticAttributes()` utility properly extracts framework and custom attributes
   - Consistent attribute merging pattern across all Carbon components
-  - Better separation between framework attributes (event, record-id) and data-* attributes
+  - Better separation between framework attributes (event, record-id) and data-\* attributes
 - **Documentation**: Major cleanup of README.md
   - Removed non-technical content, history, and editorial commentary
   - Focused on developer-centric documentation
   - Improved scannability with consistent formatting
 
 ### Fixed
+
 - **Carbon Overflow Menu**: Fixed variable shadowing bug in overflow menu handler
   - Menu-level attributes now properly merge with item-level attributes
   - Changed `menuAttr` to `menuAttrs` and added `itemAttrs` for clarity
@@ -258,6 +280,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enables complex cell layouts with multiple bindable elements
 
 ### Removed
+
 - **Unused CSS Build Scripts**: Removed `build_css` and `dev_watch_sass` npm scripts
   - Zooy exports source SASS files, not compiled CSS
   - Applications compile SASS themselves
@@ -269,6 +292,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [36.1.0] - 2025-10-31
 
 ### Added
+
 - Icon toggle support for Carbon icon buttons via CSS classes
 - New `carbon-icons.scss` with `.off-icon` and `.on-icon` classes for icon visibility toggling
 - Enhanced `cds-icon-button[data-toggle="true"]` handler to detect and support icon-swap mode
@@ -276,12 +300,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Maintains backward compatibility with original color/opacity toggle mode
 
 ### Changed
+
 - Icon toggle buttons now use CSS-driven visibility toggling instead of DOM manipulation
 - JavaScript only manages `is-selected` attribute, CSS handles all visual changes
 
 ## [35.3.0] - 2025-10-22
 
 ### Changed
+
 - **Build System Migration**: Migrated from Rollup to Vite for faster builds and better DX
   - Build time improved by 44% (2.91s → 1.63s)
   - Simplified configuration with modern defaults
@@ -300,12 +326,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed obsolete build scripts
 
 ### Removed
+
 - Rollup and related plugins (`@rollup/plugin-*`)
 - Terser minifier (replaced by esbuild)
 - `build/` directory containing obsolete linting scripts
 - `rollup.config.js` (replaced by `vite.config.js`)
 
 ### Added
+
 - Vite build system with library mode configuration
 - Modern package.json exports for better module resolution
 - Updated bundle size metrics:
@@ -316,22 +344,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [35.2.0] - 2025-10-16
 
 ### Fixed
+
 - **Carbon Modal Component Detection**: Fixed `scanForCarbonComponents()` to check the panel element itself, not just descendants. Previously, when a panel WAS a Carbon component (e.g., `<cds-modal>`), it would not be initialized because `querySelectorAll()` only finds descendants.
 - **Carbon Modal Close Events**: Carbon modals now properly emit `destroy_me` event on all close methods (close button, ESC key, backdrop click). Fixed by always emitting `destroy_me` regardless of template attributes.
 - **Form Submission with Footer Buttons**: Submit buttons can now be placed outside forms using HTML5 `form` attribute. Button renderer now checks both `button.closest('form')` and `button.getAttribute('form')` to find associated forms.
 
 ### Added
+
 - **Carbon Modal Footer Support**: Added initialization for `cds-modal-footer-button` with same form submission handling as `cds-button`
 - **HTML5 Form Association**: Carbon buttons now support HTML5 `form="form-id"` attribute for buttons outside form elements
 - **Debug Logging**: Added comprehensive console logging for Carbon modal initialization and event handling (temporary, for development)
 
 ### Changed
+
 - Carbon button renderer now handles buttons outside form boundaries via HTML5 form attribute
 - Modal close events are no longer configurable - modals MUST destroy their panel when closed
 
 ## [35.1.1] - 2025-10-16
 
 ### Removed
+
 - Removed unused panel event handlers:
   - `search_by_qdict` from SearchHandlers
   - `add_q_dict_kv` from QueryParamHandlers
@@ -339,6 +371,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `nav_back` from NavigationHandlers (entire module removed)
 
 ### Added
+
 - Added comprehensive handler migration guide (`docs/migration/HANDLER_MIGRATION.md`)
 - Organized documentation into structured `docs/` directory:
   - `docs/architecture/` - Architecture documentation
@@ -347,17 +380,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added standard project files (LICENSE, CHANGELOG.md, CONTRIBUTING.md)
 
 ### Changed
+
 - Exported handler collections through public API (`zooy.handlers`)
 - Sanitized documentation files for developer use (removed progress tracking)
 
 ## [35.1.0] - 2025-10-16
 
 ### Changed
+
 - Refactored panel event handlers into composable, opt-in collections
 - Extracted MDC-specific handlers into separate modules
 - Updated View class to use new handler collection pattern
 
 ### Added
+
 - Handler collection system:
   - `MdcTreeHandlers` - MDC tree component handlers
   - `SearchHandlers` - Search and filter handlers
@@ -369,6 +405,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [35.0.0] - 2025
 
 ### Added
+
 - Component Library Registry system for pluggable UI libraries
 - Carbon Design System integration (IBM Carbon Web Components)
 - Lazy-loading support for component libraries
@@ -377,12 +414,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Programmatic icon API
 
 ### Changed
+
 - Refactored Panel to be component-library-agnostic
 - Migrated from MDC-only to multi-library support
 - Updated build system for code-splitting (Rollup)
 - Improved bundling strategy (reduced initial bundle size)
 
 ### Deprecated
+
 - Direct MDC integration (now isolated in `mdc/` modules)
 - Tight coupling between Panel and component libraries
 

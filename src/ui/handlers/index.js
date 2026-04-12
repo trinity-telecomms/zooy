@@ -33,6 +33,6 @@
  * @module ui/handlers
  */
 
-export {MdcTreeHandlers} from './mdc-tree-handlers.js';
-export {SearchHandlers} from './search-handlers.js';
-export {QueryParamHandlers} from './query-param-handlers.js';
+export { MdcTreeHandlers } from "./mdc-tree-handlers.js";
+export { SearchHandlers } from "./search-handlers.js";
+export { QueryParamHandlers } from "./query-param-handlers.js";

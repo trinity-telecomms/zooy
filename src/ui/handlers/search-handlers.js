@@ -35,23 +35,26 @@ export const SearchHandlers = {
    * @param {Object} eventData - Event data with href, formData.q, and targetval
    * @param {Panel} ePanel - The panel to update
    */
-  'search': function(eventData, ePanel) {
+  search: function (eventData, ePanel) {
     let href = `${eventData.href}`;
     const qString = eventData.formData.q;
     const qDict = eventData.targetval;
-    if (qString !== '') {
+    if (qString !== "") {
       href = `${href}?q=${qString}`;
     }
-    if (qDict !== '') {
+    if (qDict !== "") {
       let newQDict = qDict;
-      if (qDict.includes('page=')) {
-        newQDict = qDict.split('&').filter(e => !e.includes('page=')).join('&');
+      if (qDict.includes("page=")) {
+        newQDict = qDict
+          .split("&")
+          .filter((e) => !e.includes("page="))
+          .join("&");
       }
-      href = qString !== '' ? `${href}&${newQDict}` : `${href}?${newQDict}`;
+      href = qString !== "" ? `${href}&${newQDict}` : `${href}?${newQDict}`;
     }
-    this.user.fetchAndSplit(href, ePanel.abortController.signal).then(
-      s => ePanel.onReplacePartialDom(s, eventData.zvptarget)
-    );
+    this.user
+      .fetchAndSplit(href, ePanel.abortController.signal)
+      .then((s) => ePanel.onReplacePartialDom(s, eventData.zvptarget));
   },
 
   /**
@@ -61,12 +64,12 @@ export const SearchHandlers = {
    * @param {Object} eventData - Event data with trigger element
    * @param {Panel} ePanel - The panel to update
    */
-  'reset_search': function(eventData, ePanel) {
+  reset_search: function (eventData, ePanel) {
     // Grab the closest form up the DOM, reset its 'q' field and make
     // it use the normal submit logic.
-    const form = eventData.trigger.closest('form');
-    ePanel.removeFromQParams('q');
-    form.elements['q'].value = '';
-    form.dispatchEvent(new Event('submit'));
-  }
+    const form = eventData.trigger.closest("form");
+    ePanel.removeFromQParams("q");
+    form.elements["q"].value = "";
+    form.dispatchEvent(new Event("submit"));
+  },
 };

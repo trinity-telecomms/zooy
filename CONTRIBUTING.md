@@ -21,12 +21,14 @@ Thank you for your interest in contributing to Zooy! This document provides guid
 
 1. Fork the repository
 2. Clone your fork:
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/zooy.git
    cd zooy
    ```
 
 3. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -58,6 +60,7 @@ zooy/
 ### Making Changes
 
 1. Create a feature branch:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -65,12 +68,14 @@ zooy/
 2. Make your changes following our coding standards (see below)
 
 3. Build and test:
+
    ```bash
    npm run build
    npm test
    ```
 
 4. Lint your code:
+
    ```bash
    npm run lint
    ```
@@ -92,6 +97,7 @@ zooy/
   - Private fields: `#camelCase`
 
 **Example:**
+
 ```javascript
 /**
  * Example component demonstrating coding standards.
@@ -188,6 +194,7 @@ Follow conventional commit format:
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -197,6 +204,7 @@ Follow conventional commit format:
 - `chore`: Maintenance tasks
 
 **Examples:**
+
 ```
 feat(handlers): add FormValidationHandlers collection
 

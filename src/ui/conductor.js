@@ -1,7 +1,7 @@
-import UserManager from '../user/usermanager.js';
-import Evt from './evt.js';
-import View from './view.js';
-import {mergeRight} from 'ramda';
+import UserManager from "../user/usermanager.js";
+import Evt from "./evt.js";
+import View from "./view.js";
+import { mergeRight } from "ramda";
 
 /**
  * The Conductor orchestrates view management and navigation in the application.
@@ -11,7 +11,6 @@ import {mergeRight} from 'ramda';
  * @extends {Evt}
  */
 export default class Conductor extends Evt {
-
   #viewConstructorMap = new Map();
 
   #activeView = null;
@@ -21,7 +20,6 @@ export default class Conductor extends Evt {
    * @private
    */
   #user = void 0;
-
 
   #split = void 0;
 
@@ -43,7 +41,7 @@ export default class Conductor extends Evt {
 
     this.#viewEventMap = this.#initViewEventsInternal();
 
-    window.addEventListener('popstate', (event) => {
+    window.addEventListener("popstate", (event) => {
       if (event.state === null) {
         return;
       }
@@ -52,12 +50,13 @@ export default class Conductor extends Evt {
 
     // Emit time ticks every 60 seconds for time-based components
     this.doOnBeat(() => {
-      document.dispatchEvent(new CustomEvent('zoo-tick-60', {
-        detail: {timestamp: Date.now()}
-      }));
+      document.dispatchEvent(
+        new CustomEvent("zoo-tick-60", {
+          detail: { timestamp: Date.now() },
+        }),
+      );
     }, 60000);
-
-  };
+  }
 
   set split(split) {
     this.#split = split;
@@ -65,11 +64,10 @@ export default class Conductor extends Evt {
 
   get split() {
     if (!this.#split) {
-      throw new Error('No SPLIT component available');
+      throw new Error("No SPLIT component available");
     }
     return this.#split;
   }
-
 
   /**
    * @param {!UserManager} user
@@ -79,7 +77,7 @@ export default class Conductor extends Evt {
     if (this.#activeView) {
       this.#activeView.user = this.user;
     }
-  };
+  }
 
   /**
    * @return {!UserManager}
@@ -89,7 +87,7 @@ export default class Conductor extends Evt {
       this.#user = new UserManager();
     }
     return this.#user;
-  };
+  }
 
   get utils() {
     return this.#funcMap;
@@ -116,15 +114,16 @@ export default class Conductor extends Evt {
    * @private
    */
   #initViewEventsInternal() {
-    return new Map()
-      .set('switch_view', (eventData, _eView) => {
-        if (this.#viewConstructorMap.has(eventData.view)) {
-          const view = this.#viewConstructorMap.get(eventData.view)(
-            eventData.pk || eventData.recordId, eventData);
-          this.switchView(view);
-        }
-      });
-  };
+    return new Map().set("switch_view", (eventData, _eView) => {
+      if (this.#viewConstructorMap.has(eventData.view)) {
+        const view = this.#viewConstructorMap.get(eventData.view)(
+          eventData.pk || eventData.recordId,
+          eventData,
+        );
+        this.switchView(view);
+      }
+    });
+  }
 
   /**
    * Maps a view event name to a handler function. Allows dynamic registration
@@ -156,9 +155,9 @@ export default class Conductor extends Evt {
     if (this.#viewEventMap.has(eventValue)) {
       this.#viewEventMap.get(eventValue)(eventData, eView);
     } else {
-      console.warn('Unhandled VIEW Event:', e, eventValue, eventData, eView);
+      console.warn("Unhandled VIEW Event:", e, eventValue, eventData, eView);
     }
-  };
+  }
 
   /**
    * Make the given view active.
@@ -172,7 +171,7 @@ export default class Conductor extends Evt {
     }
     this.#activeView = view;
     this.#activeView.render();
-  };
+  }
 
   /**
    * @param {!View} view
@@ -194,7 +193,7 @@ export default class Conductor extends Evt {
    */
   switchView(view) {
     this.setActiveView(this.initView(view));
-  };
+  }
 
   //--[ History and Navigation ]--
   /**
@@ -204,11 +203,11 @@ export default class Conductor extends Evt {
    * @param {!Object} item The history item containing view state
    */
   recordHistory(item) {
-    this.debugMe('HISTORY', item);
+    this.debugMe("HISTORY", item);
     if (item.init) {
-      history.replaceState(item, '', document.location.href);
+      history.replaceState(item, "", document.location.href);
     } else if (!item.history) {
-      history.pushState(item, '', null);
+      history.pushState(item, "", null);
     }
   }
 
@@ -224,12 +223,12 @@ export default class Conductor extends Evt {
     const activeView = this.#activeView;
 
     if (activeView.switchViewMap_.has(view)) {
-      this.debugMe('NAV:VIEW:MAP', item);
+      this.debugMe("NAV:VIEW:MAP", item);
       activeView.switchViewMap_.get(view)(item);
     } else if (this.#viewConstructorMap.has(view)) {
       const targetView = this.#viewConstructorMap.get(view)(item.pk, item);
-      this.debugMe('NAV:NEW:VIEW', item);
+      this.debugMe("NAV:NEW:VIEW", item);
       this.switchView(targetView);
     }
   };
-};
+}

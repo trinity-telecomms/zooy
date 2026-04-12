@@ -1,9 +1,8 @@
-import Panel from './panel.js';
-import {UiEventType} from '../events/uieventtype.js';
-import {replaceNode, splitScripts} from '../dom/utils.js';
-import {whatType} from 'badu';
-import {EV} from '../events/mouseandtouchevents.js';
-
+import Panel from "./panel.js";
+import { UiEventType } from "../events/uieventtype.js";
+import { replaceNode, splitScripts } from "../dom/utils.js";
+import { whatType } from "badu";
+import { EV } from "../events/mouseandtouchevents.js";
 
 /** @typedef {{
  *     href: (string|undefined),
@@ -11,7 +10,7 @@ import {EV} from '../events/mouseandtouchevents.js';
  *     pk: (string|undefined),
  *     }}
  */
-let ServerFormSuccessJsonType;
+let _ServerFormSuccessJsonType;
 
 /**
  * A specialized Panel for handling forms with validation, submission interception,
@@ -55,7 +54,6 @@ class FormPanel extends Panel {
    * @private
    */
   #fMap = new Map();
-
 
   #intercept = true;
 
@@ -109,7 +107,6 @@ class FormPanel extends Panel {
     //  * @type {?function(!FormPanel): (boolean|Promise<boolean>)}
     //  */
     // this.customValidation = null;
-
   }
 
   /**
@@ -134,8 +131,7 @@ class FormPanel extends Panel {
     //   this.#captureOriginalFormData();
     //   this.#setupChangeTracking();
     // }
-  };
-
+  }
 
   /**
    * Internal method to identify the form element and set up interception.
@@ -147,8 +143,7 @@ class FormPanel extends Panel {
       this.#interceptFormSubmit(this.#form);
       this.#initFieldValidation();
     }
-  };
-
+  }
 
   /**
    * @param {string=} string The id of the form we want to sterilise.
@@ -156,15 +151,15 @@ class FormPanel extends Panel {
    */
   getFormFromId(string) {
     let form = null;
-    let el = this.getElement().querySelector('form');
+    let el = this.getElement().querySelector("form");
     if (string) {
-      el = document.getElementById(/** @type {string} */(string)) || el;
+      el = document.getElementById(/** @type {string} */ (string)) || el;
     }
-    if (el && el.tagName.toLowerCase() === 'form') {
+    if (el && el.tagName.toLowerCase() === "form") {
       form = /** @type {HTMLFormElement} */ (el);
     }
     return form;
-  };
+  }
 
   //--[ Field Validation Methods ]--
   /**
@@ -174,22 +169,31 @@ class FormPanel extends Panel {
    */
   #initFieldValidation() {
     if (this.#form) {
+      this.listen(
+        this.#form,
+        EV.CHANGE,
+        (e) => {
+          this.#validateOnChange(e);
+        },
+        { passive: true },
+      );
 
-      this.listen(this.#form, EV.CHANGE, e => {
-        this.#validateOnChange(e);
-      }, {passive: true});
-
-      this.listen(this.#form, EV.INPUT, e => {
+      this.listen(this.#form, EV.INPUT, (e) => {
         this.clearAllValidationErrors();
         this.#validateOnChange(e);
       });
 
-      this.listen(this.#form, EV.INVALID, e => {
-        e.preventDefault();
-        const field = /** @type {HTMLInputElement} */ (e.target);
-        this.#clearAlertOnField(field);
-        this.displayFieldError(field);
-      }, {passive: true});
+      this.listen(
+        this.#form,
+        EV.INVALID,
+        (e) => {
+          e.preventDefault();
+          const field = /** @type {HTMLInputElement} */ (e.target);
+          this.#clearAlertOnField(field);
+          this.displayFieldError(field);
+        },
+        { passive: true },
+      );
     }
   }
 
@@ -199,11 +203,10 @@ class FormPanel extends Panel {
    * @return {boolean} True if all fields are valid, false otherwise
    */
   checkAllFields() {
-
     const arr = [...this.#form.elements]
-      .map(e => [this.#checkValidationForField(e), e])
-      .filter(e => !e[0]);
-    arr.forEach(e => this.displayFieldError(e[1]));
+      .map((e) => [this.#checkValidationForField(e), e])
+      .filter((e) => !e[0]);
+    arr.forEach((e) => this.displayFieldError(e[1]));
     return arr.length === 0;
   }
 
@@ -212,10 +215,10 @@ class FormPanel extends Panel {
    */
   clearAllValidationErrors() {
     const fields = this.#form ? this.#form.elements : [];
-    [...fields].forEach(field => this.#clearAlertOnField(field));
+    [...fields].forEach((field) => this.#clearAlertOnField(field));
 
-    const nonFieldErrs = this.#form.querySelectorAll('.non-field-errors');
-    [...nonFieldErrs].forEach(e => e.classList.remove('alert-error'));
+    const nonFieldErrs = this.#form.querySelectorAll(".non-field-errors");
+    [...nonFieldErrs].forEach((e) => e.classList.remove("alert-error"));
   }
 
   /**
@@ -226,8 +229,8 @@ class FormPanel extends Panel {
    * @private
    */
   displayAlert_(field, msg, _css) {
-    const alertDom = document.getElementById(`${field.id}-helper-text`) ||
-      document.createElement('p');
+    const alertDom =
+      document.getElementById(`${field.id}-helper-text`) || document.createElement("p");
     alertDom.textContent = msg;
     this.#fMap.set(field, alertDom);
   }
@@ -253,9 +256,9 @@ class FormPanel extends Panel {
    * @private
    */
   #clearAlertOnField(field) {
-    field.classList.remove('error');
+    field.classList.remove("error");
     if (this.#fMap.has(field)) {
-      this.#fMap.get(field).textContent = '';
+      this.#fMap.get(field).textContent = "";
     }
     this.#fMap.delete(field);
   }
@@ -267,8 +270,8 @@ class FormPanel extends Panel {
    */
   displayFieldError(field, opt_msg) {
     const message = opt_msg || field.validationMessage;
-    field.classList.add('error');
-    this.displayAlert_(field, message, 'alert-error');
+    field.classList.add("error");
+    this.displayAlert_(field, message, "alert-error");
   }
 
   /**
@@ -277,7 +280,7 @@ class FormPanel extends Panel {
    * @param {string} message
    */
   displayFieldSuccess(field, message) {
-    this.displayAlert_(field, message, 'alert-success');
+    this.displayAlert_(field, message, "alert-success");
   }
 
   /**
@@ -286,7 +289,7 @@ class FormPanel extends Panel {
    * @param {string} message
    */
   displayFieldInfo(field, message) {
-    this.displayAlert_(field, message, 'alert-info');
+    this.displayAlert_(field, message, "alert-info");
   }
 
   /**
@@ -314,9 +317,9 @@ class FormPanel extends Panel {
       form.noValidate = true;
 
       const user = this.user;
-      this.listen(form, EV.SUBMIT, e => {
+      this.listen(form, EV.SUBMIT, (e) => {
         e.preventDefault();
-        this.debugMe('Intercepted from SUBMIT');
+        this.debugMe("Intercepted from SUBMIT");
 
         // TODO: Add custom validation hook
         // if (this.customValidation) {
@@ -345,8 +348,7 @@ class FormPanel extends Panel {
       });
     }
     return form;
-  };
-
+  }
 
   //--[ Round Trip ]--
   /**
@@ -354,7 +356,7 @@ class FormPanel extends Panel {
    */
   onSubmitSuccess(func) {
     this.onSubmitSucFunc = func;
-  };
+  }
 
   /**
    * Given a 'fetch' reply, replace the form.
@@ -363,7 +365,6 @@ class FormPanel extends Panel {
    * @param {string} reply
    */
   replaceForm(reply) {
-
     this.responseObject = splitScripts(reply);
     if (this.responseObject.html) {
       if (this.redirected) {
@@ -375,28 +376,26 @@ class FormPanel extends Panel {
         parent.replaceChild(this.getElement(), el);
       } else {
         // Just replace the form component.
-        const newForm = /** @type {!Element} */ (this.responseObject.html)
-          .querySelector('form');
+        const newForm = /** @type {!Element} */ (this.responseObject.html).querySelector("form");
         if (newForm) {
           replaceNode(newForm, this.#form);
         }
 
         // Forms have randomIDs so the submit button must come along...
         // Sadly :(
-        const newSubmit = /** @type {!Element} */ (this.responseObject.html)
-          .querySelector('button[type="submit"]');
-        const oldSubmit = /** @type {!Element} */ (this.getElement())
-          .querySelector('button[type="submit"]');
+        const newSubmit = /** @type {!Element} */ (this.responseObject.html).querySelector(
+          'button[type="submit"]',
+        );
+        const oldSubmit = /** @type {!Element} */ (this.getElement()).querySelector(
+          'button[type="submit"]',
+        );
         if (newSubmit && oldSubmit) {
           replaceNode(newSubmit, oldSubmit);
         }
-
-
       }
       this.enterDocument();
     }
-  };
-
+  }
 
   /**
    * Expects HTML data from a call to the back.
@@ -406,23 +405,23 @@ class FormPanel extends Panel {
     const usr = this.user;
     const uri = this.uri;
     if (usr) {
-      return usr.fetch(uri, this.abortController.signal).then(
-        s => this.replaceForm(s));
+      return usr.fetch(uri, this.abortController.signal).then((s) => this.replaceForm(s));
     } else {
-      return Promise.reject(new Error('No UserManager instance available for FormPanel.refreshFromFromServer()'));
+      return Promise.reject(
+        new Error("No UserManager instance available for FormPanel.refreshFromFromServer()"),
+      );
     }
-  };
+  }
 
   /**
    * @param {string} reply
    * @return {Promise}
    */
   processSubmitReply(reply) {
-
     this.clearAllValidationErrors();
     let success = false;
 
-    if (whatType(reply) === 'object' && reply['success']) {
+    if (whatType(reply) === "object" && reply["success"]) {
       return Promise.resolve(this).then(() => {
         this.onSubmitSucFunc(this, reply);
         this.dispatchCompEvent(UiEventType.FORM_SUBMIT_SUCCESS);
@@ -431,14 +430,14 @@ class FormPanel extends Panel {
 
     // WTF is GOING ON HERE JAN??!
     // This reeks to high heavens.
-    if (reply === 'success') {
+    if (reply === "success") {
       this.debugMe(`
       1.REDIRECTED: ${this.redirected}
       REPLY: ${reply}`);
       // We are done.
       // Nothing further to do here.
       success = true;
-    } else if (reply === 'redirected_success\n') {
+    } else if (reply === "redirected_success\n") {
       this.debugMe(`
       2.REDIRECTED: ${this.redirected}
       REPLY: ${reply}`);
@@ -491,7 +490,7 @@ class FormPanel extends Panel {
       // const errorCount = this.#form?.querySelectorAll('.alert-error').length || 0;
       // return Promise.reject(new Error(`Form validation failed: ${errorCount} error(s) found`));
     }
-  };
+  }
 }
 
 export default FormPanel;

@@ -5,26 +5,26 @@
  * Uses namespace imports to reduce verbosity.
  */
 
-import * as table from './table.js';
-import * as pagination from './table-pagination.js';
-import * as modal from './modal.js';
-import * as menu from './menu.js';
-import * as button from './button.js';
-import * as dropdown from './dropdown.js';
-import * as datePicker from './date-picker.js';
-import * as fileUploader from './file-uploader.js';
-import * as tabs from './tabs.js';
-import * as breadcrumb from './breadcrumb.js';
-import * as formInputs from './form-inputs.js';
-import * as formControls from './form-controls.js';
-import * as tags from './tags.js';
-import * as lists from './lists.js';
-import * as notifications from './notifications.js';
-import * as tiles from './tiles.js';
-import * as progress from './progress.js';
-import * as tooltips from './tooltips.js';
-import * as misc from './misc.js';
-import * as presentational from './presentational.js';
+import * as table from "./table.js";
+import * as pagination from "./table-pagination.js";
+import * as modal from "./modal.js";
+import * as menu from "./menu.js";
+import * as button from "./button.js";
+import * as dropdown from "./dropdown.js";
+import * as datePicker from "./date-picker.js";
+import * as fileUploader from "./file-uploader.js";
+import * as tabs from "./tabs.js";
+import * as breadcrumb from "./breadcrumb.js";
+import * as formInputs from "./form-inputs.js";
+import * as formControls from "./form-controls.js";
+import * as tags from "./tags.js";
+import * as lists from "./lists.js";
+import * as notifications from "./notifications.js";
+import * as tiles from "./tiles.js";
+import * as progress from "./progress.js";
+import * as tooltips from "./tooltips.js";
+import * as misc from "./misc.js";
+import * as presentational from "./presentational.js";
 
 /**
  * Extract all component wrappers from a module.
@@ -35,7 +35,7 @@ import * as presentational from './presentational.js';
  */
 function extractWrappers(module) {
   return Object.values(module).filter(
-    item => typeof item === 'object' && item !== null && item.selector
+    (item) => typeof item === "object" && item !== null && item.selector,
   );
 }
 
@@ -75,7 +75,7 @@ export const components = [
 export function buildComponentMap() {
   const componentMap = new Map();
 
-  components.forEach(component => {
+  components.forEach((component) => {
     componentMap.set(component.selector, component);
   });
 

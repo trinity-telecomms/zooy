@@ -1,5 +1,5 @@
-import {isDefAndNotNull} from 'badu';
-import {both, has, path} from 'ramda';
+import { isDefAndNotNull } from "badu";
+import { both, has, path } from "ramda";
 
 /**
  * Default formatters (minimal - add as needed).
@@ -34,19 +34,19 @@ const DEFAULT_FORMATTERS = {
    *        zoo-bind-tpl="$${(value / 100).toFixed(2)}">
    */
   tpl: (value, data, element) => {
-    const template = element?.getAttribute('zoo-bind-attr-tpl') || element?.getAttribute('zoo-bind-tpl');
+    const template =
+      element?.getAttribute("zoo-bind-attr-tpl") || element?.getAttribute("zoo-bind-tpl");
     if (!template) return value;
 
     // Use Function constructor to evaluate template literal
     // Available variables: value, data
     try {
-      return new Function('value', 'data', `return \`${template}\`;`)(value, data);
+      return new Function("value", "data", `return \`${template}\`;`)(value, data);
     } catch (e) {
-      console.warn('[Binder] Invalid template:', template, e);
+      console.warn("[Binder] Invalid template:", template, e);
       return value;
     }
-  }
-
+  },
 };
 
 export class Binder {
@@ -70,17 +70,17 @@ export class Binder {
   constructor(panel, url, rootEl, options = {}) {
     // Validate required parameters
     if (!url) {
-      throw new Error('Binder requires a URL');
+      throw new Error("Binder requires a URL");
     }
     if (!rootEl || !(rootEl instanceof Element)) {
-      throw new Error('Binder requires a valid rootEl Element');
+      throw new Error("Binder requires a valid rootEl Element");
     }
 
     // Store configuration
     this.#panel = panel;
     this.#url = new URL(url, window.location.origin);
     this.#rootEl = rootEl;
-    this.#formatters = {...DEFAULT_FORMATTERS, ...options.formatters};
+    this.#formatters = { ...DEFAULT_FORMATTERS, ...options.formatters };
 
     // Apply initial URL params if provided
     if (options.urlParams) {
@@ -99,25 +99,25 @@ export class Binder {
   }
 
   get limit() {
-    return parseInt(this.#url.searchParams.get('limit') || '0', 10);
+    return parseInt(this.#url.searchParams.get("limit") || "0", 10);
   }
 
   get offset() {
-    return parseInt(this.#url.searchParams.get('offset') || '0', 10);
+    return parseInt(this.#url.searchParams.get("offset") || "0", 10);
   }
 
   get isPaginated() {
-    return both(has('count'), has('results'))(this.#data);
+    return both(has("count"), has("results"))(this.#data);
   }
 
   #setUrlParams(params) {
     Object.entries(params).forEach(([key, value]) => {
-      if (!isDefAndNotNull(value) || value === '' || (Array.isArray(value) && value.length < 1)) {
+      if (!isDefAndNotNull(value) || value === "" || (Array.isArray(value) && value.length < 1)) {
         this.#url.searchParams.delete(key);
         return;
       }
       if (Array.isArray(value)) {
-        this.#url.searchParams.set(key, value.join(','));
+        this.#url.searchParams.set(key, value.join(","));
         return;
       }
       this.#url.searchParams.set(key, value);
@@ -136,8 +136,8 @@ export class Binder {
    */
   #updateBinderUrlAttributes() {
     const urlString = this.#url.href.split(this.url.origin)[1].slice(1);
-    this.#rootEl.querySelectorAll('[zoo-bind-binderurl]').forEach(el => {
-      el.setAttribute('zoo-bind-binderurl', urlString);
+    this.#rootEl.querySelectorAll("[zoo-bind-binderurl]").forEach((el) => {
+      el.setAttribute("zoo-bind-binderurl", urlString);
     });
   }
 
@@ -151,7 +151,9 @@ export class Binder {
    */
   async fetchData(urlParams = {}) {
     const json = await this.#panel.user.fetchJson(
-      this.#setUrlParams(urlParams).toString(), this.#panel.abortController.signal);
+      this.#setUrlParams(urlParams).toString(),
+      this.#panel.abortController.signal,
+    );
     this.setData(json);
   }
 
@@ -190,7 +192,7 @@ export class Binder {
    */
   render() {
     if (!isDefAndNotNull(this.#data)) {
-      console.warn('[Binder] No data to render');
+      console.warn("[Binder] No data to render");
       return;
     }
 
@@ -219,14 +221,14 @@ export class Binder {
   #renderSimpleBindings(element, data, index = 0, options = {}) {
     const removeAttributes = options.removeAttributes ?? false;
 
-    element.querySelectorAll('[zoo-bind-attr]').forEach(el => {
-      if (el.closest('[zoo-template]')) return;
+    element.querySelectorAll("[zoo-bind-attr]").forEach((el) => {
+      if (el.closest("[zoo-template]")) return;
 
-      const bindings = el.getAttribute('zoo-bind-attr');
+      const bindings = el.getAttribute("zoo-bind-attr");
 
-      bindings.split(',').forEach(binding => {
-        const [attr, pathAndFormat] = binding.split(':').map(s => s.trim());
-        const [path, format] = pathAndFormat.split('|').map(s => s.trim());
+      bindings.split(",").forEach((binding) => {
+        const [attr, pathAndFormat] = binding.split(":").map((s) => s.trim());
+        const [path, format] = pathAndFormat.split("|").map((s) => s.trim());
         let value = this.#getValue(data, path, index);
         if (format && this.#formatters[format]) {
           value = this.#formatters[format](value, data, el);
@@ -236,27 +238,26 @@ export class Binder {
         }
       });
       if (removeAttributes) {
-        el.removeAttribute('zoo-bind-attr');
-        el.removeAttribute('zoo-bind-attr-tpl');
+        el.removeAttribute("zoo-bind-attr");
+        el.removeAttribute("zoo-bind-attr-tpl");
       }
     });
 
-    element.querySelectorAll('[zoo-bind]').forEach(el => {
-      if (el.closest('[zoo-template]')) return;
+    element.querySelectorAll("[zoo-bind]").forEach((el) => {
+      if (el.closest("[zoo-template]")) return;
 
-      const binding = el.getAttribute('zoo-bind');
-      const [path, format] = binding.split('|').map(s => s.trim());
+      const binding = el.getAttribute("zoo-bind");
+      const [path, format] = binding.split("|").map((s) => s.trim());
       let value = this.#getValue(data, path, index);
       if (format && this.#formatters[format]) {
         value = this.#formatters[format](value, data, el);
       }
-      el.textContent = value ?? '';
+      el.textContent = value ?? "";
       if (removeAttributes) {
-        el.removeAttribute('zoo-bind');
-        el.removeAttribute('zoo-bind-tpl');
+        el.removeAttribute("zoo-bind");
+        el.removeAttribute("zoo-bind-tpl");
       }
     });
-
   }
 
   /**
@@ -265,32 +266,32 @@ export class Binder {
    * @private
    */
   #renderTemplateConsumers() {
-    const consumers = this.#rootEl.querySelectorAll('[zoo-template]');
+    const consumers = this.#rootEl.querySelectorAll("[zoo-template]");
 
-    consumers.forEach(consumer => {
-      const templateId = consumer.getAttribute('zoo-template');
-      const dataPath = consumer.getAttribute('zoo-template-bind');
+    consumers.forEach((consumer) => {
+      const templateId = consumer.getAttribute("zoo-template");
+      const dataPath = consumer.getAttribute("zoo-template-bind");
 
       if (!templateId) {
-        console.warn('[Binder] Consumer missing template ID', consumer);
+        console.warn("[Binder] Consumer missing template ID", consumer);
         return;
       }
 
       // Get template element
       const template = this.#rootEl.querySelector(`#${templateId}`);
-      if (!template || template.tagName !== 'TEMPLATE') {
+      if (!template || template.tagName !== "TEMPLATE") {
         console.error(`[DataBinder] Template not found or invalid: ${templateId}`);
         return;
       }
 
       // Extract data slice for this consumer
-      const dataSlice = dataPath ?
-        path(dataPath.split('.'), this.#data) :
-        this.#data;
+      const dataSlice = dataPath ? path(dataPath.split("."), this.#data) : this.#data;
 
       // Validate it's defined
       if (!dataSlice) {
-        console.warn(`[DataBinder] Data slice is undefined. Path: ${dataPath}. Skipping render for this consumer.`);
+        console.warn(
+          `[DataBinder] Data slice is undefined. Path: ${dataPath}. Skipping render for this consumer.`,
+        );
         return;
       }
 
@@ -301,7 +302,7 @@ export class Binder {
       }
 
       // Clear consumer and render items
-      consumer.innerHTML = '';
+      consumer.innerHTML = "";
 
       dataSlice.forEach((item, index) => {
         const clone = this.#renderTemplateItem(template, item, index);
@@ -326,7 +327,7 @@ export class Binder {
     // Use unified rendering with template-specific options:
     // - removeAttributes: true (clean up binding attributes after processing)
     this.#renderSimpleBindings(clone, item, index, {
-      removeAttributes: true
+      removeAttributes: true,
     });
 
     return clone;
@@ -349,16 +350,16 @@ export class Binder {
    */
   #getValue(obj, pathString, index) {
     const specialVars = {
-      '$index': () => index,
-      '$index__paged': () => this.offset + index,
-      '$index1': () => index + 1,
-      '$index1__paged': () => this.offset + index + 1
+      $index: () => index,
+      $index__paged: () => this.offset + index,
+      $index1: () => index + 1,
+      $index1__paged: () => this.offset + index + 1,
     };
 
     if (specialVars[pathString]) {
       return specialVars[pathString]();
     }
 
-    return path(pathString.split('.'), obj);
+    return path(pathString.split("."), obj);
   }
 }

@@ -4,7 +4,7 @@
  * Handles progress bars, progress indicators, and inline loading.
  */
 
-import {getSemanticAttributes} from '../../zoo/index.js';
+import { getSemanticAttributes } from "../../zoo/index.js";
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -13,13 +13,12 @@ import {getSemanticAttributes} from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/inline-loading/inline-loading.js').default} CDSInlineLoading
  */
 
-
 /**
  * Progress Bar - monitors for completion
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSProgressBar): void}}
  */
 export const cdsProgressBarWrap = {
-  selector: 'cds-progress-bar',
+  selector: "cds-progress-bar",
 
   /**
    * @param {CDSProgressBar} progressBar - The CDSProgressBar custom element instance
@@ -30,26 +29,26 @@ export const cdsProgressBarWrap = {
 
     if (attrs.event) {
       const observer = new MutationObserver(() => {
-        const value = parseFloat(progressBar.getAttribute('value') || '0');
-        const max = parseFloat(progressBar.getAttribute('max') || '100');
+        const value = parseFloat(progressBar.getAttribute("value") || "0");
+        const max = parseFloat(progressBar.getAttribute("max") || "100");
 
         if (value >= max) {
           this.dispatchPanelEvent(attrs.event, {
             ...attrs,
             value: value,
-            status: 'complete'
+            status: "complete",
           });
         }
       });
 
       observer.observe(progressBar, {
         attributes: true,
-        attributeFilter: ['value']
+        attributeFilter: ["value"],
       });
 
       progressBar._progressObserver = observer;
     }
-  }
+  },
 };
 
 /**
@@ -57,7 +56,7 @@ export const cdsProgressBarWrap = {
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSProgressIndicator): void}}
  */
 export const cdsProgressIndicatorWrap = {
-  selector: 'cds-progress-indicator',
+  selector: "cds-progress-indicator",
 
   /**
    * @param {CDSProgressIndicator} indicator - The CDSProgressIndicator custom element instance
@@ -66,7 +65,7 @@ export const cdsProgressIndicatorWrap = {
   init: function (indicator) {
     const attrs = getSemanticAttributes(indicator);
 
-    this.listen(indicator, 'cds-progress-step-click', e => {
+    this.listen(indicator, "cds-progress-step-click", (e) => {
       // Get attributes from the clicked step
       const step = e.target;
       const stepAttrs = getSemanticAttributes(step);
@@ -76,20 +75,20 @@ export const cdsProgressIndicatorWrap = {
         this.dispatchPanelEvent(eventName, {
           ...attrs,
           ...stepAttrs,
-          stepIndex: step.getAttribute('data-index'),
-          stepLabel: step.getAttribute('label')
+          stepIndex: step.getAttribute("data-index"),
+          stepLabel: step.getAttribute("label"),
         });
       }
     });
-  }
-}
+  },
+};
 
 /**
  * Inline Loading - Loading indicator for inline actions (e.g., form submit)
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSInlineLoading): void}}
  */
 export const cdsInlineLoadingWrap = {
-  selector: 'cds-inline-loading',
+  selector: "cds-inline-loading",
 
   /**
    * @param {CDSInlineLoading} inlineLoading - The CDSInlineLoading custom element instance
@@ -101,25 +100,25 @@ export const cdsInlineLoadingWrap = {
     // Success event - fires when status changes to 'finished'
     const successEvent = attrs.event;
     if (successEvent) {
-      this.listen(inlineLoading, 'cds-inline-loading-onsuccess', _ => {
+      this.listen(inlineLoading, "cds-inline-loading-onsuccess", (_) => {
         this.dispatchPanelEvent(successEvent, {
           ...attrs,
-          status: 'finished'
+          status: "finished",
         });
       });
     }
 
     // Status change event (optional) - fires on any status change
-    const statusEvent = inlineLoading.getAttribute('status-event');
+    const statusEvent = inlineLoading.getAttribute("status-event");
     if (statusEvent) {
       // Monitor status attribute changes
       const observer = new MutationObserver((mutations) => {
-        mutations.forEach(mutation => {
-          if (mutation.attributeName === 'status') {
-            const status = inlineLoading.getAttribute('status');
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === "status") {
+            const status = inlineLoading.getAttribute("status");
             this.dispatchPanelEvent(statusEvent, {
               ...attrs,
-              status: status
+              status: status,
             });
           }
         });
@@ -127,10 +126,10 @@ export const cdsInlineLoadingWrap = {
 
       observer.observe(inlineLoading, {
         attributes: true,
-        attributeFilter: ['status']
+        attributeFilter: ["status"],
       });
 
       inlineLoading._statusObserver = observer;
     }
-  }
+  },
 };

@@ -4,7 +4,7 @@
  * Handles tooltips, popovers, and toggletips.
  */
 
-import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
+import { getSemanticAttributes, getEventAttribute } from "../../zoo/index.js";
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -13,13 +13,12 @@ import {getSemanticAttributes, getEventAttribute} from '../../zoo/index.js';
  * @typedef {import('@carbon/web-components/es/components/toggle-tip/toggletip.js').default} CDSToggletip
  */
 
-
 /**
  * Tool Tip
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSTooltip): void}}
  */
 export const cdsTooltipWrap = {
-  selector: 'cds-tooltip',
+  selector: "cds-tooltip",
 
   /**
    * @param {CDSTooltip} tooltip - The CDSTooltip custom element instance
@@ -29,26 +28,26 @@ export const cdsTooltipWrap = {
     const attrs = getSemanticAttributes(tooltip);
 
     // Listen for tooltip open/close
-    const openEvent = getEventAttribute(tooltip, 'open-event');
+    const openEvent = getEventAttribute(tooltip, "open-event");
     if (openEvent) {
-      this.listen(tooltip, 'cds-tooltip-beingopened', _ => {
+      this.listen(tooltip, "cds-tooltip-beingopened", (_) => {
         this.dispatchPanelEvent(openEvent, {
           ...attrs,
-          action: 'opened'
+          action: "opened",
         });
       });
     }
 
-    const closeEvent = getEventAttribute(tooltip, 'close-event');
+    const closeEvent = getEventAttribute(tooltip, "close-event");
     if (closeEvent) {
-      this.listen(tooltip, 'cds-tooltip-closed', _ => {
+      this.listen(tooltip, "cds-tooltip-closed", (_) => {
         this.dispatchPanelEvent(closeEvent, {
           ...attrs,
-          action: 'closed'
+          action: "closed",
         });
       });
     }
-  }
+  },
 };
 
 /**
@@ -56,7 +55,7 @@ export const cdsTooltipWrap = {
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSPopover): void}}
  */
 export const cdsPopoverWrap = {
-  selector: 'cds-popover',
+  selector: "cds-popover",
 
   /**
    * @param {CDSPopover} popover - The CDSPopover custom element instance
@@ -66,35 +65,34 @@ export const cdsPopoverWrap = {
     const attrs = getSemanticAttributes(popover);
 
     // Listen for popover open/close
-    const openEvent = getEventAttribute(popover, 'open-event');
+    const openEvent = getEventAttribute(popover, "open-event");
     if (openEvent) {
-      this.listen(popover, 'cds-popover-beingopened', _ => {
+      this.listen(popover, "cds-popover-beingopened", (_) => {
         this.dispatchPanelEvent(openEvent, {
           ...attrs,
-          action: 'opened'
+          action: "opened",
         });
       });
     }
 
-    const closeEvent = getEventAttribute(popover, 'close-event');
+    const closeEvent = getEventAttribute(popover, "close-event");
     if (closeEvent) {
-      this.listen(popover, 'cds-popover-closed', _ => {
+      this.listen(popover, "cds-popover-closed", (_) => {
         this.dispatchPanelEvent(closeEvent, {
           ...attrs,
-          action: 'closed'
+          action: "closed",
         });
       });
     }
-  }
-}
-
+  },
+};
 
 /**
  * Toggletip - tooltip that stays open until dismissed
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSToggletip): void}}
  */
 export const cdsToggletipWrap = {
-  selector: 'cds-toggletip',
+  selector: "cds-toggletip",
 
   /**
    * @param {CDSToggletip} toggletip - The CDSToggletip custom element instance
@@ -106,13 +104,13 @@ export const cdsToggletipWrap = {
     // Monitor open/close state changes
     if (attrs.event) {
       const observer = new MutationObserver((mutations) => {
-        mutations.forEach(mutation => {
-          if (mutation.attributeName === 'open') {
-            const isOpen = toggletip.hasAttribute('open');
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === "open") {
+            const isOpen = toggletip.hasAttribute("open");
             this.dispatchPanelEvent(attrs.event, {
               ...attrs,
-              action: isOpen ? 'opened' : 'closed',
-              open: isOpen
+              action: isOpen ? "opened" : "closed",
+              open: isOpen,
             });
           }
         });
@@ -120,10 +118,10 @@ export const cdsToggletipWrap = {
 
       observer.observe(toggletip, {
         attributes: true,
-        attributeFilter: ['open']
+        attributeFilter: ["open"],
       });
 
       toggletip._toggletipObserver = observer;
     }
-  }
-}
+  },
+};

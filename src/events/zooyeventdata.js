@@ -1,6 +1,5 @@
 //--[ Standard component event data]--
 export default class ZooyEventData {
-
   constructor(value, opt_data) {
     /**
      * @type {string|number}

@@ -1,6 +1,4 @@
-import {
-  identity, isArray, isDefAndNotNull, isNumber, isString, pathOr, toNumber
-} from 'badu';
+import { identity, isArray, isDefAndNotNull, isNumber, isString, pathOr, toNumber } from "badu";
 
 /**
  * Native implementation to format a date as relative time (e.g., "5 minutes ago")
@@ -13,13 +11,13 @@ const format = (date) => {
   const diffInSeconds = Math.floor((now - date) / 1000);
 
   const units = [
-    { name: 'year', seconds: 31536000 },
-    { name: 'month', seconds: 2592000 },
-    { name: 'week', seconds: 604800 },
-    { name: 'day', seconds: 86400 },
-    { name: 'hour', seconds: 3600 },
-    { name: 'minute', seconds: 60 },
-    { name: 'second', seconds: 1 }
+    { name: "year", seconds: 31536000 },
+    { name: "month", seconds: 2592000 },
+    { name: "week", seconds: 604800 },
+    { name: "day", seconds: 86400 },
+    { name: "hour", seconds: 3600 },
+    { name: "minute", seconds: 60 },
+    { name: "second", seconds: 1 },
   ];
 
   // Handle future dates
@@ -28,23 +26,23 @@ const format = (date) => {
     for (const unit of units) {
       const value = Math.floor(absDiff / unit.seconds);
       if (value >= 1) {
-        const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+        const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
         return rtf.format(value, unit.name);
       }
     }
-    return 'just now';
+    return "just now";
   }
 
   // Handle past dates
   for (const unit of units) {
     const value = Math.floor(diffInSeconds / unit.seconds);
     if (value >= 1) {
-      const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+      const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
       return rtf.format(-value, unit.name);
     }
   }
 
-  return 'just now';
+  return "just now";
 };
 
 /**
@@ -65,7 +63,9 @@ const getInputChecked_ = function (el) {
  */
 const getSelectSingle_ = function (el) {
   const selectedIndex = /** @type {!HTMLSelectElement} */ (el).selectedIndex;
-  return selectedIndex >= 0 ? /** @type {!HTMLSelectElement} */ (el).options[selectedIndex].value : null;
+  return selectedIndex >= 0
+    ? /** @type {!HTMLSelectElement} */ (el).options[selectedIndex].value
+    : null;
 };
 
 /**
@@ -94,19 +94,18 @@ export const getValue = function (el) {
   // Elements with a type may need more specialized logic.
   const type = /** @type {!HTMLInputElement} */ (el).type;
   switch (isString(type) && type.toLowerCase()) {
-    case 'checkbox':
-    case 'radio':
+    case "checkbox":
+    case "radio":
       return getInputChecked_(el);
-    case 'select-one':
+    case "select-one":
       return getSelectSingle_(el);
-    case 'select-multiple':
+    case "select-multiple":
       return getSelectMultiple_(el);
     default:
       // Not every element with a value has a type (e.g. meter and progress).
       return el.value !== null && el.value !== undefined ? el.value : null;
   }
 };
-
 
 /**
  * Converts a set of form elements to an object with form names, as keys,
@@ -116,11 +115,11 @@ export const getValue = function (el) {
  * @param elements
  * @returns {*|(function(*, *): *)}
  */
-export const formToJSON = elements => [...elements].reduce((data, element) => {
-  data[element.name] = element.value;
-  return data;
-}, {});
-
+export const formToJSON = (elements) =>
+  [...elements].reduce((data, element) => {
+    data[element.name] = element.value;
+    return data;
+  }, {});
 
 /**
  * Replaces a node in the DOM tree. Will do nothing if `oldNode` has no
@@ -135,13 +134,12 @@ export const replaceNode = (newNode, oldNode) => {
   }
 };
 
-
 /**
  * Removes a node from its parent.
  * @param {!Node|undefined} node The node to remove.
  * @return {Node} The node removed if removed; else, null.
  */
-export const removeNode = node => {
+export const removeNode = (node) => {
   return node && node.parentNode ? node.parentNode.removeChild(node) : null;
 };
 
@@ -161,18 +159,17 @@ export const insertSiblingAfter = (newNode, refNode) => {
  * @param {!Node} node
  * @return {boolean}
  */
-export const isInPage = node => {
-  return (node === document.body) ? false : document.body.contains(node);
+export const isInPage = (node) => {
+  return node === document.body ? false : document.body.contains(node);
 };
 
 /**
  * @param {!HTMLElement} el
  * @return {!Array<number>}
  */
-export const getPos = el => {
+export const getPos = (el) => {
   return [el.offsetLeft, el.offsetTop];
 };
-
 
 /**
  * Make a random RGBA colour string.
@@ -181,13 +178,15 @@ export const getPos = el => {
  * @param {number=} opt_a
  * @return {string}
  */
-export const randomColour = opt_a => {
-  return [1, 2, 3].map(() => Math.floor(Math.random() * 256) + 1)
-    .reduce((p, c) => `${p}${c},`, 'rgba(') + `${opt_a ? opt_a : 0.5}`;
+export const randomColour = (opt_a) => {
+  return (
+    [1, 2, 3]
+      .map(() => Math.floor(Math.random() * 256) + 1)
+      .reduce((p, c) => `${p}${c},`, "rgba(") + `${opt_a ? opt_a : 0.5}`
+  );
 };
 
-
-export const totalWidth = el => {
+export const totalWidth = (el) => {
   const s = window.getComputedStyle(el);
   const width = el.offsetWidth;
   const margin = parseFloat(s.marginLeft) + parseFloat(s.marginRight);
@@ -196,7 +195,7 @@ export const totalWidth = el => {
   return width + margin - padding + border;
 };
 
-export const totalHeight = el => {
+export const totalHeight = (el) => {
   const s = window.getComputedStyle(el);
   const height = el.offsetHeight;
   const margin = parseFloat(s.marginTop) + parseFloat(s.marginBottom);
@@ -204,7 +203,6 @@ export const totalHeight = el => {
   const border = parseFloat(s.borderTopWidth) + parseFloat(s.borderBottomWidth);
   return height + margin - padding + border;
 };
-
 
 /**
  * Evaluates each of the scripts in the ajaxScriptsStrings_ map in turn.
@@ -219,15 +217,14 @@ export const totalHeight = el => {
  * @param {!Component} comp
  * @return {function(?NodeList)}
  */
-export const evalScripts = comp => arr => {
-  arr && Array.from(arr).forEach(s => {
-    (function () {
-
-      eval(s.text);
-    }).bind(comp)();
-  });
+export const evalScripts = (comp) => (arr) => {
+  arr &&
+    Array.from(arr).forEach((s) => {
+      (function () {
+        eval(s.text);
+      }).bind(comp)();
+    });
 };
-
 
 /**
  * Module scripts can not be evaluated with a given scope. The only way we can
@@ -238,30 +235,30 @@ export const evalScripts = comp => arr => {
  * @param comp
  * @returns {Function}
  */
-export const evalModules = comp => arr => {
-  arr && Array.from(arr).forEach(e => {
-    (function () {
-      const script = document.createElement('script');
-      script.type = 'module';
-      script.textContent = e.textContent;
-      const el = comp.getElement();
+export const evalModules = (comp) => (arr) => {
+  arr &&
+    Array.from(arr).forEach((e) => {
+      (function () {
+        const script = document.createElement("script");
+        script.type = "module";
+        script.textContent = e.textContent;
+        const el = comp.getElement();
 
-      // Convoluted way to access to this component in the script
-      // If the original script tag contained a date-set declaration named
-      // "zv_comp_access", then we park component access inside the component
-      // root element under the key: zvComponent, and add a class to that
-      // element so a querySelector(`${zv_comp_access}`) will find the
-      // correct element from where we can then get to the panel.
-      const zvPanelAccess = getElDataMap(e)['zv_comp_access'];
-      if (zvPanelAccess) {
-        el.zvComponent = comp;
-        el.classList.add(zvPanelAccess);
-      }
-      el.appendChild(script);
-    }).bind(comp)();
-  });
+        // Convoluted way to access to this component in the script
+        // If the original script tag contained a date-set declaration named
+        // "zv_comp_access", then we park component access inside the component
+        // root element under the key: zvComponent, and add a class to that
+        // element so a querySelector(`${zv_comp_access}`) will find the
+        // correct element from where we can then get to the panel.
+        const zvPanelAccess = getElDataMap(e)["zv_comp_access"];
+        if (zvPanelAccess) {
+          el.zvComponent = comp;
+          el.classList.add(zvPanelAccess);
+        }
+        el.appendChild(script);
+      }).bind(comp)();
+    });
 };
-
 
 /**
  * This makes a distinction between normal script tags and module scripts.
@@ -281,27 +278,24 @@ export const evalModules = comp => arr => {
  *    modules: (NodeListOf<HTMLElementTagNameMap> | NodeListOf<Element>)
  *      }}
  */
-export const splitScripts = data => {
-  const DF = new DOMParser().parseFromString(data, 'text/html');
+export const splitScripts = (data) => {
+  const DF = new DOMParser().parseFromString(data, "text/html");
   const df = /** @type {Document} */ (DF);
   return {
     html: df.body.firstElementChild,
     scripts: df.querySelectorAll('script:not([type="module"])'),
-    modules: df.querySelectorAll('script[type="module"]')
+    modules: df.querySelectorAll('script[type="module"]'),
   };
 };
-
 
 /**
  * @param {string} t
  */
-export const handleTemplateProm = t => Promise.resolve(splitScripts(t));
-
+export const handleTemplateProm = (t) => Promise.resolve(splitScripts(t));
 
 export const enableClass = (e, className, bool) => {
   bool ? e.classList.add(className) : e.classList.remove(className);
 };
-
 
 /**
  * Removes a class if an element has it, and adds it the element doesn't have
@@ -319,34 +313,34 @@ export const toggleClass = (element, className) => {
   return add;
 };
 
-
-export const getElDataMap = el => el ? Object.assign({}, el.dataset || {}) : {};
-
+export const getElDataMap = (el) => (el ? Object.assign({}, el.dataset || {}) : {});
 
 const dtFormatter = {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit'
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
 };
 
 const dFormatter = {
-  year: 'numeric', month: 'short', day: 'numeric'
+  year: "numeric",
+  month: "short",
+  day: "numeric",
 };
 
-export const dtf = new Intl.DateTimeFormat('en', {
-  day: '2-digit',
-  month: 'short',
-  year: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit', // hour12: false
-  hourCycle: 'h23'
+export const dtf = new Intl.DateTimeFormat("en", {
+  day: "2-digit",
+  month: "short",
+  year: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit", // hour12: false
+  hourCycle: "h23",
 });
 
-export const dateToZooyStdTimeString = d => {
+export const dateToZooyStdTimeString = (d) => {
   // [ { type: 'month', value: 'Aug' },
   //   { type: 'literal', value: ' ' },
   //   { type: 'day', value: '05' },
@@ -358,7 +352,20 @@ export const dateToZooyStdTimeString = d => {
   //   { type: 'minute', value: '16' },
   //   { type: 'literal', value: ':' },
   //   { type: 'second', value: '17' } ]
-  const [{value: mo}, , {value: da}, , {value: ye}, , {value: hr}, , {value: mn}, , {value: sc}, ,] = dtf.formatToParts(d);
+  const [
+    { value: mo },
+    ,
+    { value: da },
+    ,
+    { value: ye },
+    ,
+    { value: hr },
+    ,
+    { value: mn },
+    ,
+    { value: sc },
+    ,
+  ] = dtf.formatToParts(d);
   return `${da} ${mo} ${ye} ${hr}:${mn}:${sc}`;
 };
 
@@ -369,7 +376,7 @@ export const dateToZooyStdTimeString = d => {
  * @param prepend Data to prepend to the value.
  * @returns {`${string}|${string}`|`${string} (${string})`|string}
  */
-export const parseMomentAgo = (v, resultFormat = 'both', prepend = undefined) => {
+export const parseMomentAgo = (v, resultFormat = "both", prepend = undefined) => {
   let ts = v;
   if (isNumber(ts) && ts < 946684800000) {
     ts = ts * 1000;
@@ -381,19 +388,18 @@ export const parseMomentAgo = (v, resultFormat = 'both', prepend = undefined) =>
   const time = dateToZooyStdTimeString(d);
 
   switch (resultFormat) {
-    case 'time|ago':
+    case "time|ago":
       return `${time}|${ago}`;
-    case 'ago':
+    case "ago":
       return `${ago}`;
-    case 'datetime':
-    case 'time':
+    case "datetime":
+    case "time":
       return `${time}`;
-    case 'both':
-    case 'ago (time)':
+    case "both":
+    case "ago (time)":
     default:
       return `${ago} (${time})`;
   }
-
 };
 
 /**
@@ -406,14 +412,18 @@ export const parseMomentAgo = (v, resultFormat = 'both', prepend = undefined) =>
  * @returns {string} A new string where characters meeting the defined
  *                   criteria have been replaced by an asterisk ('*').
  */
-const parseObfuscated = v => {
+const parseObfuscated = (v) => {
   /**
    * @param {string} s
    * @return {function(number): boolean}
    */
-  const tst = s => i => i < s.length - 4;
+  const tst = (s) => (i) => i < s.length - 4;
   const t = tst(v);
-  const ob = s => s.split('').map((c, i) => t(i) ? '*' : c).join('');
+  const ob = (s) =>
+    s
+      .split("")
+      .map((c, i) => (t(i) ? "*" : c))
+      .join("");
   return ob(v);
 };
 
@@ -446,17 +456,23 @@ const parseObfuscated = v => {
  */
 export const parseMap = new Map()
   .set(undefined, (v, _el, _dataMap) => identity(v))
-  .set('', (v, _el, _dataMap) => identity(v))
-  .set('class_update_only', (v, _el, _dataMap) => identity(v))
-  .set('frac_100', (v, _el, _dataMap) => Math.round((v * 100) * 100) / 100)
-  .set('date_and_time', (v, _el, _dataMap) => new Date(v).toLocaleString(undefined, dtFormatter))
-  .set('date', (v, _el, _dataMap) => new Date(v).toLocaleString(undefined, dFormatter))
-  .set('moment_ago', (v, _el, dataMap) => parseMomentAgo(v, 'both', dataMap['zdd_date_tz'] || void 0))
-  .set('moment_ago_only', (v, _el, dataMap) => parseMomentAgo(v, 'ago', dataMap['zdd_date_tz'] || void 0))
-  .set('moment_ago_datetime', (v, _el, dataMap) => parseMomentAgo(v, 'datetime', dataMap['zdd_date_tz'] || void 0))
-  .set('pretty-json', (v, _el, _dataMap) => JSON.stringify(v, null, 4))
-  .set('obfuscated', (v, _el, _dataMap) => parseObfuscated(v))
-  .set('linear-progress', (v, el, dataMap) => {
+  .set("", (v, _el, _dataMap) => identity(v))
+  .set("class_update_only", (v, _el, _dataMap) => identity(v))
+  .set("frac_100", (v, _el, _dataMap) => Math.round(v * 100 * 100) / 100)
+  .set("date_and_time", (v, _el, _dataMap) => new Date(v).toLocaleString(undefined, dtFormatter))
+  .set("date", (v, _el, _dataMap) => new Date(v).toLocaleString(undefined, dFormatter))
+  .set("moment_ago", (v, _el, dataMap) =>
+    parseMomentAgo(v, "both", dataMap["zdd_date_tz"] || void 0),
+  )
+  .set("moment_ago_only", (v, _el, dataMap) =>
+    parseMomentAgo(v, "ago", dataMap["zdd_date_tz"] || void 0),
+  )
+  .set("moment_ago_datetime", (v, _el, dataMap) =>
+    parseMomentAgo(v, "datetime", dataMap["zdd_date_tz"] || void 0),
+  )
+  .set("pretty-json", (v, _el, _dataMap) => JSON.stringify(v, null, 4))
+  .set("obfuscated", (v, _el, _dataMap) => parseObfuscated(v))
+  .set("linear-progress", (v, el, dataMap) => {
     const max = toNumber(dataMap.zpmax);
     const progress = el.linProg;
     if (max && progress) {
@@ -465,7 +481,6 @@ export const parseMap = new Map()
     }
     return v;
   });
-
 
 /**
  * Parses a string containing key-value definitions into an array of key-value pairs.
@@ -484,11 +499,13 @@ export const parseMap = new Map()
  */
 export const parseDataPropKvDef = (str) => {
   const cleaned = str.trim();
-  const pairs = cleaned.split(',').map(pair => pair.trim());
-  return pairs.map(pair => {
-    const [key, value] = pair.split(':').map(item => item.trim());
-    return [key, value];
-  }).filter(([key, value]) => key !== '' && value !== '');
+  const pairs = cleaned.split(",").map((pair) => pair.trim());
+  return pairs
+    .map((pair) => {
+      const [key, value] = pair.split(":").map((item) => item.trim());
+      return [key, value];
+    })
+    .filter(([key, value]) => key !== "" && value !== "");
 };
 
 /**
@@ -507,41 +524,46 @@ export const parseDataPropKvDef = (str) => {
 const parseDataProps = (el, data) => {
   const dm = getElDataMap(el);
   delete el.dataset.zoodatapropkv;
-  const targetPropDef = dm.zoodatapropkv || '';
+  const targetPropDef = dm.zoodatapropkv || "";
   const propDefs = parseDataPropKvDef(targetPropDef);
   propDefs.forEach(([prop, valueAccess]) => {
-    el.dataset[prop] = pathOr(undefined, valueAccess.split('.'))(data);
+    el.dataset[prop] = pathOr(undefined, valueAccess.split("."))(data);
   });
   return el;
 };
 
-
-export const mapDataToEls = (rootEl, json, opt_extendedMap = new Map(), opt_loopIndex = undefined) => {
-
+export const mapDataToEls = (
+  rootEl,
+  json,
+  opt_extendedMap = new Map(),
+  opt_loopIndex = undefined,
+) => {
   if (!json) {
     return;
   }
 
   const merged = new Map([...parseMap, ...opt_extendedMap]);
-  [...rootEl.querySelectorAll('[data-zdd],[data-zdd_class_update],[data-zdd_template_loop_index]')].forEach(el => {
+  [
+    ...rootEl.querySelectorAll("[data-zdd],[data-zdd_class_update],[data-zdd_template_loop_index]"),
+  ].forEach((el) => {
     const dataMap = getElDataMap(el);
-    const lldRef = dataMap['zdd'] || '';
-    const parseAs = dataMap['zdd_parse_as'];
-    const renderEffect = dataMap['zdd_render_effect'] || '';
-    const classUpdate = dataMap['zdd_class_update'];
-    const loopIndex = dataMap['zdd_template_loop_index'];
-    const units = dataMap['zdd_units'] || '';
-    let v = pathOr(undefined, lldRef.split('.'))(json);
+    const lldRef = dataMap["zdd"] || "";
+    const parseAs = dataMap["zdd_parse_as"];
+    const renderEffect = dataMap["zdd_render_effect"] || "";
+    const classUpdate = dataMap["zdd_class_update"];
+    const loopIndex = dataMap["zdd_template_loop_index"];
+    const units = dataMap["zdd_units"] || "";
+    let v = pathOr(undefined, lldRef.split("."))(json);
 
     if (isDefAndNotNull(v)) {
       v = merged.has(parseAs) ? merged.get(parseAs)(v, el, dataMap) : v;
     }
 
     if (loopIndex && isNumber(opt_loopIndex)) {
-      console.log('loopIndex: ', loopIndex, ' opt_loopIndex: ', opt_loopIndex);
-      if (loopIndex === 'zero_indexed') {
+      console.log("loopIndex: ", loopIndex, " opt_loopIndex: ", opt_loopIndex);
+      if (loopIndex === "zero_indexed") {
         el.innerHTML = opt_loopIndex;
-      } else if (loopIndex === 'one_indexed') {
+      } else if (loopIndex === "one_indexed") {
         el.innerHTML = opt_loopIndex + 1;
       } else {
         el.innerHTML = opt_loopIndex;
@@ -549,54 +571,59 @@ export const mapDataToEls = (rootEl, json, opt_extendedMap = new Map(), opt_loop
     }
 
     if (classUpdate) {
-      const [valueAccess, action, name] = classUpdate.split(':');
-      const v = pathOr(undefined, valueAccess.split('.'))(json);
+      const [valueAccess, action, name] = classUpdate.split(":");
+      const v = pathOr(undefined, valueAccess.split("."))(json);
       if (isDefAndNotNull(v)) {
         switch (action) {
-          case 'swap': {
+          case "swap": {
             const regex = /\{}/gi;
-            const oldClassName = name.replace(regex, '');
+            const oldClassName = name.replace(regex, "");
             const newClass = name.replace(regex, v);
-            el.classList.remove(...[...el.classList].filter(e => e.includes(oldClassName)));
+            el.classList.remove(...[...el.classList].filter((e) => e.includes(oldClassName)));
             el.classList.add(newClass);
             break;
           }
-          case 'remove_on_data':
+          case "remove_on_data":
             el.classList.remove(name);
             break;
-          case 'choice_map':
+          case "choice_map":
             // name: '1>blah.hello|2>blee.bing|3>blue.whatnow'
             // If value is 1, add blah and remove all the rest
-            name.split('|').filter(e => e !== '').forEach(e => {
-              const [keyVal, className] = e.split('>');
-              if (keyVal === v + '') {
-                el.classList.add.apply(el.classList, className.split('.'));
-              } else {
-                el.classList.remove.apply(el.classList, className.split('.'));
-              }
-            });
+            name
+              .split("|")
+              .filter((e) => e !== "")
+              .forEach((e) => {
+                const [keyVal, className] = e.split(">");
+                if (keyVal === v + "") {
+                  el.classList.add.apply(el.classList, className.split("."));
+                } else {
+                  el.classList.remove.apply(el.classList, className.split("."));
+                }
+              });
             break;
         }
       }
     }
 
-    if (parseAs === 'templated-array' && isArray(v)) {
+    if (parseAs === "templated-array" && isArray(v)) {
       if (v.length === 0) {
-        el.classList.add('display__none');
+        el.classList.add("display__none");
       } else {
-        el.classList.remove('display__none');
+        el.classList.remove("display__none");
         v = v || [];
         const template = el.firstElementChild;
-        template.classList.remove('display__none');
-        el.replaceChildren(...v.map((e, i) => {
-          const clone = template.cloneNode(true);
-          const c2 = parseDataProps(clone, e);
-          mapDataToEls(c2, e, undefined, i);
-          return c2;
-        }));
+        template.classList.remove("display__none");
+        el.replaceChildren(
+          ...v.map((e, i) => {
+            const clone = template.cloneNode(true);
+            const c2 = parseDataProps(clone, e);
+            mapDataToEls(c2, e, undefined, i);
+            return c2;
+          }),
+        );
       }
     } else if (isDefAndNotNull(v)) {
-      if (renderEffect === 'typewriter') {
+      if (renderEffect === "typewriter") {
         let i = 0;
         const txt = v + units;
         const speed = 5;
@@ -607,16 +634,11 @@ export const mapDataToEls = (rootEl, json, opt_extendedMap = new Map(), opt_loop
             setTimeout(typeWriter, speed);
           }
         };
-        el.innerHTML = '';
+        el.innerHTML = "";
         typeWriter();
       } else {
         el.innerHTML = v + units;
       }
     }
-
-
   });
 };
-
-
-

@@ -2,7 +2,7 @@
 
 Per-component documentation for Carbon components wired into zooy's panel event system. Each guide covers what the component is, how it's integrated into zooy, usage patterns for Django templates, and gotchas.
 
-These guides are written for **template authors** in the consuming app (z2) — they document *how to use* components from HTML, not how zooy wires them internally. For architectural details see `CLAUDE.md` and `.claude/`.
+These guides are written for **template authors** in the consuming app (z2) — they document _how to use_ components from HTML, not how zooy wires them internally. For architectural details see `CLAUDE.md` and `.claude/`.
 
 ## Conventions
 
@@ -19,9 +19,11 @@ Every guide follows the same structure:
 ## Carbon components
 
 ### Buttons
+
 - [cds-icon-button](./cds-icon-button.md) — icon-only button with tooltip, stateless click, and toggle mode (icon-swap + colour-swap)
 
 ### Lists
+
 - [cds-contained-list](./cds-contained-list.md) — flat list with optional clickable items, header label, and action slot
 
 <!-- Add new component guides here as they're wired in. -->
@@ -32,6 +34,6 @@ When you add a new Carbon component to `src/ui/carbon/components/`, create a mat
 
 - Filename is the primary selector with `.md` (e.g. `cds-contained-list.md`, `cds-data-table.md`).
 - Link it from the index above under the appropriate section.
-- Show *Django template* snippets, not plain HTML — assume a `{% for %}` loop is the normal case.
+- Show _Django template_ snippets, not plain HTML — assume a `{% for %}` loop is the normal case.
 - Always document whether the component is presentational or interactive, and what ends up in the panel event `detail`.
 - Call out anything zooy can't enforce (e.g. Carbon attributes the template must set for the integration to work).

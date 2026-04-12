@@ -10,8 +10,8 @@ clean:
     @echo "✓ Cleaned dist/"
 
 # Build the package
-build: clean lint lint-fix
-    npm run build
+build: clean lint
+    vp build
     @echo "✓ Built zooy package"
 
 # Build and create tarball for local testing
@@ -21,14 +21,22 @@ pack: build
 
 # Lint JavaScript code
 lint:
-    npm run lint
+    vp lint
 
 # Fix linting issues
 lint-fix:
-    npm run lint:fix
+    vp lint --fix
+
+# Run format, lint, and type checks
+check:
+    vp check
+
+# Fix format and lint issues
+check-fix:
+    vp check --fix
 
 # Run all quality checks
-qa: lint
+qa: check
     @echo "✓ Quality checks passed"
 
 # Bump version (patch by default)
@@ -100,5 +108,3 @@ version:
 show-files:
     @echo "Files to be published:"
     @npm pack --dry-run 2>&1 | grep -A 1000 "Tarball Contents"
-
-

@@ -62,7 +62,7 @@ export class ComponentLibraryRegistry {
       ...library, // Preserve all library properties (utils, helpers, etc.)
       dispose: library.dispose || null, // Optional disposal function
       cache: library.cache || new Map(), // Use provided cache or create new one
-      config: library.config || {}
+      config: library.config || {},
     });
 
     console.debug(`[ComponentLibraryRegistry] Registered: ${name}`);
@@ -77,9 +77,9 @@ export class ComponentLibraryRegistry {
    */
   static get(name) {
     if (!this.#libraries.has(name)) {
-      const available = Array.from(this.#libraries.keys()).join(', ');
+      const available = Array.from(this.#libraries.keys()).join(", ");
       throw new Error(
-        `Component library '${name}' is not registered. Available: ${available || 'none'}`
+        `Component library '${name}' is not registered. Available: ${available || "none"}`,
       );
     }
     return this.#libraries.get(name);
@@ -115,7 +115,7 @@ export class ComponentLibraryRegistry {
     for (const [name, library] of this.#libraries.entries()) {
       stats[name] = {
         cacheSize: library.cache.size,
-        config: library.config
+        config: library.config,
       };
     }
     return stats;

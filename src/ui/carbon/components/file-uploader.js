@@ -4,20 +4,19 @@
  * Handles file selection and deletion events.
  */
 
-import { getSemanticAttributes } from '../../zoo/index.js';
+import { getSemanticAttributes } from "../../zoo/index.js";
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
  * @typedef {import('@carbon/web-components/es/components/file-uploader/file-uploader.js').default} CDSFileUploader
  */
 
-
 /**
  * File Uploader
  * @type {{selector: string, import: (function(): Promise<*>)|*, init: function(CDSFileUploader): void}}
  */
 export const cdsFileUploaderWrap = {
-  selector: 'cds-file-uploader',
+  selector: "cds-file-uploader",
 
   /**
    * @param {CDSFileUploader} uploader - The CDSFileUploader custom element instance
@@ -32,25 +31,25 @@ export const cdsFileUploaderWrap = {
       // Listen for native change event on the input element
       const input = uploader.querySelector('input[type="file"]');
       if (input) {
-        this.listen(input, 'change', e => {
+        this.listen(input, "change", (e) => {
           this.dispatchPanelEvent(changeEvent, {
             ...attrs,
-            files: Array.from(e.target.files || [])
+            files: Array.from(e.target.files || []),
           });
         });
       }
     }
 
     // File deletion event (when individual file items are deleted)
-    const deleteEvent = uploader.getAttribute('delete-event');
+    const deleteEvent = uploader.getAttribute("delete-event");
     if (deleteEvent) {
-      this.listen(uploader, 'cds-file-uploader-item-deleted', e => {
+      this.listen(uploader, "cds-file-uploader-item-deleted", (e) => {
         this.dispatchPanelEvent(deleteEvent, {
           ...attrs,
           fileName: e.detail?.fileName,
-          fileId: e.detail?.fileId
+          fileId: e.detail?.fileId,
         });
       });
     }
-  }
-}
+  },
+};

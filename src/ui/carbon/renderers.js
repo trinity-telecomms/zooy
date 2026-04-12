@@ -6,9 +6,9 @@
  * @see https://web-components.carbondesignsystem.com/
  */
 
-import {getSemanticAttributes, getEventAttribute} from '../zoo/index.js';
-import { buildComponentMap } from './components/index.js';
-import { imports } from './imports.js';
+import { getSemanticAttributes, getEventAttribute } from "../zoo/index.js";
+import { buildComponentMap } from "./components/index.js";
+import { imports } from "./imports.js";
 
 /**
  * Scans panel DOM once and categorizes all Carbon elements by their config selector.
@@ -29,15 +29,15 @@ export function scanForCarbonComponents(panel) {
     elementMap.set(selector, []);
   }
 
-  for (const [selector, config] of Object.entries(COMPONENT_CONFIG)) {
+  for (const [selector] of Object.entries(COMPONENT_CONFIG)) {
     if (panel.matches(selector)) {
       elementMap.get(selector).push(panel);
     }
   }
 
-  const allElements = panel.querySelectorAll('*');
+  const allElements = panel.querySelectorAll("*");
   for (const element of allElements) {
-    for (const [selector, config] of Object.entries(COMPONENT_CONFIG)) {
+    for (const [selector] of Object.entries(COMPONENT_CONFIG)) {
       if (element.matches(selector)) {
         elementMap.get(selector).push(element);
       }
@@ -68,7 +68,7 @@ export function collectImportsNeeded(elementMap) {
     if (elements.length > 0 && imports[selector]) {
       // Get imports from centralized map
       const importFns = imports[selector];
-      importFns.forEach(importFn => importsNeeded.add(importFn));
+      importFns.forEach((importFn) => importsNeeded.add(importFn));
     }
   }
 
@@ -112,7 +112,7 @@ export function attachEventListeners(elementMap, panel) {
   for (const [selector, elements] of elementMap.entries()) {
     const config = COMPONENT_CONFIG[selector];
 
-    elements.forEach(element => {
+    elements.forEach((element) => {
       if (config.init) {
         config.init.call(panel, element);
         return;
@@ -120,10 +120,10 @@ export function attachEventListeners(elementMap, panel) {
 
       if (config.multiEvent) {
         const attrs = getSemanticAttributes(element);
-        config.events.forEach(eventConfig => {
-          const eventName = getEventAttribute(element, eventConfig.attrName, 'event');
+        config.events.forEach((eventConfig) => {
+          const eventName = getEventAttribute(element, eventConfig.attrName, "event");
           if (eventName) {
-            panel.listen(element, eventConfig.type, e => {
+            panel.listen(element, eventConfig.type, (e) => {
               panel.dispatchPanelEvent(eventName, eventConfig.getData(e, attrs, element));
             });
           }
@@ -136,7 +136,7 @@ export function attachEventListeners(elementMap, panel) {
       const eventName = attrs.event;
 
       if (eventName) {
-        panel.listen(element, config.event, e => {
+        panel.listen(element, config.event, (e) => {
           e.stopPropagation();
           const data = config.getData(e, attrs, element);
 
@@ -160,9 +160,7 @@ export function attachEventListeners(elementMap, panel) {
  * All Carbon component configurations have been extracted to the components/ directory.
  * This object simply merges them all together for the renderer to use.
  */
-const COMPONENT_CONFIG = {
-  ...Object.fromEntries(buildComponentMap())
-};
+const COMPONENT_CONFIG = Object.fromEntries(buildComponentMap());
 
 /**
  * Generic Carbon component renderer with lazy loading.
@@ -181,11 +179,10 @@ const COMPONENT_CONFIG = {
  * @returns {Promise<void>}
  */
 export const renderCarbonComponents = async function (panel, cache) {
-
   const elementMap = scanForCarbonComponents(panel);
 
   if (elementMap.size === 0) {
-    this.debugMe('[Carbon] No Carbon components found in panel');
+    this.debugMe("[Carbon] No Carbon components found in panel");
     return;
   }
 
@@ -206,7 +203,7 @@ export const renderCarbonComponents = async function (panel, cache) {
     try {
       await loadComponentImports(importsNeeded, cache);
     } catch (error) {
-      console.error('[Carbon] Failed to load some component modules:', error);
+      console.error("[Carbon] Failed to load some component modules:", error);
       // Continue anyway - some components may have loaded successfully
     }
   }

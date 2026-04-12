@@ -77,14 +77,12 @@
  * See: pagination event handlers in initEventHandlers() and paginationComponent
  */
 
-import {Binder} from '../../binder.js';
-import {getSemanticAttributes} from '../../zoo/index.js';
+import { Binder } from "../../binder.js";
+import { getSemanticAttributes } from "../../zoo/index.js";
 import * as R from "ramda";
-import {isDefAndNotNull, objToPaths} from "badu";
+import { isDefAndNotNull, objToPaths } from "badu";
 // noinspection JSFileReferences
-import {
-  TABLE_SORT_DIRECTION
-} from "@carbon/web-components/lib/components/data-table/defs.js";
+import { TABLE_SORT_DIRECTION } from "@carbon/web-components/lib/components/data-table/defs.js";
 
 /**
  * Type definitions for Carbon Web Components (for IDE intellisense)
@@ -138,10 +136,10 @@ import {
  */
 const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   // Get Carbon component classes for type-safe event names
-  const CDSTable = customElements.get('cds-table');
-  const CDSPagination = customElements.get('cds-pagination');
+  const CDSTable = customElements.get("cds-table");
+  const CDSPagination = customElements.get("cds-pagination");
   const CDSTableBatchActions = customElements.get(CDSTable.selectorTableBatchActions);
-  const CDSPopover = customElements.get('cds-popover');
+  const _CDSPopover = customElements.get("cds-popover");
 
   const dataBinder = cdsTable.dataBinder;
   const pagination = cdsTable.pagination;
@@ -151,8 +149,17 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   const batActToolbar = cdsTable.querySelector(CDSTable.selectorTableBatchActions);
 
   const tableBody = cdsTable.querySelector(CDSTable.selectorTableBody);
-  const noNavEls = ['button', 'a', 'input', 'select', 'textarea', '[role="button"]', '.cds--table-expand', '.cds--table-column-checkbox',].join(',');
-  const sortableHeaders = cdsTable.querySelectorAll(CDSTable.selectorHeaderCell + '[is-sortable]')
+  const noNavEls = [
+    "button",
+    "a",
+    "input",
+    "select",
+    "textarea",
+    '[role="button"]',
+    ".cds--table-expand",
+    ".cds--table-column-checkbox",
+  ].join(",");
+  const sortableHeaders = cdsTable.querySelectorAll(CDSTable.selectorHeaderCell + "[is-sortable]");
   const isSortable = cdsTable.isSortable || sortableHeaders.length > 0;
 
   // Keep a map of all the custom events we want to issue, which needs to be
@@ -166,90 +173,102 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    * Issue a user defined event when a row is clicked.
    * @param {String} customEventName
    */
-  const onRowClickEvent = customEventName => {
-    panel.listen(cdsTable, 'click', e => {
+  const onRowClickEvent = (customEventName) => {
+    panel.listen(cdsTable, "click", (e) => {
       const target = e.target.closest(CDSTable.selectorTableRow);
-      if (!target || e.composedPath().some(el => el.matches && el.matches(noNavEls))) return;
+      if (!target || e.composedPath().some((el) => el.matches && el.matches(noNavEls))) return;
       e.stopPropagation();
       const targetAttrs = getSemanticAttributes(target);
       panel.dispatchPanelEvent(customEventName, {
         ...targetAttrs,
       });
     });
-  }
+  };
 
   /**
    * Issue a user defined panel event after a row was un/expanded
    * @param  {String}  customEventName
    */
-  const onRowExpandEvent = customEventName => {
-    panel.listen(cdsTable, CDSTable.eventExpandoToggle, e => {
+  const onRowExpandEvent = (customEventName) => {
+    panel.listen(cdsTable, CDSTable.eventExpandoToggle, (e) => {
       const target = e.target;
-      const allRows = target.tagName === "CDS-TABLE-HEADER-ROW"
+      const allRows = target.tagName === "CDS-TABLE-HEADER-ROW";
       const didExpand = e.detail.expanded;
       const targetAttrs = getSemanticAttributes(target);
       const payload = {
-        tableAttrs, ...targetAttrs, target, allRows, didExpand,
-      }
+        tableAttrs,
+        ...targetAttrs,
+        target,
+        allRows,
+        didExpand,
+      };
       panel.dispatchPanelEvent(customEventName, payload);
     });
-  }
+  };
 
   /**
    * Issue a user defined panel event after sorting a column
    * @param  {String} customEventName
    */
-  const onColSortEvent = customEventName => {
-    userEventsMap.set(onColSorted, payload => {
+  const onColSortEvent = (customEventName) => {
+    userEventsMap.set(onColSorted, (payload) => {
       panel.dispatchPanelEvent(customEventName, payload);
     });
-  }
+  };
 
   /**
    * Issue a panel event when all rows are un/checked.
    * @param {String}  customEventName
    */
-  const onRowCheckAllEvent = customEventName => {
-    userEventsMap.set(onAllRowsChecked, e => {
+  const onRowCheckAllEvent = (customEventName) => {
+    userEventsMap.set(onAllRowsChecked, (e) => {
       const selectedRows = e.detail.selectedRows;
       const selectCount = Math.min(selectedRows.length, batActToolbar.totalRowsCount);
       const target = e.target;
       const targetAttrs = getSemanticAttributes(target);
       const selection = selectedRows.map(getSemanticAttributes);
       const payload = {
-        tableAttrs, ...targetAttrs, target, selectCount, selection
+        tableAttrs,
+        ...targetAttrs,
+        target,
+        selectCount,
+        selection,
       };
       panel.dispatchPanelEvent(customEventName, payload);
-    })
-  }
+    });
+  };
 
   /**
    * Issue a panel event when one row is un/checked
    * @param  {String}  customEventName
    */
-  const onRowCheckOneEvent = customEventName => {
+  const onRowCheckOneEvent = (customEventName) => {
     // Table-level synthetic event for row selection
     // Fires with the table as the target. Contains all the selected rows, in an array
     // in the detail object. Also contains the last selected row in
     // the `selectedRow` key in the detail object.
-    panel.listen(cdsTable, CDSTable.eventTableRowSelect, e => {
+    panel.listen(cdsTable, CDSTable.eventTableRowSelect, (e) => {
       const target = e.target;
       const selectedRows = e.detail.selectedRows || [];
       const selectCount = selectedRows.length;
       const selection = selectedRows.map(getSemanticAttributes);
       const targetAttrs = getSemanticAttributes(target);
       const payload = {
-        tableAttrs, ...targetAttrs, selectCount, selection, target,
+        tableAttrs,
+        ...targetAttrs,
+        selectCount,
+        selection,
+        target,
       };
       panel.dispatchPanelEvent(customEventName, payload);
     });
-  }
+  };
 
   /**
    * Server side sorting is sorts on the server. Ha!
    */
   const initServerSideSorting = () => {
-    panel.listen(cdsTable, CDSTable.eventBeforeSort, e => {
+    panel.listen(cdsTable, CDSTable.eventBeforeSort, (e) => {
       const target = e.target;
       const sortWas = e.detail.oldSortDirection;
       const sortNow = e.detail.sortDirection;
@@ -263,34 +282,40 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
       e.preventDefault();
 
       // Clear the inner
-      tableBody.innerHTML = '';
+      tableBody.innerHTML = "";
       skeleton && skeleton.show();
 
       sortableHeaders.forEach((col, _) => {
         if (col === target) {
-          col.setAttribute('sort-active', 'true');
-          col.setAttribute('sort-direction', sortNow);
+          col.setAttribute("sort-active", "true");
+          col.setAttribute("sort-direction", sortNow);
         } else {
-          col.removeAttribute('sort-active');
-          col.setAttribute('sort-direction', 'none');
+          col.removeAttribute("sort-active");
+          col.setAttribute("sort-direction", "none");
         }
-      })
+      });
 
       // Reload data with DRF ordering parameter
       // (e.g., ?ordering=name or ?ordering=-name)
-      const params = {ordering};
+      const params = { ordering };
       dataBinder.fetchData(params).then(() => {
         pagination.setData(dataBinder);
         skeleton && skeleton.hide();
       });
 
       // Maybe issue custom event with payload.
-      userEventsMap.has(onColSorted) && userEventsMap.get(onColSorted)({
-        tableAttrs, ...targetAttrs, sortNow, sortWas, sortField, ordering, target,
-      });
-    })
-
-  }
+      userEventsMap.has(onColSorted) &&
+        userEventsMap.get(onColSorted)({
+          tableAttrs,
+          ...targetAttrs,
+          sortNow,
+          sortWas,
+          sortField,
+          ordering,
+          target,
+        });
+    });
+  };
 
   /**
    * Table-level synthetic event when all rows are checked from the header row.
@@ -305,17 +330,17 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    * does nothing for them, and we need to uncheck them by hand here.
    */
   const initSelectAllFunctionality = () => {
-    panel.listen(cdsTable, CDSTable.eventTableRowSelectAll, e => {
+    panel.listen(cdsTable, CDSTable.eventTableRowSelectAll, (e) => {
       if (e.detail.selectedRows.length === 0) {
         cdsTable.querySelectorAll(CDSTable.selectorTableRow).forEach((row) => {
-          row.disabled = false
-          row.selected = false
-        })
+          row.disabled = false;
+          row.selected = false;
+        });
       }
       // Maybe issue custom event.
       userEventsMap.has(onAllRowsChecked) && userEventsMap.get(onAllRowsChecked)(e);
     });
-  }
+  };
 
   /**
    * This is only housekeeping. It listens for the synthetic event generated
@@ -325,13 +350,13 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    * selected records to the TOTAL value.
    */
   const initBatchActionHousekeeping = () => {
-    panel.listen(cdsTable, CDSTable.eventBeforeChangeSelectionAll, e => {
-      e.stopPropagation()
+    panel.listen(cdsTable, CDSTable.eventBeforeChangeSelectionAll, (e) => {
+      e.stopPropagation();
       if (e.detail.callback) {
         e.detail.callback();
       }
     });
-  }
+  };
 
   /**
    * This listens on the batch toolbar for the TOTAL button press, and then
@@ -344,20 +369,26 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    */
   const initBatchActions = (batActToolbar) => {
     const headerRow = cdsTable.querySelector("cds-table-header-row");
-    panel.listen(batActToolbar, CDSTableBatchActions.eventClickSelectAll, e => {
+    panel.listen(batActToolbar, CDSTableBatchActions.eventClickSelectAll, (e) => {
       e.stopPropagation();
-      headerRow.dispatchEvent(new CustomEvent(CDSTable.eventBeforeChangeSelectionAll, {
-        bubbles: true, cancelable: true, composed: true, detail: {
-          selected: true, callback: () => {
-            batActToolbar.selectedRowsCount = batActToolbar.totalRowsCount;
-            cdsTable.querySelectorAll(CDSTable.selectorTableRow).forEach((row) => {
-              row.disabled = true
-            })
-          }
-        }
-      }));
+      headerRow.dispatchEvent(
+        new CustomEvent(CDSTable.eventBeforeChangeSelectionAll, {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          detail: {
+            selected: true,
+            callback: () => {
+              batActToolbar.selectedRowsCount = batActToolbar.totalRowsCount;
+              cdsTable.querySelectorAll(CDSTable.selectorTableRow).forEach((row) => {
+                row.disabled = true;
+              });
+            },
+          },
+        }),
+      );
     });
-  }
+  };
 
   /**
    * Server-side search: Filters as the user types, and executes a server side
@@ -365,30 +396,30 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    * @param searchElement
    */
   const initSearchOnEnter = (searchElement) => {
-    panel.listen(searchElement, 'keydown', e => {
-      if (e.key === 'Enter') {
+    panel.listen(searchElement, "keydown", (e) => {
+      if (e.key === "Enter") {
         skeleton && skeleton.show();
         pagination.totalItems = 0;
-        cdsTable.querySelector('cds-table-body').replaceChildren();
-        const searchValue = searchElement.value || '';
-        const params = {search: searchValue, offset: 0};
+        cdsTable.querySelector("cds-table-body").replaceChildren();
+        const searchValue = searchElement.value || "";
+        const params = { search: searchValue, offset: 0 };
         dataBinder.fetchData(params).then(() => {
           pagination.setData(dataBinder);
           skeleton && skeleton.hide();
-        })
+        });
       }
     });
-  }
+  };
 
   /**
    * Handle clear button click (value becomes empty)
    * @param searchElement
    */
   const initClearSearch = (searchElement) => {
-    panel.listen(searchElement, CDSTable.eventSearchInput, e => {
-      const searchValue = e.detail.value || '';
-      if (searchValue === '') {
-        const params = {search: '', offset: 0};
+    panel.listen(searchElement, CDSTable.eventSearchInput, (e) => {
+      const searchValue = e.detail.value || "";
+      if (searchValue === "") {
+        const params = { search: "", offset: 0 };
         skeleton && skeleton.show();
         dataBinder.fetchData(params).then(() => {
           skeleton && skeleton.hide();
@@ -396,7 +427,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
         });
       }
     });
-  }
+  };
 
   /**
    * Initialize filter popover functionality
@@ -420,38 +451,40 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   const initFilterPopover = (popover) => {
     popover.caret = false;
 
-    const button = popover.querySelector('cds-icon-button, button:not([slot])');
-    const checkboxes = popover.querySelectorAll('cds-checkbox');
-    const actionButtons = popover.querySelectorAll('cds-modal-footer-button');
-    const resetFilterParams = [...popover.querySelectorAll('cds-checkbox-group')].map(getSemanticAttributes)
+    const button = popover.querySelector("cds-icon-button, button:not([slot])");
+    const checkboxes = popover.querySelectorAll("cds-checkbox");
+    const actionButtons = popover.querySelectorAll("cds-modal-footer-button");
+    const resetFilterParams = [...popover.querySelectorAll("cds-checkbox-group")]
+      .map(getSemanticAttributes)
       .map(R.pathOr("noop", ["zoo", "filter", "field"]))
-      .reduce((p, c) => {
+      .reduce(
+        (p, c) => {
           p[c] = null;
           return p;
         },
-        {offset: 0}
-      )
+        { offset: 0 },
+      );
 
     if (!button || !actionButtons) {
-      console.error("Improperly configured Batch Filter popover")
+      console.error("Improperly configured Batch Filter popover");
       return;
     }
 
     // Watch for popover closing (e.g., clicking outside)
     new MutationObserver(() => {
-      popover.classList.toggle('cds--overflow-menu--open', popover.open);
+      popover.classList.toggle("cds--overflow-menu--open", popover.open);
     }).observe(popover, {
       attributes: true,
-      attributeFilter: ['open']
+      attributeFilter: ["open"],
     });
 
     const actionButtonReset = Symbol();
     const actionButtonApply = Symbol();
     const actionButtonMap = [...actionButtons].reduce((p, c, _) => {
-      if (c.hasAttribute('reset-filter')) {
+      if (c.hasAttribute("reset-filter")) {
         p.set(actionButtonReset, c);
       }
-      if (c.hasAttribute('apply-filter')) {
+      if (c.hasAttribute("apply-filter")) {
         p.set(actionButtonApply, c);
       }
       return p;
@@ -460,10 +493,10 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     const buildFilterParams = () => {
       const filterMap = new Map();
 
-      checkboxes.forEach(el => {
-        const id = el.getAttribute('id');
-        if (!id || !id.includes(':')) return;
-        const [field, value] = id.split(':');
+      checkboxes.forEach((el) => {
+        const id = el.getAttribute("id");
+        if (!id || !id.includes(":")) return;
+        const [field, value] = id.split(":");
         if (!filterMap.has(field)) {
           filterMap.set(field, []);
         }
@@ -471,13 +504,13 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
           filterMap.get(field).push(value);
         }
       });
-      return filterMap
+      return filterMap;
     };
 
     // Reset button: uncheck all checkboxes and clear filters
     if (actionButtonMap.has(actionButtonReset)) {
-      const uncheck = e => e.checked = false;
-      panel.listen(actionButtonMap.get(actionButtonReset), 'click', (e) => {
+      const uncheck = (e) => (e.checked = false);
+      panel.listen(actionButtonMap.get(actionButtonReset), "click", (e) => {
         e.stopPropagation();
 
         checkboxes.forEach(uncheck);
@@ -491,13 +524,16 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     }
 
     if (actionButtonMap.has(actionButtonApply)) {
-      panel.listen(actionButtonMap.get(actionButtonApply), 'click', (e) => {
+      panel.listen(actionButtonMap.get(actionButtonApply), "click", (e) => {
         e.stopPropagation();
 
-        const params = [...buildFilterParams()].reduce((p, [key, value]) => {
-          p[key] = value === [] ? null : value;
-          return p;
-        }, {offset: 0});
+        const params = [...buildFilterParams()].reduce(
+          (p, [key, value]) => {
+            p[key] = Array.isArray(value) && value.length === 0 ? null : value;
+            return p;
+          },
+          { offset: 0 },
+        );
 
         skeleton && skeleton.show();
         dataBinder.fetchData(params).then(() => {
@@ -508,10 +544,10 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
       });
     }
 
-    panel.listen(button, 'click', (e) => {
+    panel.listen(button, "click", (e) => {
       e.stopPropagation();
       popover.open = !popover.open;
-      popover.classList.toggle('cds--overflow-menu--open', popover.open);
+      popover.classList.toggle("cds--overflow-menu--open", popover.open);
     });
   };
 
@@ -521,17 +557,17 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    * @private
    */
   const initPageSizeChangeFunctionality = () => {
-    panel.listen(pagination, CDSPagination.eventPageSizeChanged, _ => {
+    panel.listen(pagination, CDSPagination.eventPageSizeChanged, (_) => {
       const pageSize = pagination.pageSize;
       const params = {
         limit: pageSize,
-        offset: 0
+        offset: 0,
       };
       dataBinder.fetchData(params).then(() => {
         pagination.setData(dataBinder);
-      })
+      });
     });
-  }
+  };
 
   /**
    * Carbon Web Components fires cds-pagination-changed-current twice per navigation.
@@ -543,22 +579,22 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
    */
   const initPageNavFunctionality = () => {
     let lastFetchedOffset = null;
-    panel.listen(pagination, CDSPagination.eventChangeCurrent, e => {
-      const {page} = e.detail;
+    panel.listen(pagination, CDSPagination.eventChangeCurrent, (e) => {
+      const { page } = e.detail;
       const pageSize = pagination.pageSize;
       const offset = (page - 1) * pageSize;
 
       // Only fetch if we're actually navigating to a different offset
       if (offset !== lastFetchedOffset) {
         lastFetchedOffset = offset;
-        const params = {limit: pageSize, offset};
+        const params = { limit: pageSize, offset };
         dataBinder.fetchData(params).then(() => {
-          pagination.setData(dataBinder)
+          pagination.setData(dataBinder);
           skeleton && skeleton.hide();
         });
       }
     });
-  }
+  };
 
   // Wire up pagination listeners.
   if (dataBinder && pagination) {
@@ -575,7 +611,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
   // Filter popover initialization - find popover with data-batch-filter attribute
   const tableToolbar = cdsTable.querySelector(CDSTable.selectorTableToolbarContent);
   if (tableToolbar) {
-    const filterPopovers = tableToolbar.querySelectorAll('cds-popover[data-batch-filter]');
+    const filterPopovers = tableToolbar.querySelectorAll("cds-popover[data-batch-filter]");
     if (dataBinder && filterPopovers) {
       filterPopovers.forEach(initFilterPopover);
     }
@@ -595,7 +631,7 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
     initSelectAllFunctionality();
     initBatchActionHousekeeping();
     if (batActToolbar) {
-      initBatchActions(batActToolbar)
+      initBatchActions(batActToolbar);
     }
   }
 
@@ -623,19 +659,19 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
           check: {
             one: onRowCheckOneEvent,
             all: onRowCheckAllEvent,
-          }
-        }, column: {
+          },
+        },
+        column: {
           sort: onColSortEvent,
         },
       },
-    }
-  }
+    },
+  };
   objToPaths(tableAttrs).forEach(([path, value]) => {
     if (R.hasPath(path, listenMap)) {
       R.path(path, listenMap)(value);
     }
-  })
-
+  });
 };
 
 /**
@@ -652,16 +688,16 @@ const initEventHandlers = (panel, cdsTable, tableAttrs) => {
  * @private
  */
 const createPagination = (dataBinder) => {
-  const pagination = document.createElement('cds-pagination');
+  const pagination = document.createElement("cds-pagination");
 
-  pagination.backwardText = 'Previous page';
-  pagination.forwardText = 'Next page';
-  pagination.itemsPerPageText = 'Items per page:';
+  pagination.backwardText = "Previous page";
+  pagination.forwardText = "Next page";
+  pagination.itemsPerPageText = "Items per page:";
   pagination.pageSize = dataBinder.limit;
-  pagination.size = 'lg';
+  pagination.size = "lg";
 
-  [10, 25, 50, 100, 500].forEach(size => {
-    const selectItem = document.createElement('cds-select-item');
+  [10, 25, 50, 100, 500].forEach((size) => {
+    const selectItem = document.createElement("cds-select-item");
     selectItem.value = size.toString();
     selectItem.textContent = size.toString();
     pagination.appendChild(selectItem);
@@ -676,7 +712,7 @@ const createPagination = (dataBinder) => {
    */
   pagination.setData = (dataBinder) => {
     if (dataBinder.isPaginated) {
-      const {count} = R.pick(['count'], dataBinder.data);
+      const { count } = R.pick(["count"], dataBinder.data);
       const totalPages = Math.ceil(count / dataBinder.limit);
 
       // Use pagesUnknown mode for large datasets to avoid Carbon
@@ -688,15 +724,15 @@ const createPagination = (dataBinder) => {
       // When using pagesUnknown mode, override the formatter to include total count
       // Uses closure to capture 'count' from this scope
       if (pagination.pagesUnknown) {
-        pagination.formatStatusWithIndeterminateTotal = ({start, end}) =>
-          `${start}–${end} of ${count} item${count <= 1 ? '' : 's'}`;
+        pagination.formatStatusWithIndeterminateTotal = ({ start, end }) =>
+          `${start}–${end} of ${count} item${count <= 1 ? "" : "s"}`;
       } else {
         delete pagination.formatStatusWithIndeterminateTotal;
       }
     }
-  }
+  };
   return pagination;
-}
+};
 
 /**
  * Create and configure a skeleton loader that matches the table structure.
@@ -707,29 +743,29 @@ const createPagination = (dataBinder) => {
 const createSkeleton = (cdsTable) => {
   // Verify parent exists
   if (!cdsTable.parentNode) {
-    console.error('[Carbon Table] Cannot create skeleton: table has no parent node');
+    console.error("[Carbon Table] Cannot create skeleton: table has no parent node");
     return;
   }
 
   // Interrogate table structure
-  const hasTitle = !!cdsTable.querySelector('cds-table-header-title');
-  const hasDescription = !!cdsTable.querySelector('cds-table-header-description');
-  const hasToolbar = !!cdsTable.querySelector('cds-table-toolbar');
-  const colCount = [...cdsTable.querySelectorAll('cds-table-header-cell')].length;
-  const hasZebra = cdsTable.hasAttribute('zebra');
-  const size = cdsTable.getAttribute('size');
+  const hasTitle = !!cdsTable.querySelector("cds-table-header-title");
+  const hasDescription = !!cdsTable.querySelector("cds-table-header-description");
+  const hasToolbar = !!cdsTable.querySelector("cds-table-toolbar");
+  const colCount = [...cdsTable.querySelectorAll("cds-table-header-cell")].length;
+  const hasZebra = cdsTable.hasAttribute("zebra");
+  const size = cdsTable.getAttribute("size");
 
-  const skeleton = document.createElement('cds-table-skeleton');
+  const skeleton = document.createElement("cds-table-skeleton");
   skeleton.showHeader = hasTitle || hasDescription;
   skeleton.showToolbar = hasToolbar;
   skeleton.zebra = hasZebra;
   skeleton.columnCount = colCount;
   skeleton.size = size;
-  skeleton.show = () => skeleton.classList.remove('hidden');
-  skeleton.hide = () => skeleton.classList.add('hidden');
+  skeleton.show = () => skeleton.classList.remove("hidden");
+  skeleton.hide = () => skeleton.classList.add("hidden");
 
   // Create wrapper and overlay skeleton behind table
-  const wrapper = document.createElement('div');
+  const wrapper = document.createElement("div");
   wrapper.classList.add("zoo-datatable-skeleton-wrapper");
   cdsTable.parentNode.insertBefore(wrapper, cdsTable);
   wrapper.appendChild(skeleton);
@@ -750,18 +786,17 @@ const createSkeleton = (cdsTable) => {
  * @private
  */
 const setupDataBinderIntegration = (panel, el) => {
-  const apiUrl = el.getAttribute('zoo-url-api');
-  const pageSize = parseInt(el.getAttribute('data-page-size') || 25, 10)
+  const apiUrl = el.getAttribute("zoo-url-api");
+  const pageSize = parseInt(el.getAttribute("data-page-size") || 25, 10);
   if (apiUrl) {
     return new Binder(panel, apiUrl, el, {
-      urlParams: {limit: pageSize},
+      urlParams: { limit: pageSize },
     });
   }
-}
-
+};
 
 export const cdsTableWrap = {
-  selector: 'cds-table',
+  selector: "cds-table",
 
   /**
    * Initialize a Carbon data table component.
@@ -808,7 +843,7 @@ export const cdsTableWrap = {
 
       cdsTable.after(pagination);
       // Fetch initial data with only the page size parameter
-      dataBinder.fetchData().then(_ => {
+      dataBinder.fetchData().then((_) => {
         skeleton.hide();
         pagination.setData(dataBinder);
         initEventHandlers(panel, cdsTable, attrs);
@@ -817,8 +852,5 @@ export const cdsTableWrap = {
       // No data binding, set up event handlers immediately
       initEventHandlers(panel, cdsTable, attrs);
     }
-  }
+  },
 };
-
-
-

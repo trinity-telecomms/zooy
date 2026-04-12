@@ -1,11 +1,10 @@
-import Component from './component.js';
-import {UiEventType} from '../events/uieventtype.js';
-import {identity, randomId} from 'badu';
-import Evt from './evt.js';
-import Dragger from './dragger.js';
-import ZooyEventData from '../events/zooyeventdata.js';
-import {EV} from '../events/mouseandtouchevents.js';
-
+import Component from "./component.js";
+import { UiEventType } from "../events/uieventtype.js";
+import { identity, randomId } from "badu";
+import Evt from "./evt.js";
+import Dragger from "./dragger.js";
+import ZooyEventData from "../events/zooyeventdata.js";
+import { EV } from "../events/mouseandtouchevents.js";
 
 //--[ Main Class ]--
 /**
@@ -17,7 +16,6 @@ import {EV} from '../events/mouseandtouchevents.js';
  * @extends {Component}
  */
 export default class Split extends Component {
-
   /**
    * Returns the split event type code used for dispatching split events.
    * @return {string} The SPLIT event type
@@ -33,7 +31,7 @@ export default class Split extends Component {
   constructor() {
     super();
 
-    this.dragImage_ = document.createElement('canvas');
+    this.dragImage_ = document.createElement("canvas");
 
     /**
      * Holds reference between the nest designation, and the nest element.
@@ -53,14 +51,14 @@ export default class Split extends Component {
     this.splitNests_ = new Set();
 
     // window.addEventListener('resize', () => this.refreshAll_());
-  };
+  }
 
   /**
    * Returns all nest entries (name and config object) that have a valid element.
    * @return {!Array<!Array<string, !Object>>} Array of [nestName, nestConfig] pairs
    */
   get nests() {
-    return [...this.nestMap_.entries()].filter(([_k, {nestEl}]) => nestEl);
+    return [...this.nestMap_.entries()].filter(([_k, { nestEl }]) => nestEl);
   }
 
   /**
@@ -88,7 +86,7 @@ export default class Split extends Component {
    * @param {boolean=} opt_skipAni If true, skips animation
    */
   closeAndLockAll(callback = identity, opt_skipAni = false) {
-    this.nestNames.forEach(n => this.closeAndLock(n, callback, opt_skipAni));
+    this.nestNames.forEach((n) => this.closeAndLock(n, callback, opt_skipAni));
   }
 
   /**
@@ -97,7 +95,7 @@ export default class Split extends Component {
    * @param {boolean=} opt_skipAni If true, skips animation
    */
   openAndUnlockAll(callback = identity, opt_skipAni = false) {
-    this.nestNames.forEach(n => this.openAndUnlock(n, callback, opt_skipAni));
+    this.nestNames.forEach((n) => this.openAndUnlock(n, callback, opt_skipAni));
   }
 
   // ---------------------------------------------------------------------------
@@ -110,8 +108,8 @@ export default class Split extends Component {
    * @param {string} nestName Nest name
    */
   lock(nestName) {
-    const {dragEl} = this.nestMap_.get(nestName);
-    dragEl.classList.add('locked');
+    const { dragEl } = this.nestMap_.get(nestName);
+    dragEl.classList.add("locked");
   }
 
   /**
@@ -122,8 +120,8 @@ export default class Split extends Component {
    * @param {string} nestName Nest name
    */
   unlock(nestName) {
-    const {dragEl} = this.nestMap_.get(nestName);
-    dragEl.classList.remove('locked');
+    const { dragEl } = this.nestMap_.get(nestName);
+    dragEl.classList.remove("locked");
   }
 
   /**
@@ -136,21 +134,21 @@ export default class Split extends Component {
    *    simply affected directly.
    */
   resize(nestName, size, callback = identity, opt_skipAni = false) {
-    const {sizeNow, nestEl, canResize} = this.nestMap_.get(nestName);
+    const { sizeNow, nestEl, canResize } = this.nestMap_.get(nestName);
     if (!canResize) {
       return;
     }
     if (opt_skipAni || sizeNow === size) {
-      nestEl.classList.remove('animated');
+      nestEl.classList.remove("animated");
       nestEl.style.flexBasis = `${size}px`;
       this.nestMap_.get(nestName).sizeNow = size;
       callback();
     } else {
-      nestEl.classList.add('animated');
+      nestEl.classList.add("animated");
       this.nestCallbackMap_.set(nestName, () => {
         // We always leave the nest without animations, as this makes for
         // a more responsive drag behavior.
-        nestEl.classList.remove('animated');
+        nestEl.classList.remove("animated");
         this.nestMap_.get(nestName).sizeNow = size;
         callback();
       });
@@ -167,27 +165,27 @@ export default class Split extends Component {
    *    simply affected directly.
    */
   closeAndLock(nestName, callback = identity, opt_skipAni = false) {
-    const {nestEl, dragEl, canResize} = this.nestMap_.get(nestName);
+    const { nestEl, dragEl, canResize } = this.nestMap_.get(nestName);
     if (!canResize) {
       return;
     }
     const onDone = () => {
-      dragEl.classList.add('locked', 'closed');
-      nestEl.classList.add('closed');
+      dragEl.classList.add("locked", "closed");
+      nestEl.classList.add("closed");
       callback();
     };
     this.resize(nestName, 0, onDone, opt_skipAni);
   }
 
   closeAndUnlock(nestName, callback = identity, opt_skipAni = false) {
-    const {nestEl, dragEl, canResize} = this.nestMap_.get(nestName);
+    const { nestEl, dragEl, canResize } = this.nestMap_.get(nestName);
     if (!canResize) {
       return;
     }
     const onDone = () => {
-      nestEl.classList.remove('closed');
-      dragEl.classList.remove('closed', 'locked');
-      dragEl.classList.add('collapsed');
+      nestEl.classList.remove("closed");
+      dragEl.classList.remove("closed", "locked");
+      dragEl.classList.add("collapsed");
       callback();
     };
     this.resize(nestName, 0, onDone, opt_skipAni);
@@ -204,19 +202,13 @@ export default class Split extends Component {
    *    simply affected directly.
    */
   openAndUnlock(nestName, size, callback, opt_skipAni = false) {
-    const {
-      nestEl,
-      dragEl,
-      defSize,
-      lastSize,
-      canResize
-    } = this.nestMap_.get(nestName);
+    const { nestEl, dragEl, defSize, lastSize, canResize } = this.nestMap_.get(nestName);
     if (!canResize) {
       return;
     }
     const targetSize = size || lastSize || defSize;
-    nestEl.classList.remove('closed');
-    dragEl.classList.remove('closed', 'locked', 'collapsed');
+    nestEl.classList.remove("closed");
+    dragEl.classList.remove("closed", "locked", "collapsed");
     setTimeout(() => {
       this.resize(nestName, targetSize, callback, opt_skipAni);
     }, 50);
@@ -232,19 +224,13 @@ export default class Split extends Component {
    *    simply affected directly.
    */
   openAndLock(nestName, size, callback, opt_skipAni = false) {
-    const {
-      nestEl,
-      dragEl,
-      defSize,
-      lastSize,
-      canResize
-    } = this.nestMap_.get(nestName);
+    const { nestEl, dragEl, defSize, lastSize, canResize } = this.nestMap_.get(nestName);
     if (!canResize) {
       return;
     }
     const targetSize = size || lastSize || defSize;
-    nestEl.classList.remove('closed');
-    dragEl.classList.remove('closed', 'collapsed');
+    nestEl.classList.remove("closed");
+    dragEl.classList.remove("closed", "collapsed");
     setTimeout(() => {
       this.resize(nestName, targetSize, callback, opt_skipAni);
     }, 50);
@@ -260,14 +246,14 @@ export default class Split extends Component {
    *    simply affected directly.
    */
   close(nestName, callback = identity, opt_skipAni = false) {
-    const {dragEl, canResize, nestEl} = this.nestMap_.get(nestName);
+    const { dragEl, canResize, nestEl } = this.nestMap_.get(nestName);
     if (!canResize) {
       return;
     }
-    this.dispatchSplitEvent(UiEventType.SPLIT_WILL_CLOSE, {nestName, nestEl});
+    this.dispatchSplitEvent(UiEventType.SPLIT_WILL_CLOSE, { nestName, nestEl });
     const cb = () => {
-      dragEl.classList.add('collapsed');
-      this.dispatchSplitEvent(UiEventType.SPLIT_DID_CLOSE, {nestName, nestEl});
+      dragEl.classList.add("collapsed");
+      this.dispatchSplitEvent(UiEventType.SPLIT_DID_CLOSE, { nestName, nestEl });
       callback();
     };
     this.resize(nestName, 0, cb, opt_skipAni);
@@ -282,15 +268,15 @@ export default class Split extends Component {
    *    simply affected directly.
    */
   open(nestName, callback = identity, opt_skipAni = false) {
-    const {defSize, lastSize, dragEl, canResize, nestEl} = this.nestMap_.get(nestName);
+    const { defSize, lastSize, dragEl, canResize, nestEl } = this.nestMap_.get(nestName);
     if (!canResize) {
       return;
     }
-    this.dispatchSplitEvent(UiEventType.SPLIT_WILL_OPEN, {nestName, nestEl});
-    dragEl.classList.remove('collapsed', 'closed');
+    this.dispatchSplitEvent(UiEventType.SPLIT_WILL_OPEN, { nestName, nestEl });
+    dragEl.classList.remove("collapsed", "closed");
     const targetSize = lastSize || defSize;
     const cb = () => {
-      this.dispatchSplitEvent(UiEventType.SPLIT_DID_OPEN, {nestName, nestEl});
+      this.dispatchSplitEvent(UiEventType.SPLIT_DID_OPEN, { nestName, nestEl });
       callback();
     };
     this.resize(nestName, targetSize, cb, opt_skipAni);
@@ -311,7 +297,6 @@ export default class Split extends Component {
       this.close(nestName, callback, opt_skipAni);
     }
   }
-
 
   //----------------------------------------------------------------------------
   /**
@@ -348,91 +333,93 @@ export default class Split extends Component {
    * @param {?Array<string>} classArrDragger Extra classes for the dragger element
    * @param {?Array<string>} classArrGrabber Extra classes for the grabber element
    */
-  addSplit(opt_el = void 0, orientation = 'EW',
+  addSplit(
+    opt_el = void 0,
+    orientation = "EW",
     defSizeA = 100,
     defSizeC = 100,
     classArrA = [],
     classArrB = [],
     classArrC = [],
     classArrDragger = [],
-    classArrGrabber = []) {
-
+    classArrGrabber = [],
+  ) {
     // Check that we are not splitting the same root element twice.
     const root = opt_el ? opt_el : this.getElement();
     if (this.splitNests_.has(root)) {
-      return ['Already used!', root];
+      return ["Already used!", root];
     } else {
       convertElToSplit(root, orientation);
       this.splitNests_.add(root);
     }
 
     // Check we are splitting a element that is part of the component.
-    let refN = '';
+    let refN = "";
     if (opt_el) {
-      const match = [...this.nestMap_.entries()].find(([_k, {nestEl}]) => nestEl === opt_el);
+      const match = [...this.nestMap_.entries()].find(([_k, { nestEl }]) => nestEl === opt_el);
       if (match) {
         refN = match[0];
       } else {
-        return ['Element not managed by this component', opt_el];
+        return ["Element not managed by this component", opt_el];
       }
     }
 
     // Make the nest elements
     const refA = `${refN}A`;
-    const A = makeOuterNest(defSizeA, [...['zoo_nest__A', refA], ...classArrA]);
+    const A = makeOuterNest(defSizeA, ["zoo_nest__A", refA, ...classArrA]);
     const AB = new Dragger(orientation);
-    AB.domFunc = makeDraggerEl([`zoo_drag_${refA}`,...classArrDragger], classArrGrabber);
+    AB.domFunc = makeDraggerEl([`zoo_drag_${refA}`, ...classArrDragger], classArrGrabber);
     AB.render(root);
     this.nestMap_.set(refA, {
-      side: 'A',
+      side: "A",
       nestEl: A,
       dragger: AB,
       dragEl: AB.getElement(),
       defSize: defSizeA,
       sizeNow: -1,
-      canResize: true
+      canResize: true,
     });
 
     // Middle nests don't have associated daggers
     const refB = `${refN}B`;
-    const B = makeInnerNest([...['zoo_nest__B', refB], ...classArrB]);
-    this.nestMap_.set(refB, {nestEl: B, canResize: false});
+    const B = makeInnerNest(["zoo_nest__B", refB, ...classArrB]);
+    this.nestMap_.set(refB, { nestEl: B, canResize: false });
 
     // Outer nest and its dragger
     const refC = `${refN}C`;
     const BC = new Dragger(orientation);
-    BC.domFunc = makeDraggerEl([`zoo_drag_${refC}`,...classArrDragger], classArrGrabber);
+    BC.domFunc = makeDraggerEl([`zoo_drag_${refC}`, ...classArrDragger], classArrGrabber);
     BC.render(root);
-    const C = makeOuterNest(defSizeC, [...['zoo_nest__C', refC], ...classArrC]);
+    const C = makeOuterNest(defSizeC, ["zoo_nest__C", refC, ...classArrC]);
     this.nestMap_.set(refC, {
-      side: 'C',
+      side: "C",
       nestEl: C,
       dragger: BC,
       dragEl: BC.getElement(),
       defSize: defSizeC,
       sizeNow: -1,
-      canResize: true
+      canResize: true,
     });
 
-    [A, AB.getElement(), B, BC.getElement(), C].forEach(e => root.appendChild(e));
+    [A, AB.getElement(), B, BC.getElement(), C].forEach((e) => root.appendChild(e));
 
     let maxSize = 0;
     const onDragEvent = (orientation, nest, ref, factor) => {
       let start;
-      const metric = orientation === 'NS' ? 'height' : 'width';
-      const delta = orientation === 'NS' ? 'deltaY' : 'deltaX';
-      return event => {
+      const metric = orientation === "NS" ? "height" : "width";
+      const delta = orientation === "NS" ? "deltaY" : "deltaX";
+      return (event) => {
         switch (event.detail.value_) {
           case UiEventType.COMP_DRAG_START:
             // Calculate the maximum move possible.
             start = nest.getBoundingClientRect()[metric];
             maxSize = B.getBoundingClientRect()[metric] + start;
-            this.nestMap_.get(ref).dragEl.classList.remove('collapsed');
+            this.nestMap_.get(ref).dragEl.classList.remove("collapsed");
             break;
           case UiEventType.COMP_DRAG_MOVE: {
             const val = Math.min(maxSize, start + factor * event.detail.data_[delta]);
             this.nestMap_.get(ref).lastSize = val;
-            nest.style.flexBasis = val + 'px';
+            nest.style.flexBasis = val + "px";
             break;
           }
           case UiEventType.COMP_DRAG_END:
@@ -449,11 +436,11 @@ export default class Split extends Component {
     this.listen(BC, Component.compEventCode(), onDragEvent(orientation, C, refC, -1));
     this.listen(AB.getElement(), EV.DBLCLICK, () => this.toggle(refA));
     this.listen(BC.getElement(), EV.DBLCLICK, () => this.toggle(refC));
-    this.listen(AB.getElement().querySelector('.zoo_grabber'), EV.CLICK, () => this.toggle(refA));
-    this.listen(BC.getElement().querySelector('.zoo_grabber'), EV.CLICK, () => this.toggle(refC));
+    this.listen(AB.getElement().querySelector(".zoo_grabber"), EV.CLICK, () => this.toggle(refA));
+    this.listen(BC.getElement().querySelector(".zoo_grabber"), EV.CLICK, () => this.toggle(refC));
 
     this.listen(A, EV.TRANSITIONEND, (event) => {
-      if (event.propertyName === 'flex-basis' && event.target === A) {
+      if (event.propertyName === "flex-basis" && event.target === A) {
         const callback = this.nestCallbackMap_.get(refA);
         this.nestCallbackMap_.delete(refA);
         callback && callback();
@@ -461,7 +448,7 @@ export default class Split extends Component {
       }
     });
     this.listen(C, EV.TRANSITIONEND, (event) => {
-      if (event.propertyName === 'flex-basis' && event.target === C) {
+      if (event.propertyName === "flex-basis" && event.target === C) {
         const callback = this.nestCallbackMap_.get(refC);
         this.nestCallbackMap_.delete(refC);
         callback && callback();
@@ -484,8 +471,7 @@ export default class Split extends Component {
     const dataObj = new ZooyEventData(value, opt_data);
     const event = Evt.makeEvent(UiEventType.SPLIT, dataObj);
     return this.dispatchEvent(event);
-  };
-
+  }
 }
 
 //--[ DOM Makers ]--
@@ -495,7 +481,7 @@ export default class Split extends Component {
  * @return {!Element}
  */
 const convertElToSplit = (el, orientation) => {
-  el.classList.add('zoo_split', `zoo_split__${orientation.toLowerCase()}`);
+  el.classList.add("zoo_split", `zoo_split__${orientation.toLowerCase()}`);
   return el;
 };
 
@@ -505,10 +491,10 @@ const convertElToSplit = (el, orientation) => {
  * @return {!Element}
  */
 const makeOuterNest = (initialSize, classArr = []) => {
-  const el = document.createElement('div');
-  el.setAttribute('id', randomId(7));
-  el.classList.add('zoo_nest', 'zoo_nest__outer', ...classArr);
-  el.style.flexBasis = initialSize + 'px';
+  const el = document.createElement("div");
+  el.setAttribute("id", randomId(7));
+  el.classList.add("zoo_nest", "zoo_nest__outer", ...classArr);
+  el.style.flexBasis = initialSize + "px";
   // classArr.forEach(e => el.classList.add(e));
   return el;
 };
@@ -518,9 +504,9 @@ const makeOuterNest = (initialSize, classArr = []) => {
  * @return {!Element}
  */
 const makeInnerNest = (classArr = []) => {
-  const el = document.createElement('div');
-  el.setAttribute('id', randomId(7));
-  el.classList.add('zoo_nest', 'zoo_nest__inner', ...classArr);
+  const el = document.createElement("div");
+  el.setAttribute("id", randomId(7));
+  el.classList.add("zoo_nest", "zoo_nest__inner", ...classArr);
   // el.classList.add();
   // classArr.forEach(e => el.classList.add(e));
   return el;
@@ -531,17 +517,19 @@ const makeInnerNest = (classArr = []) => {
  * @param {?Array<string>} classArrGrabber
  * @returns {function(): HTMLDivElement}
  */
-const makeDraggerEl = (classArrDragger = [], classArrGrabber = []) => () => {
-  const el = document.createElement('div');
-  el.setAttribute('id', randomId(7));
-  // el.setAttribute('draggable', true);
-  el.classList.add('zoo_dragger', ...classArrDragger);
-  // classArrDragger.forEach(e => el.classList.add(e));
+const makeDraggerEl =
+  (classArrDragger = [], classArrGrabber = []) =>
+  () => {
+    const el = document.createElement("div");
+    el.setAttribute("id", randomId(7));
+    // el.setAttribute('draggable', true);
+    el.classList.add("zoo_dragger", ...classArrDragger);
+    // classArrDragger.forEach(e => el.classList.add(e));
 
-  // Append an inner grabber.
-  const grabber = document.createElement('div');
-  grabber.classList.add('zoo_grabber', ...classArrGrabber);
-  // classArrGrabber.forEach(e => grabber.classList.add(e));
-  el.appendChild(grabber);
-  return el;
-};
+    // Append an inner grabber.
+    const grabber = document.createElement("div");
+    grabber.classList.add("zoo_grabber", ...classArrGrabber);
+    // classArrGrabber.forEach(e => grabber.classList.add(e));
+    el.appendChild(grabber);
+    return el;
+  };

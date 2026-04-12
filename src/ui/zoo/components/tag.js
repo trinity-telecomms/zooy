@@ -40,40 +40,40 @@
  *   }
  */
 
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from "lit";
 
 export class ZooTag extends LitElement {
   static properties = {
     token: { type: String },
     prefix: { type: String },
-    postfix: { type: String }
+    postfix: { type: String },
   };
 
   static styles = css`
-      :host {
-          display: inline-block;
-      }
+    :host {
+      display: inline-block;
+    }
 
-      .tag {
-          text-align: center;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          line-height: initial;
-          width: max-content;
-          padding: .2em 1em;
-          border-radius: 1em;
-          font-size: var(--zoo-theme-chips-font-size, 0.75rem);
-          white-space: nowrap;
-          word-break: break-word;
-          box-sizing: border-box;
-      }
+    .tag {
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: initial;
+      width: max-content;
+      padding: 0.2em 1em;
+      border-radius: 1em;
+      font-size: var(--zoo-theme-chips-font-size, 0.75rem);
+      white-space: nowrap;
+      word-break: break-word;
+      box-sizing: border-box;
+    }
   `;
 
   render() {
-    const prefix = this.prefix ?? '';
-    const token = this.token ?? 'default';
-    const postfix = this.postfix ?? '';
+    const prefix = this.prefix ?? "";
+    const token = this.token ?? "default";
+    const postfix = this.postfix ?? "";
     const fullToken = `${prefix}${token}${postfix}`;
 
     return html`
@@ -91,6 +91,6 @@ export class ZooTag extends LitElement {
 }
 
 // Auto-register if not already defined
-if (!customElements.get('zoo-tag')) {
-  customElements.define('zoo-tag', ZooTag);
+if (!customElements.get("zoo-tag")) {
+  customElements.define("zoo-tag", ZooTag);
 }

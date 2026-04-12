@@ -1,9 +1,8 @@
-import ZooyEventData from '../events/zooyeventdata.js';
-import Evt from './evt.js';
-import {UiEventType} from '../events/uieventtype.js';
-import {isInPage, removeNode} from '../dom/utils.js';
-import {ComponentLibraryRegistry} from './component-library-registry.js';
-
+import ZooyEventData from "../events/zooyeventdata.js";
+import Evt from "./evt.js";
+import { UiEventType } from "../events/uieventtype.js";
+import { isInPage, removeNode } from "../dom/utils.js";
+import { ComponentLibraryRegistry } from "./component-library-registry.js";
 
 /**
  * Errors thrown by the component.
@@ -13,52 +12,52 @@ const ComponentError = {
   /**
    * Error when a method is not supported.
    */
-  NOT_SUPPORTED: 'Method not supported',
+  NOT_SUPPORTED: "Method not supported",
 
   /**
    * Error when the given element can not be decorated.
    */
-  DECORATE_INVALID: 'Invalid element to decorate',
+  DECORATE_INVALID: "Invalid element to decorate",
 
   /**
    * Error when the component is already rendered and another render attempt is
    * made.
    */
-  ALREADY_RENDERED: 'Component already rendered',
+  ALREADY_RENDERED: "Component already rendered",
 
   /**
    * Error when an already disposed component is attempted to be rendered.
    */
-  ALREADY_DISPOSED: 'Component already disposed',
+  ALREADY_DISPOSED: "Component already disposed",
 
   /**
    * Error when an attempt is made to set the parent of a component in a way
    * that would result in an inconsistent object graph.
    */
-  PARENT_UNABLE_TO_BE_SET: 'Unable to set parent component',
+  PARENT_UNABLE_TO_BE_SET: "Unable to set parent component",
 
   /**
    * Error when an attempt is made to add a child component at an out-of-bounds
    * index.  We don't support sparse child arrays.
    */
-  CHILD_INDEX_OUT_OF_BOUNDS: 'Child component index out of bounds',
+  CHILD_INDEX_OUT_OF_BOUNDS: "Child component index out of bounds",
 
   /**
    * Error when an attempt is made to remove a child component from a component
    * other than its parent.
    */
-  NOT_OUR_CHILD: 'Child is not in parent component',
+  NOT_OUR_CHILD: "Child is not in parent component",
 
   /**
    * Error when an operation requiring DOM interaction is made when the
    * component is not in the document
    */
-  NOT_IN_DOCUMENT: 'Operation not supported while component is not in document',
+  NOT_IN_DOCUMENT: "Operation not supported while component is not in document",
 
   /**
    * Error when an invalid component state is encountered.
    */
-  STATE_INVALID: 'Invalid component state'
+  STATE_INVALID: "Invalid component state",
 };
 
 /**
@@ -69,7 +68,6 @@ const ComponentError = {
  * @extends {Evt}
  */
 export default class Component extends Evt {
-
   //--[ Static ]--
   /**
    * Returns the component event type code used for dispatching component events.
@@ -112,9 +110,7 @@ export default class Component extends Evt {
      * @return {!HTMLElement|!Element|!DocumentFragment}
      * @private
      */
-    this.#makeDomFunc = () =>
-    /** @type {!HTMLElement} */(document.createElement('div'));
-
+    this.#makeDomFunc = () => /** @type {!HTMLElement} */ (document.createElement("div"));
 
     /**
      * Whether the component is in the document.
@@ -126,7 +122,7 @@ export default class Component extends Evt {
      * The DOM element for the component.
      * @private {!Node|undefined}
      */
-    this.#element =  void 0;
+    this.#element = void 0;
 
     /**
      * Arbitrary data object associated with the component.  Such as meta-data.
@@ -156,7 +152,6 @@ export default class Component extends Evt {
      */
     this.#children = new Map();
 
-
     /**
      * Dom Elements that are out of the direct tree of this component's element,
      * but still belongs to the component. These may be things like menu
@@ -166,7 +161,6 @@ export default class Component extends Evt {
      * @type {[Element]}
      */
     this.outOfTreeElements = [];
-
 
     /**
      * The DOM element for the component.
@@ -180,8 +174,7 @@ export default class Component extends Evt {
      * @private
      */
     this.#beforeReadyFunc = () => void 0;
-
-  };
+  }
 
   //--[ Getters and Setters ]--
   /**
@@ -214,7 +207,6 @@ export default class Component extends Evt {
     return this.#model;
   }
 
-
   /**
    * @param {boolean} bool
    */
@@ -246,7 +238,6 @@ export default class Component extends Evt {
     this.#beforeReadyFunc = func;
   }
 
-
   //--[ DOM Management ]--
   /**
    * Internal method to set the component's root element. Used primarily during
@@ -265,7 +256,7 @@ export default class Component extends Evt {
    */
   getElement() {
     return this.#element;
-  };
+  }
 
   /**
    * Creates the initial DOM representation for the component.  The default
@@ -273,7 +264,7 @@ export default class Component extends Evt {
    */
   createDom() {
     this.#element = this.#makeDomFunc();
-  };
+  }
 
   /**
    * Asserts that this component can be rendered asynchronously.
@@ -286,7 +277,6 @@ export default class Component extends Evt {
       throw new Error(ComponentError.ALREADY_DISPOSED);
     }
   }
-
 
   /**
    * Renders the component.  If a parent element is supplied, the component's
@@ -305,8 +295,7 @@ export default class Component extends Evt {
    */
   render(opt_parentElement) {
     this.render_(opt_parentElement);
-  };
-
+  }
 
   /**
    * Renders the component.  If a parent element is supplied, the component's
@@ -336,7 +325,7 @@ export default class Component extends Evt {
     if (!this.#element) {
       this.createDom();
     }
-    const rootEl = /** @type {!Node} */(this.#element);
+    const rootEl = /** @type {!Node} */ (this.#element);
 
     if (opt_target) {
       this.#target = opt_target;
@@ -349,7 +338,7 @@ export default class Component extends Evt {
         this.#target.insertBefore(rootEl, null);
       }
     } else {
-      if (!isInPage(/** @type {!Node} */(rootEl))) {
+      if (!isInPage(/** @type {!Node} */ (rootEl))) {
         document.body.appendChild(rootEl);
       }
     }
@@ -362,8 +351,7 @@ export default class Component extends Evt {
     if (!this.#parent || this.#parent.isInDocument) {
       this.enterDocument();
     }
-  };
-
+  }
 
   //--[ Life-cycle ]--
   /**
@@ -372,7 +360,7 @@ export default class Component extends Evt {
    */
   hoist(el, targetParent = undefined) {
     if (!targetParent) {
-      targetParent = document.querySelector('body');
+      targetParent = document.querySelector("body");
     }
     targetParent.appendChild(el);
     this.outOfTreeElements.push(el);
@@ -395,20 +383,18 @@ export default class Component extends Evt {
    * children.
    */
   enterDocument() {
-
     // First check if I am disposed. If so, don't enter the document.
     // This may happen on slow networks where the user clicks multiple times
     // and multiple queries are in flight...
     if (this.disposed) {
       removeNode(this.getElement());
     } else {
-
       this.isInDocument = true;
 
       // Propagate enterDocument to child components that have a DOM, if any.
       // If a child was decorated before entering the document its enterDocument
       // will be called here.
-      [...this.#children.values()].forEach(child => {
+      [...this.#children.values()].forEach((child) => {
         if (!child.isInDocument && child.getElement()) {
           child.enterDocument();
         }
@@ -417,8 +403,7 @@ export default class Component extends Evt {
       this.executeBeforeReady();
       this.dispatchCompEvent(UiEventType.READY);
     }
-
-  };
+  }
 
   /**
    * Called by dispose to clean up the elements and listeners created by a
@@ -434,7 +419,7 @@ export default class Component extends Evt {
   exitDocument() {
     // Propagate exitDocument to child components that have been rendered, if any.
 
-    [...this.#children.values()].forEach(child => {
+    [...this.#children.values()].forEach((child) => {
       if (child.isInDocument) {
         child.exitDocument();
       }
@@ -445,8 +430,7 @@ export default class Component extends Evt {
     this.isInDocument = false;
     removeNode(this.getElement());
     this.placeholderDom && removeNode(this.placeholderDom);
-  };
-
+  }
 
   /**
    * Disposes of the component.  Calls `exitDocument`, which is expected to
@@ -456,14 +440,13 @@ export default class Component extends Evt {
    * @protected
    */
   disposeInternal() {
-
     if (this.isInDocument) {
       this.exitDocument();
     }
 
     // Disposes of the component's children, if any.
     if (this.#children) {
-      [...this.#children.values()].forEach(child => child.disposeInternal());
+      [...this.#children.values()].forEach((child) => child.disposeInternal());
     }
 
     this.outOfTreeElements.forEach(removeNode);
@@ -478,7 +461,7 @@ export default class Component extends Evt {
     this.#parent = null;
 
     super.disposeInternal();
-  };
+  }
 
   /**
    * Disposes of the component and performs cleanup. Aborts any pending async
@@ -500,14 +483,16 @@ export default class Component extends Evt {
           }
         } catch (error) {
           // Intentionally ignoring library cleanup errors during disposal
-          console.debug(`[${libName}] Cleanup error during component disposal (non-critical):`, error);
+          console.debug(
+            `[${libName}] Cleanup error during component disposal (non-critical):`,
+            error,
+          );
         }
       }
     }
 
     super.dispose();
   }
-
 
   //--[ Built in events ]--
   /**
@@ -530,6 +515,5 @@ export default class Component extends Evt {
     const dataObj = new ZooyEventData(value, opt_data);
     const event = Evt.makeEvent(UiEventType.COMP, dataObj);
     return this.dispatchEvent(event);
-  };
-
+  }
 }

@@ -1,11 +1,11 @@
-import Evt from './evt.js';
-import {UiEventType} from '../events/uieventtype.js';
-import ZooyEventData from '../events/zooyeventdata.js';
-import UserManager from '../user/usermanager.js';
-import Panel from './panel.js';
-import {identity, isDefAndNotNull} from 'badu';
+import Evt from "./evt.js";
+import { UiEventType } from "../events/uieventtype.js";
+import ZooyEventData from "../events/zooyeventdata.js";
+import UserManager from "../user/usermanager.js";
+import Panel from "./panel.js";
+import { identity, isDefAndNotNull } from "badu";
 // Temporary imports for backwards compatibility - will be removed as apps migrate
-import {SearchHandlers, QueryParamHandlers} from './handlers/index.js';
+import { SearchHandlers, QueryParamHandlers } from "./handlers/index.js";
 
 /**
  * A View orchestrates multiple panels and manages their interactions.
@@ -16,7 +16,6 @@ import {SearchHandlers, QueryParamHandlers} from './handlers/index.js';
  * @extends {Evt}
  */
 export default class View extends Evt {
-
   #registerViewConstructor = void 0;
 
   #recordHistory = void 0;
@@ -61,9 +60,7 @@ export default class View extends Evt {
      * @private {*}
      */
     this.metaData_ = new Map();
-
-
-  };
+  }
 
   set recordHistory(func) {
     this.#recordHistory = func;
@@ -91,7 +88,7 @@ export default class View extends Evt {
 
   set split(split) {
     this.split_ = split;
-    this.listen(this.split_, UiEventType.SPLIT, e => {
+    this.listen(this.split_, UiEventType.SPLIT, (e) => {
       const eventValue = e.detail.getValue();
       const eventData = e.detail.getData();
       switch (eventValue) {
@@ -117,7 +114,7 @@ export default class View extends Evt {
 
   get split() {
     if (!this.split_) {
-      throw new Error('No SPLIT component available');
+      throw new Error("No SPLIT component available");
     }
     return this.split_;
   }
@@ -127,9 +124,8 @@ export default class View extends Evt {
    */
   set user(user) {
     this.user_ = user;
-    this.panelMap.forEach(panel => panel.user = user);
-  };
-
+    this.panelMap.forEach((panel) => (panel.user = user));
+  }
 
   /**
    * @return {!UserManager}
@@ -139,8 +135,7 @@ export default class View extends Evt {
       this.user_ = new UserManager();
     }
     return this.user_;
-  };
-
+  }
 
   /**
    * Render each of the panels in this view.
@@ -151,48 +146,40 @@ export default class View extends Evt {
     this.configurePanels();
     this.displayPanels();
     this.postRender();
-  };
+  }
 
   /**
    * Placeholder for subclasses to add panel event functions.
    */
-  initPanelEvents() {
-  };
-
+  initPanelEvents() {}
 
   /**
    * Run before the render.
    */
-  preRender() {
-  };
+  preRender() {}
 
   /**
    * Placeholder for panel configuration functionality;
    */
-  configurePanels() {
-  }
+  configurePanels() {}
 
   /**
    * Placeholder for panel display functionality;
    */
-  displayPanels() {
-  }
+  displayPanels() {}
 
   /**
    * Placeholder for post render functionality.
    */
-  postRender() {
-  }
-
+  postRender() {}
 
   /**
    * @inheritDoc
    */
   dispose() {
-    [...this.panelMap.values()].forEach(panel => panel.dispose());
+    [...this.panelMap.values()].forEach((panel) => panel.dispose());
     super.dispose();
-  };
-
+  }
 
   /**
    * Add a panel as a child of the view.
@@ -204,8 +191,7 @@ export default class View extends Evt {
     this.removePanelByName(name);
     this.panelMap.set(name, panel);
     this.listen(panel, Panel.panelEventCode(), this.onPanelEvent.bind(this));
-  };
-
+  }
 
   /**
    * Remove a panel from the view by name.
@@ -213,8 +199,7 @@ export default class View extends Evt {
    */
   removePanelByName(name) {
     this.panelMap.has(name) && this.panelMap.get(name).dispose();
-  };
-
+  }
 
   /**
    * @param {Panel} panel
@@ -227,14 +212,13 @@ export default class View extends Evt {
     }
   }
 
-
   /**
    * @param {string} name
    * @return {Panel|undefined}
    */
   getPanelByName(name) {
     return this.panelMap.get(name);
-  };
+  }
 
   /**
    * Broadcasts data to all panels in this view. Each panel receives the data
@@ -242,7 +226,7 @@ export default class View extends Evt {
    * @param {*} data The data to broadcast to all panels
    */
   broadcastToPanels(data) {
-    [...this.panelMap.values()].forEach(p => p.onViewDataBroadcast(data));
+    [...this.panelMap.values()].forEach((p) => p.onViewDataBroadcast(data));
   }
 
   /**
@@ -260,17 +244,17 @@ export default class View extends Evt {
     const map = new Map();
 
     // Framework-level handlers (stay in View)
-    map.set('destroy_me', (eventData, ePanel) => {
+    map.set("destroy_me", (eventData, ePanel) => {
       this.removePanel(ePanel);
     });
 
-    map.set('switch_view', (eventData, ePanel) => {
-      this.debugMe('switch_view received: eventData', eventData);
+    map.set("switch_view", (eventData, ePanel) => {
+      this.debugMe("switch_view received: eventData", eventData);
       const view = eventData.view;
       if (this.switchViewMap_.has(view)) {
         this.switchViewMap_.get(view)(eventData, ePanel);
       } else {
-        this.debugMe('NO VIEW FOUND FOR:', view, this.switchViewMap_);
+        this.debugMe("NO VIEW FOUND FOR:", view, this.switchViewMap_);
       }
     });
 
@@ -278,13 +262,13 @@ export default class View extends Evt {
     // These will be removed - applications should register these explicitly
     Object.entries({
       ...SearchHandlers,
-      ...QueryParamHandlers
+      ...QueryParamHandlers,
     }).forEach(([name, handler]) => {
       map.set(name, handler.bind(this));
     });
 
     return map;
-  };
+  }
 
   /**
    * Maps a panel event name to a handler function. Allows dynamic registration
@@ -307,7 +291,6 @@ export default class View extends Evt {
     this.switchViewMap_.set(s, func);
   }
 
-
   /**
    * @param {!CustomEvent} e
    */
@@ -320,24 +303,27 @@ export default class View extends Evt {
       return;
     }
     const eventData = e.detail.getData();
-    if (eventValue?.startsWith('switch_view:')) {
-      eventData.view = eventValue.split(':')[1];
-      eventValue = 'switch_view';
+    if (eventValue?.startsWith("switch_view:")) {
+      eventData.view = eventValue.split(":")[1];
+      eventValue = "switch_view";
     }
     const ePanel = /** @type {Panel} */ (e.target);
     if (this.panelEventMap_.has(eventValue)) {
       this.panelEventMap_.get(eventValue)(eventData, ePanel);
     } else {
-      this.debugMe(`NO EVENT MATCH - This usually you are missing 
+      this.debugMe(
+        `NO EVENT MATCH - This usually you are missing 
         a "mapPanEv(${eventValue} ..." statement in your panel JS
-        or you have a "event='${eventValue}'" attribute in your panel HTML`, {
-        event: e,
-        eventValue,
-        eventData,
-        panel: ePanel.constructor.name
-      });
+        or you have a "event='${eventValue}'" attribute in your panel HTML`,
+        {
+          event: e,
+          eventValue,
+          eventData,
+          panel: ePanel.constructor.name,
+        },
+      );
     }
-  };
+  }
 
   //--[ Split Events ]--
   /**
@@ -345,32 +331,28 @@ export default class View extends Evt {
    *
    * @param {{nestName: !string, nestEl:!HTMLElement}} _data
    */
-  onSplitWillOpen(_data) {
-  }
+  onSplitWillOpen(_data) {}
 
   /**
    * Triggered before a split will close.
    *
    * @param {{nestName: !string, nestEl:!HTMLElement}} _data
    */
-  onSplitWillClose(_data) {
-  }
+  onSplitWillClose(_data) {}
 
   /**
    * Triggered after a split closed.
    *
    * @param {{nestName: !string, nestEl:!HTMLElement}} _data
    */
-  onSplitDidClose(_data) {
-  }
+  onSplitDidClose(_data) {}
 
   /**
    * Triggered after a split opened.
    *
    * @param {{nestName: !string, nestEl:!HTMLElement}} _data
    */
-  onSplitDidOpen(_data) {
-  }
+  onSplitDidOpen(_data) {}
 
   //--[ Built in events ]--
   /**
@@ -393,8 +375,7 @@ export default class View extends Evt {
     const dataObj = new ZooyEventData(value, opt_data);
     const event = Evt.makeEvent(UiEventType.VIEW, dataObj);
     return this.dispatchEvent(event);
-  };
-
+  }
 
   //--[  Meta Data ]--
   /**
@@ -433,6 +414,4 @@ export default class View extends Evt {
   hasMetaData(k) {
     return this.metaData_.has(k);
   }
-
-
 }

@@ -87,7 +87,7 @@
  *   - No per-component timers = efficient at scale
  */
 
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from "lit";
 
 /**
  * Native implementation to format a date as relative time (e.g., "5 minutes ago")
@@ -100,13 +100,13 @@ const formatRelativeTime = (date) => {
   const diffInSeconds = Math.floor((now - date) / 1000);
 
   const units = [
-    { name: 'year', seconds: 31536000 },
-    { name: 'month', seconds: 2592000 },
-    { name: 'week', seconds: 604800 },
-    { name: 'day', seconds: 86400 },
-    { name: 'hour', seconds: 3600 },
-    { name: 'minute', seconds: 60 },
-    { name: 'second', seconds: 1 }
+    { name: "year", seconds: 31536000 },
+    { name: "month", seconds: 2592000 },
+    { name: "week", seconds: 604800 },
+    { name: "day", seconds: 86400 },
+    { name: "hour", seconds: 3600 },
+    { name: "minute", seconds: 60 },
+    { name: "second", seconds: 1 },
   ];
 
   // Handle future dates
@@ -115,23 +115,23 @@ const formatRelativeTime = (date) => {
     for (const unit of units) {
       const value = Math.floor(absDiff / unit.seconds);
       if (value >= 1) {
-        const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+        const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
         return rtf.format(value, unit.name);
       }
     }
-    return 'just now';
+    return "just now";
   }
 
   // Handle past dates
   for (const unit of units) {
     const value = Math.floor(diffInSeconds / unit.seconds);
     if (value >= 1) {
-      const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+      const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
       return rtf.format(-value, unit.name);
     }
   }
 
-  return 'just now';
+  return "just now";
 };
 
 /**
@@ -139,18 +139,30 @@ const formatRelativeTime = (date) => {
  * @param {Date} d - The date to format
  * @returns {string} Formatted datetime string (e.g., "05 Jan 21 14:30:22")
  */
-const formatDatetime = d => {
-  const dtf = new Intl.DateTimeFormat('en', {
-    day: '2-digit',
-    month: 'short',
-    year: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23'
+const formatDatetime = (d) => {
+  const dtf = new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "short",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
   });
 
-  const [{value: mo}, , {value: da}, , {value: ye}, , {value: hr}, , {value: mn}, , {value: sc}] = dtf.formatToParts(d);
+  const [
+    { value: mo },
+    ,
+    { value: da },
+    ,
+    { value: ye },
+    ,
+    { value: hr },
+    ,
+    { value: mn },
+    ,
+    { value: sc },
+  ] = dtf.formatToParts(d);
   return `${da} ${mo} ${ye} ${hr}:${mn}:${sc}`;
 };
 
@@ -159,14 +171,14 @@ const formatDatetime = d => {
  * @param {Date} d - The date to format
  * @returns {string} Formatted date string (e.g., "05 Jan 21")
  */
-const formatDate = d => {
-  const dtf = new Intl.DateTimeFormat('en', {
-    day: '2-digit',
-    month: 'short',
-    year: '2-digit'
+const formatDate = (d) => {
+  const dtf = new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "short",
+    year: "2-digit",
   });
 
-  const [{value: mo}, , {value: da}, , {value: ye}] = dtf.formatToParts(d);
+  const [{ value: mo }, , { value: da }, , { value: ye }] = dtf.formatToParts(d);
   return `${da} ${mo} ${ye}`;
 };
 
@@ -174,7 +186,7 @@ export class ZooTimestamp extends LitElement {
   static properties = {
     timestamp: { type: Number },
     kind: { type: String },
-    concat: { type: String }
+    concat: { type: String },
   };
 
   static styles = css`
@@ -202,8 +214,8 @@ export class ZooTimestamp extends LitElement {
   constructor() {
     super();
     this.timestamp = Date.now();
-    this.kind = 'both';
-    this.concat = 'r (s)'; // Default concat template
+    this.kind = "both";
+    this.concat = "r (s)"; // Default concat template
     this._boundTickHandler = this._onTimeTick.bind(this);
     this._isListening = false;
   }
@@ -213,7 +225,7 @@ export class ZooTimestamp extends LitElement {
    * @returns {boolean}
    */
   _shouldListenToTicks() {
-    return this.kind === 'relative' || this.kind === 'both';
+    return this.kind === "relative" || this.kind === "both";
   }
 
   connectedCallback() {
@@ -229,7 +241,7 @@ export class ZooTimestamp extends LitElement {
   updated(changedProperties) {
     super.updated(changedProperties);
     // If kind changed, update tick listener
-    if (changedProperties.has('kind')) {
+    if (changedProperties.has("kind")) {
       this._updateTickListener();
     }
   }
@@ -241,7 +253,7 @@ export class ZooTimestamp extends LitElement {
     const shouldListen = this._shouldListenToTicks();
 
     if (shouldListen && !this._isListening) {
-      document.addEventListener('zoo-tick-60', this._boundTickHandler);
+      document.addEventListener("zoo-tick-60", this._boundTickHandler);
       this._isListening = true;
     } else if (!shouldListen && this._isListening) {
       this._removeTickListener();
@@ -253,7 +265,7 @@ export class ZooTimestamp extends LitElement {
    */
   _removeTickListener() {
     if (this._isListening) {
-      document.removeEventListener('zoo-tick-60', this._boundTickHandler);
+      document.removeEventListener("zoo-tick-60", this._boundTickHandler);
       this._isListening = false;
     }
   }
@@ -273,32 +285,30 @@ export class ZooTimestamp extends LitElement {
     let remaining = template;
 
     while (remaining.length > 0) {
-      const rIndex = remaining.indexOf('r');
-      const sIndex = remaining.indexOf('s');
+      const rIndex = remaining.indexOf("r");
+      const sIndex = remaining.indexOf("s");
 
       // Find which placeholder comes first
-      const nextIndex = [rIndex, sIndex]
-        .filter(i => i !== -1)
-        .sort((a, b) => a - b)[0];
+      const nextIndex = [rIndex, sIndex].filter((i) => i !== -1).sort((a, b) => a - b)[0];
 
       if (nextIndex === undefined) {
         // No more placeholders, add remaining as text
         if (remaining.length > 0) {
-          parts.push({ type: 'text', value: remaining });
+          parts.push({ type: "text", value: remaining });
         }
         break;
       }
 
       // Add text before placeholder
       if (nextIndex > 0) {
-        parts.push({ type: 'text', value: remaining.substring(0, nextIndex) });
+        parts.push({ type: "text", value: remaining.substring(0, nextIndex) });
       }
 
       // Add placeholder
       if (nextIndex === rIndex) {
-        parts.push({ type: 'relative', value: '' });
+        parts.push({ type: "relative", value: "" });
       } else {
-        parts.push({ type: 'static', value: '' });
+        parts.push({ type: "static", value: "" });
       }
 
       // Move past the placeholder
@@ -322,39 +332,41 @@ export class ZooTimestamp extends LitElement {
     const dateOnly = formatDate(date);
 
     switch (this.kind) {
-      case 'relative':
-        return [{ type: 'relative', value: relative }];
+      case "relative":
+        return [{ type: "relative", value: relative }];
 
-      case 'datetime':
-        return [{ type: 'static', value: staticTime }];
+      case "datetime":
+        return [{ type: "static", value: staticTime }];
 
-      case 'date':
-        return [{ type: 'static', value: dateOnly }];
+      case "date":
+        return [{ type: "static", value: dateOnly }];
 
-      case 'both':
+      case "both": {
         const parts = this._parseTemplate(this.concat);
-        return parts.map(part => {
-          if (part.type === 'relative') {
-            return { type: 'relative', value: relative };
-          } else if (part.type === 'static') {
-            return { type: 'static', value: staticTime };
+        return parts.map((part) => {
+          if (part.type === "relative") {
+            return { type: "relative", value: relative };
+          } else if (part.type === "static") {
+            return { type: "static", value: staticTime };
           } else {
             return part;
           }
         });
+      }
 
-      default:
+      default: {
         // Default to 'both'
         const defaultParts = this._parseTemplate(this.concat);
-        return defaultParts.map(part => {
-          if (part.type === 'relative') {
-            return { type: 'relative', value: relative };
-          } else if (part.type === 'static') {
-            return { type: 'static', value: staticTime };
+        return defaultParts.map((part) => {
+          if (part.type === "relative") {
+            return { type: "relative", value: relative };
+          } else if (part.type === "static") {
+            return { type: "static", value: staticTime };
           } else {
             return part;
           }
         });
+      }
     }
   }
 
@@ -367,10 +379,10 @@ export class ZooTimestamp extends LitElement {
     const parts = this._getFormattedParts();
 
     return html`<time datetime="${date.toISOString()}">
-      ${parts.map(part => {
-        if (part.type === 'relative') {
+      ${parts.map((part) => {
+        if (part.type === "relative") {
           return html`<span class="relative">${part.value}</span>`;
-        } else if (part.type === 'static') {
+        } else if (part.type === "static") {
           return html`<span class="static">${part.value}</span>`;
         } else {
           return html`<span class="separator">${part.value}</span>`;
@@ -381,6 +393,6 @@ export class ZooTimestamp extends LitElement {
 }
 
 // Auto-register if not already defined
-if (!customElements.get('zoo-timestamp')) {
-  customElements.define('zoo-timestamp', ZooTimestamp);
+if (!customElements.get("zoo-timestamp")) {
+  customElements.define("zoo-timestamp", ZooTimestamp);
 }

@@ -27,7 +27,6 @@
       width: 0;
     }
   }
-
 }
 
 .zoo_nest {
@@ -79,7 +78,8 @@
     flex-basis: 0;
   }
 
-  &:hover, &:active {
+  &:hover,
+  &:active {
     opacity: 1;
   }
 }
@@ -128,5 +128,3 @@
     cursor: ew-resize;
   }
 }
-
-

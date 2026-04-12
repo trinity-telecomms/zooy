@@ -4,21 +4,22 @@
  * This module defines the vocabulary and provides helpers for reading them.
  */
 
-import {assocPath} from 'ramda';
+import { assocPath } from "ramda";
 
-const SEMANTIC_ATTRS = new Map(Object.entries({
-  "event": "event",
-  "endpoint": "endpoint",
-  "href": "href",
-  "url": "url",
-  "target": "target",
-  "record-id": "recordId",
-  "zoo-sort-field": "sortField",
-  "zoo-view": "view",
-  "zoo-event": "event",
-  "zoo-href": "href",
-}));
-
+const SEMANTIC_ATTRS = new Map(
+  Object.entries({
+    event: "event",
+    endpoint: "endpoint",
+    href: "href",
+    url: "url",
+    target: "target",
+    "record-id": "recordId",
+    "zoo-sort-field": "sortField",
+    "zoo-view": "view",
+    "zoo-event": "event",
+    "zoo-href": "href",
+  }),
+);
 
 /**
  * Get all semantic attributes from an element.
@@ -48,13 +49,13 @@ const SEMANTIC_ATTRS = new Map(Object.entries({
  */
 export const getSemanticAttributes = (element) => {
   let attrs = {};
-  Array.from(element.attributes).forEach(attr => {
+  Array.from(element.attributes).forEach((attr) => {
     const name = attr.name;
     const value = attr.value;
     if (SEMANTIC_ATTRS.has(name)) {
       attrs[SEMANTIC_ATTRS.get(name)] = value;
-    } else if (name.startsWith('data-') || name.startsWith('zoo-')) {
-      attrs = assocPath(name.split('-'), value, attrs)
+    } else if (name.startsWith("data-") || name.startsWith("zoo-")) {
+      attrs = assocPath(name.split("-"), value, attrs);
     }
   });
   return attrs;
@@ -68,6 +69,6 @@ export const getSemanticAttributes = (element) => {
  * @param {string} [fallback='event'] - Fallback to check if eventType not found
  * @returns {string|null} Event name or null if not found
  */
-export const getEventAttribute = (element, eventType, fallback = 'event') => {
+export const getEventAttribute = (element, eventType, fallback = "event") => {
   return element.getAttribute(eventType) || element.getAttribute(fallback);
 };

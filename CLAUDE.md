@@ -7,6 +7,7 @@ Zooy (`@trintel/zooy`) is an event-driven JavaScript UI framework for building c
 It is **not** a general-purpose frontend framework. It is purpose-built for server-rendered Django apps that need rich client-side interaction: split-pane layouts, URI-based panels, form interception, and pluggable component libraries.
 
 **Key design decisions:**
+
 - Opinionated for Django + server-rendered HTML patterns
 - Component-library-agnostic via a pluggable registry (currently Carbon + MDC)
 - Panels fetch HTML from the server; client code handles interaction, not rendering
@@ -17,7 +18,7 @@ It is **not** a general-purpose frontend framework. It is purpose-built for serv
 
 - **Language:** Vanilla JavaScript (ES modules, no TypeScript)
 - **UI Libraries:** IBM Carbon Design System Web Components (`@carbon/web-components`), Material Design Components (legacy, being phased out)
-- **Custom Components:** Lit (`LitElement`) for zoo-* native components
+- **Custom Components:** Lit (`LitElement`) for zoo-\* native components
 - **Build:** Vite (library mode), esbuild minification
 - **Output:** Dual format — `dist/zooy.es.js` (ESM) + `dist/zooy.cjs.js` (CJS)
 - **Linting:** ESLint (flat config) with Husky pre-commit hooks
@@ -35,6 +36,7 @@ npm run lint:fix # eslint auto-fix
 Build outputs to `dist/`. Dependencies are **externalized** in `vite.config.js` — Carbon, Lit, badu, etc. are NOT bundled. The consuming project must have them installed.
 
 **Bundle sizes (approximate):**
+
 - Core framework: ~101KB (~27KB gzipped)
 - MDC library chunk: ~463KB (~62KB gzipped, only if registered)
 - Carbon library chunk: ~34KB (~7KB gzipped, only if registered)
@@ -79,6 +81,7 @@ Third-party UI libraries (Carbon, MDC) use a two-layer pattern:
 2. **Renderers** — glue code that connects components to the panel event system via semantic attributes
 
 For Carbon, this is:
+
 - `src/ui/carbon/components/*.js` — 19 component config files (selector, events, init, getData)
 - `src/ui/carbon/renderers.js` — the pipeline: scan → collect imports → load → attach listeners
 
@@ -89,8 +92,8 @@ For native zoo components (`zoo-tag`, `zoo-timestamp`), they extend `LitElement`
 Central static registry allowing multiple UI libraries to coexist:
 
 ```javascript
-ComponentLibraryRegistry.register('carbon', { render, dispose, cache, config });
-ComponentLibraryRegistry.register('mdc', { render, cache, config });
+ComponentLibraryRegistry.register("carbon", { render, dispose, cache, config });
+ComponentLibraryRegistry.register("mdc", { render, cache, config });
 ```
 
 Each library gets its own import cache (Map). Panel.parseContent() iterates registered libraries and calls their render functions.
@@ -100,6 +103,7 @@ Each library gets its own import cache (Map). Panel.parseContent() iterates regi
 Binds JSON from HTTP endpoints to DOM using `<template>` elements. Library-agnostic.
 
 **Key attributes:**
+
 - `zoo-url__api` — API endpoint URL (on root element)
 - `zoo-template` — template ID (on consumer element)
 - `zoo-template-bind` — dot-path to data array in JSON response (e.g., `"results"`)
@@ -113,16 +117,16 @@ Binds JSON from HTTP endpoints to DOM using `<template>` elements. Library-agnos
 
 ### Semantic Attributes
 
-Components use self-documenting HTML attributes instead of cryptic data-* prefixes:
+Components use self-documenting HTML attributes instead of cryptic data-\* prefixes:
 
-| Attribute | Purpose |
-|-----------|---------|
-| `event` | Panel event name to dispatch |
-| `change-event` | Event on change/blur |
-| `open-event` / `close-event` | Modal events |
-| `record-id` | Record identifier |
-| `endpoint` | API endpoint URL |
-| `action` | Semantic action name |
+| Attribute                    | Purpose                      |
+| ---------------------------- | ---------------------------- |
+| `event`                      | Panel event name to dispatch |
+| `change-event`               | Event on change/blur         |
+| `open-event` / `close-event` | Modal events                 |
+| `record-id`                  | Record identifier            |
+| `endpoint`                   | API endpoint URL             |
+| `action`                     | Semantic action name         |
 
 Source: `src/ui/zoo/attributes.js`
 
@@ -207,40 +211,40 @@ src/
 ## Exports (via main.js default export)
 
 ```javascript
-import zooy from '@trintel/zooy';
+import zooy from "@trintel/zooy";
 
 // Core classes
-zooy.Evt              // EventTarget base
-zooy.Component        // Base UI component
-zooy.Panel            // URI-based content panel
-zooy.FormPanel        // Form handling panel
-zooy.View             // Multi-panel orchestrator
-zooy.Conductor        // App controller
-zooy.Split            // Resizable layouts
-zooy.Dragger          // Drag component
-zooy.UserManager      // Auth + fetch wrapper
-zooy.DataBinder       // JSON-to-DOM binding (alias: zooy.Binder)
+zooy.Evt; // EventTarget base
+zooy.Component; // Base UI component
+zooy.Panel; // URI-based content panel
+zooy.FormPanel; // Form handling panel
+zooy.View; // Multi-panel orchestrator
+zooy.Conductor; // App controller
+zooy.Split; // Resizable layouts
+zooy.Dragger; // Drag component
+zooy.UserManager; // Auth + fetch wrapper
+zooy.DataBinder; // JSON-to-DOM binding (alias: zooy.Binder)
 
 // Systems
-zooy.ComponentLibraryRegistry  // Pluggable UI library registry
-zooy.UiEventType               // Event type constants
-zooy.domUtils                  // DOM utility functions
-zooy.uriUtils                  // URI utility functions
-zooy.handlers                  // { SearchHandlers, QueryParamHandlers, MdcTreeHandlers }
-zooy.zoo                       // { ZooTag, ZooTimestamp, getSemanticAttributes, ... }
+zooy.ComponentLibraryRegistry; // Pluggable UI library registry
+zooy.UiEventType; // Event type constants
+zooy.domUtils; // DOM utility functions
+zooy.uriUtils; // URI utility functions
+zooy.handlers; // { SearchHandlers, QueryParamHandlers, MdcTreeHandlers }
+zooy.zoo; // { ZooTag, ZooTimestamp, getSemanticAttributes, ... }
 
 // Async registration (lazy-loads library code)
-zooy.registerCarbonLibrary(options)  // Register Carbon Design System
-zooy.registerMdcLibrary()            // Register Material Design Components
+zooy.registerCarbonLibrary(options); // Register Carbon Design System
+zooy.registerMdcLibrary(); // Register Material Design Components
 
 // SASS (separate export)
-import '@trintel/zooy/sass';  // → src/sass/main.scss
+import "@trintel/zooy/sass"; // → src/sass/main.scss
 ```
 
 ## How the Consuming App (z2) Uses Zooy
 
 ```javascript
-import zooy from '@trintel/zooy';
+import zooy from "@trintel/zooy";
 
 const entryFunc = async (user) => {
   await zooy.registerCarbonLibrary();
@@ -249,12 +253,12 @@ const entryFunc = async (user) => {
   const c = new zooy.Conductor();
   const u = new zooy.UserManager(user);
   const s = new zooy.Split();
-  s.domFunc = () => document.getElementById('root');
+  s.domFunc = () => document.getElementById("root");
   s.render();
 
   c.user = u;
   c.split = s;
-  c.registerViewConstructor('dashboard', (pk) => new DashboardView(pk));
+  c.registerViewConstructor("dashboard", (pk) => new DashboardView(pk));
   c.switchView(new DashboardView());
 };
 ```
@@ -263,20 +267,20 @@ Server-side (Django) renders HTML templates containing `<cds-*>` components and 
 
 ## Migration Status (MDC to Carbon)
 
-| Step | Status |
-|------|--------|
-| ComponentLibraryRegistry (pluggable architecture) | Done |
-| Carbon component configs (19 component types) | Done |
-| Carbon render pipeline (scan/import/attach) | Done |
-| Semantic attributes system | Done |
-| DataBinder (JSON-to-DOM binding) | Done |
-| Table with sort/search/pagination (DRF integration) | Done |
-| Zoo native components (zoo-tag, zoo-timestamp) | Done |
-| Handler collections (composable, opt-in) | Done |
-| Vite build system | Done |
-| Django template updates (in z2) | In progress |
-| Remove MDC dependencies | Pending |
-| Remove legacy MDC renderer code | Pending |
+| Step                                                | Status      |
+| --------------------------------------------------- | ----------- |
+| ComponentLibraryRegistry (pluggable architecture)   | Done        |
+| Carbon component configs (19 component types)       | Done        |
+| Carbon render pipeline (scan/import/attach)         | Done        |
+| Semantic attributes system                          | Done        |
+| DataBinder (JSON-to-DOM binding)                    | Done        |
+| Table with sort/search/pagination (DRF integration) | Done        |
+| Zoo native components (zoo-tag, zoo-timestamp)      | Done        |
+| Handler collections (composable, opt-in)            | Done        |
+| Vite build system                                   | Done        |
+| Django template updates (in z2)                     | In progress |
+| Remove MDC dependencies                             | Pending     |
+| Remove legacy MDC renderer code                     | Pending     |
 
 ## Important Patterns
 
@@ -291,10 +295,12 @@ When adding new dependencies, add them to the `external` array.
 1. Create `src/ui/carbon/components/mycomponent.js` with a config object:
    ```javascript
    export const cdsMyComponent = {
-     selector: 'cds-my-component',
-     event: 'cds-my-component-changed',
+     selector: "cds-my-component",
+     event: "cds-my-component-changed",
      getData: (e, attrs, element) => ({ ...attrs, value: e.detail.value }),
-     init: function(element) { /* optional setup */ }
+     init: function (element) {
+       /* optional setup */
+     },
    };
    ```
 2. Add to `src/ui/carbon/components/index.js`
@@ -316,9 +322,13 @@ These still work alongside Carbon components:
 <button class="zoo__button" data-zv="event_name" data-pk="123">Click</button>
 <form class="intercept_submit" data-zv="search" data-href="/api/search">...</form>
 <div class="zoo_async_html" data-href="/api/widget"></div>
-<button class="zoo__toggle_class_driver"
-        data-toggle_class_target_id="menu"
-        data-toggle_class="open">Toggle</button>
+<button
+  class="zoo__toggle_class_driver"
+  data-toggle_class_target_id="menu"
+  data-toggle_class="open"
+>
+  Toggle
+</button>
 ```
 
 ## Known Issues
@@ -333,3 +343,92 @@ These still work alongside Carbon components:
 Current: **v1.1.1** (package.json) / latest changelog entry: **1.0.1-beta.7** (2025-11-10)
 
 The project uses semver. Major version jumped from 36.x to 1.x during the Vite migration and npm publishing restructure.
+
+<!--VITE PLUS START-->
+
+# Using Vite+, the Unified Toolchain for the Web
+
+This project is using Vite+, a unified toolchain built on top of Vite, Rolldown, Vitest, tsdown, Oxlint, Oxfmt, and Vite Task. Vite+ wraps runtime management, package management, and frontend tooling in a single global CLI called `vp`. Vite+ is distinct from Vite, but it invokes Vite through `vp dev` and `vp build`.
+
+## Vite+ Workflow
+
+`vp` is a global binary that handles the full development lifecycle. Run `vp help` to print a list of commands and `vp <command> --help` for information about a specific command.
+
+### Start
+
+- create - Create a new project from a template
+- migrate - Migrate an existing project to Vite+
+- config - Configure hooks and agent integration
+- staged - Run linters on staged files
+- install (`i`) - Install dependencies
+- env - Manage Node.js versions
+
+### Develop
+
+- dev - Run the development server
+- check - Run format, lint, and TypeScript type checks
+- lint - Lint code
+- fmt - Format code
+- test - Run tests
+
+### Execute
+
+- run - Run monorepo tasks
+- exec - Execute a command from local `node_modules/.bin`
+- dlx - Execute a package binary without installing it as a dependency
+- cache - Manage the task cache
+
+### Build
+
+- build - Build for production
+- pack - Build libraries
+- preview - Preview production build
+
+### Manage Dependencies
+
+Vite+ automatically detects and wraps the underlying package manager such as pnpm, npm, or Yarn through the `packageManager` field in `package.json` or package manager-specific lockfiles.
+
+- add - Add packages to dependencies
+- remove (`rm`, `un`, `uninstall`) - Remove packages from dependencies
+- update (`up`) - Update packages to latest versions
+- dedupe - Deduplicate dependencies
+- outdated - Check for outdated packages
+- list (`ls`) - List installed packages
+- why (`explain`) - Show why a package is installed
+- info (`view`, `show`) - View package information from the registry
+- link (`ln`) / unlink - Manage local package links
+- pm - Forward a command to the package manager
+
+### Maintain
+
+- upgrade - Update `vp` itself to the latest version
+
+These commands map to their corresponding tools. For example, `vp dev --port 3000` runs Vite's dev server and works the same as Vite. `vp test` runs JavaScript tests through the bundled Vitest. The version of all tools can be checked using `vp --version`. This is useful when researching documentation, features, and bugs.
+
+## Common Pitfalls
+
+- **Using the package manager directly:** Do not use pnpm, npm, or Yarn directly. Vite+ can handle all package manager operations.
+- **Always use Vite commands to run tools:** Don't attempt to run `vp vitest` or `vp oxlint`. They do not exist. Use `vp test` and `vp lint` instead.
+- **Running scripts:** Vite+ built-in commands (`vp dev`, `vp build`, `vp test`, etc.) always run the Vite+ built-in tool, not any `package.json` script of the same name. To run a custom script that shares a name with a built-in command, use `vp run <script>`. For example, if you have a custom `dev` script that runs multiple services concurrently, run it with `vp run dev`, not `vp dev` (which always starts Vite's dev server).
+- **Do not install Vitest, Oxlint, Oxfmt, or tsdown directly:** Vite+ wraps these tools. They must not be installed directly. You cannot upgrade these tools by installing their latest versions. Always use Vite+ commands.
+- **Use Vite+ wrappers for one-off binaries:** Use `vp dlx` instead of package-manager-specific `dlx`/`npx` commands.
+- **Import JavaScript modules from `vite-plus`:** Instead of importing from `vite` or `vitest`, all modules should be imported from the project's `vite-plus` dependency. For example, `import { defineConfig } from 'vite-plus';` or `import { expect, test, vi } from 'vite-plus/test';`. You must not install `vitest` to import test utilities.
+- **Type-Aware Linting:** There is no need to install `oxlint-tsgolint`, `vp lint --type-aware` works out of the box.
+
+## CI Integration
+
+For GitHub Actions, consider using [`voidzero-dev/setup-vp`](https://github.com/voidzero-dev/setup-vp) to replace separate `actions/setup-node`, package-manager setup, cache, and install steps with a single action.
+
+```yaml
+- uses: voidzero-dev/setup-vp@v1
+  with:
+    cache: true
+- run: vp check
+- run: vp test
+```
+
+## Review Checklist for Agents
+
+- [ ] Run `vp install` after pulling remote changes and before getting started.
+- [ ] Run `vp check` and `vp test` to validate changes.
+<!--VITE PLUS END-->

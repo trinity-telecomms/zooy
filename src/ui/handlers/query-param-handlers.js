@@ -35,11 +35,11 @@ export const QueryParamHandlers = {
    * @param {Object} eventData - Event data with href and targetval for pagination
    * @param {Panel} ePanel - The panel to update
    */
-  'paginate': function(eventData, ePanel) {
+  paginate: function (eventData, ePanel) {
     const href = `${eventData.href}?${eventData.targetval}`;
-    this.user.fetchAndSplit(href, ePanel.abortController.signal).then(
-      s => ePanel.onReplacePartialDom(s, eventData.zvptarget)
-    );
+    this.user
+      .fetchAndSplit(href, ePanel.abortController.signal)
+      .then((s) => ePanel.onReplacePartialDom(s, eventData.zvptarget));
   },
 
   /**
@@ -48,10 +48,10 @@ export const QueryParamHandlers = {
    * @param {Object} eventData - Event data with href and targetval for filtering
    * @param {Panel} ePanel - The panel to update
    */
-  'list_filter': function(eventData, ePanel) {
+  list_filter: function (eventData, ePanel) {
     const href = `${eventData.href}?${eventData.targetval}`;
-    this.user.fetchAndSplit(href, ePanel.abortController.signal).then(
-      s => ePanel.onReplacePartialDom(s, eventData.zvptarget)
-    );
-  }
+    this.user
+      .fetchAndSplit(href, ePanel.abortController.signal)
+      .then((s) => ePanel.onReplacePartialDom(s, eventData.zvptarget));
+  },
 };

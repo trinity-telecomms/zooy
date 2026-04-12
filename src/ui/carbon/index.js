@@ -23,7 +23,7 @@
  * @see https://web-components.carbondesignsystem.com/
  */
 
-import { renderCarbonComponents } from './renderers.js';
+import { renderCarbonComponents } from "./renderers.js";
 
 export { renderCarbonComponents };
 
@@ -40,12 +40,12 @@ export { renderCarbonComponents };
  * @this {Panel} - The panel instance (bound via .call())
  * @returns {Promise<void>}
  */
-export const initializeCarbonComponents = async function(panel) {
+export const initializeCarbonComponents = async function (panel) {
   try {
     // Lazy load components and attach event listeners
     await renderCarbonComponents.call(this, panel);
   } catch (error) {
-    console.error('[Zooy] Error initializing Carbon components:', error);
+    console.error("[Zooy] Error initializing Carbon components:", error);
     // Don't throw - fail gracefully, panel should still work
   }
 };
