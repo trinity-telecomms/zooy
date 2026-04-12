@@ -19,21 +19,23 @@ It is **not** a general-purpose frontend framework. It is purpose-built for serv
 - **Language:** Vanilla JavaScript (ES modules, no TypeScript)
 - **UI Libraries:** IBM Carbon Design System Web Components (`@carbon/web-components`), Material Design Components (legacy, being phased out)
 - **Custom Components:** Lit (`LitElement`) for zoo-\* native components
-- **Build:** Vite (library mode), esbuild minification
+- **Build:** Vite+ (`vp build`, library mode), esbuild minification
 - **Output:** Dual format — `dist/zooy.es.js` (ESM) + `dist/zooy.cjs.js` (CJS)
-- **Linting:** ESLint (flat config) with Husky pre-commit hooks
+- **Linting:** Oxlint via Vite+ (`vp lint`, `vp check`) with Vite+ git hooks (`.vite-hooks/`)
 - **Dependencies:** badu, ramda (functional utilities)
 - **License:** Apache-2.0
 
 ## Build
 
 ```bash
-npm run build    # clean + vite build
-npm run lint     # eslint check
-npm run lint:fix # eslint auto-fix
+vp build         # production build (library mode)
+vp lint          # oxlint check
+vp lint --fix    # oxlint auto-fix
+vp check         # format + lint (combined)
+vp check --fix   # format + lint auto-fix
 ```
 
-Build outputs to `dist/`. Dependencies are **externalized** in `vite.config.js` — Carbon, Lit, badu, etc. are NOT bundled. The consuming project must have them installed.
+Build outputs to `dist/`. Dependencies are **externalized** in `vite.config.ts` — Carbon, Lit, badu, etc. are NOT bundled. The consuming project must have them installed.
 
 **Bundle sizes (approximate):**
 
@@ -41,7 +43,7 @@ Build outputs to `dist/`. Dependencies are **externalized** in `vite.config.js` 
 - MDC library chunk: ~463KB (~62KB gzipped, only if registered)
 - Carbon library chunk: ~34KB (~7KB gzipped, only if registered)
 
-**No sourcemaps** are currently generated (build.sourcemap not set in vite.config.js).
+**No sourcemaps** are currently generated (build.sourcemap not set in vite.config.ts).
 
 ## Architecture
 
@@ -284,9 +286,9 @@ Server-side (Django) renders HTML templates containing `<cds-*>` components and 
 
 ## Important Patterns
 
-### Externalize Dependencies in vite.config.js
+### Externalize Dependencies in vite.config.ts
 
-All third-party dependencies MUST be listed in the `external` array in `vite.config.js`. Without this, Rollup creates wrapper chunks with side-effect imports that silently fail to execute `customElements.define()` when served by a consuming project's Vite dev server (especially with npm link). This was a hard-won lesson — the modules load (200 OK), the code is present, no errors, but web component registration never fires.
+All third-party dependencies MUST be listed in the `external` array in `vite.config.ts`. Without this, Rollup creates wrapper chunks with side-effect imports that silently fail to execute `customElements.define()` when served by a consuming project's Vite dev server (especially with npm link). This was a hard-won lesson — the modules load (200 OK), the code is present, no errors, but web component registration never fires.
 
 When adding new dependencies, add them to the `external` array.
 
@@ -340,7 +342,7 @@ These still work alongside Carbon components:
 
 ## Versioning
 
-Current: **v1.1.1** (package.json) / latest changelog entry: **1.0.1-beta.7** (2025-11-10)
+Current: **v1.3.0** (package.json)
 
 The project uses semver. Major version jumped from 36.x to 1.x during the Vite migration and npm publishing restructure.
 
