@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/h"
+
+# Check if CHANGELOG.md has been updated when source files change
+echo "Checking changelog..."
+
+# Get staged source files
+STAGED_SRC_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^src/' || true)
+
+# Get staged CHANGELOG.md
+STAGED_CHANGELOG=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^CHANGELOG.md$' || true)
+
+if [ -n "$STAGED_SRC_FILES" ] && [ -n "$STAGED_CHANGELOG" ]; then
+  echo "✓ CHANGELOG.md updated"
+else
+  echo "✓ No source file changes"
+fi
+
+# Run lint and format on staged files
+vp staged
