@@ -45,6 +45,14 @@ export const cdsHeadingWrap = {
 };
 
 /**
+ * Section (heading level context)
+ * @type {{selector: string}}
+ */
+export const cdsSectionWrap = {
+  selector: "cds-section",
+};
+
+/**
  * Icon
  * @type {{selector: string, import: ((function(): Promise<*>)|*)[]}}
  */

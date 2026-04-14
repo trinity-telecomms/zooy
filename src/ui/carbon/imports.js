@@ -192,6 +192,8 @@ export const imports = {
   "cds-actionable-notification": [notificationImport],
 
   // Tiles
+  "cds-tile": [tileImport],
+  "cds-tile-group": [tileImport],
   "cds-clickable-tile": [tileImport],
   "cds-expandable-tile": [tileImport],
   "cds-selectable-tile": [tileImport],
@@ -226,6 +228,7 @@ export const imports = {
 
   // Presentational - Typography & Icons
   "cds-heading": [headingImport],
+  "cds-section": [headingImport],
   "cds-icon": [iconImport],
   "cds-icon-indicator": [iconIndicatorImport],
   "cds-badge-indicator": [badgeIndicatorImport],
