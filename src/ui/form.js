@@ -383,11 +383,13 @@ class FormPanel extends Panel {
 
         // Forms have randomIDs so the submit button must come along...
         // Sadly :(
+        // Use '[type="submit"]' to match both native <button> and Carbon
+        // web components like <cds-modal-footer-button type="submit">.
         const newSubmit = /** @type {!Element} */ (this.responseObject.html).querySelector(
-          'button[type="submit"]',
+          '[type="submit"]',
         );
         const oldSubmit = /** @type {!Element} */ (this.getElement()).querySelector(
-          'button[type="submit"]',
+          '[type="submit"]',
         );
         if (newSubmit && oldSubmit) {
           replaceNode(newSubmit, oldSubmit);
