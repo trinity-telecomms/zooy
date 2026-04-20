@@ -1,6 +1,8 @@
 import { isDefAndNotNull } from "badu";
 import { both, has, path } from "ramda";
 
+import { ComponentLibraryRegistry } from "./component-library-registry.js";
+
 /**
  * Default formatters (minimal - add as needed).
  * @type {Object<string, Function>}
@@ -308,6 +310,18 @@ export class Binder {
         const clone = this.#renderTemplateItem(template, item, index);
         consumer.appendChild(clone);
       });
+
+      // Wire Carbon components inside the freshly-appended clones. Scoped to
+      // the consumer subtree so we only run the Carbon library init — NOT the
+      // panel-level hijacks ([href], .zoo__button, etc.) that
+      // Panel.parseContent would also run and that caused the previously
+      // reverted row-click regression.
+      if (ComponentLibraryRegistry.has("carbon")) {
+        const carbonLib = ComponentLibraryRegistry.get("carbon");
+        carbonLib.render
+          .call(this.#panel, consumer, carbonLib.cache)
+          .catch((err) => console.error("[Binder] Carbon init failed:", err));
+      }
     });
   }
 
