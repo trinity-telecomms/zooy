@@ -152,6 +152,9 @@ export const imports = {
 
   // File Upload
   "cds-file-uploader": [fileUploaderImport],
+  "cds-file-uploader-button": [fileUploaderImport],
+  "cds-file-uploader-drop-container": [fileUploaderImport],
+  "cds-file-uploader-item": [fileUploaderImport],
 
   // Navigation - Tabs
   "cds-tabs": [tabsImport],
