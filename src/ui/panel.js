@@ -356,24 +356,24 @@ class Panel extends Component {
   /**
    * @param {Element} panel
    */
-  parseContent(panel) {
+  async parseContent(panel) {
     this.debugMe("Enable interactions. Panel:", panel);
-
-    // Initialize component libraries via pluggable architecture
-    // Carbon Web Components (lazy-loaded, async)
-    if (typeof window.customElements !== "undefined") {
-      if (ComponentLibraryRegistry.has("carbon")) {
-        const carbonLib = ComponentLibraryRegistry.get("carbon");
-        carbonLib.render
-          .call(this, panel, carbonLib.cache)
-          .catch((err) => console.error("[Zooy] Carbon initialization failed:", err));
-      }
-    }
 
     // MDC (legacy, synchronous initialization)
     if (ComponentLibraryRegistry.has("mdc")) {
       const mdcLib = ComponentLibraryRegistry.get("mdc");
       mdcLib.render.call(this, panel, mdcLib.cache);
+    }
+
+    // Initialize component libraries via pluggable architecture
+    // Carbon Web Components (lazy-loaded, async)
+    if (typeof window.customElements !== "undefined" && ComponentLibraryRegistry.has("carbon")) {
+      const carbonLib = ComponentLibraryRegistry.get("carbon");
+      try {
+        await carbonLib.render.call(this, panel, carbonLib.cache);
+      } catch (err) {
+        console.error("[Zooy] Carbon initialization failed:", err);
+      }
     }
 
     // If I am a modal cover (.zoo__modal-base), and have the
