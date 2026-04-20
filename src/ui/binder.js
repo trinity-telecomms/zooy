@@ -154,7 +154,7 @@ export class Binder {
       this.#setUrlParams(urlParams).toString(),
       this.#panel.abortController.signal,
     );
-    return this.setData(json);
+    this.setData(json);
   }
 
   /**
@@ -170,7 +170,7 @@ export class Binder {
    */
   setData(data) {
     this.#data = data;
-    return this.render();
+    this.render();
   }
 
   /**
@@ -190,7 +190,7 @@ export class Binder {
    * Multiple consumers can exist in the same rootEl, each rendering different slices
    * of the same JSON response (e.g., results, metadata, alerts).
    */
-  async render() {
+  render() {
     if (!isDefAndNotNull(this.#data)) {
       console.warn("[Binder] No data to render");
       return;
@@ -200,7 +200,7 @@ export class Binder {
     this.#updateBinderUrlAttributes();
 
     this.#renderSimpleBindings(this.#rootEl, this.#data, 0);
-    await this.#renderTemplateConsumers();
+    this.#renderTemplateConsumers();
   }
 
   /**
@@ -263,31 +263,25 @@ export class Binder {
   /**
    * Renders template consumers by duplicating templates for array data.
    *
-   * After appending cloned rows, delegates to panel.parseContent(consumer) so
-   * registered component libraries (Carbon, MDC) scan and wire the new subtree.
-   * Without this pass, elements inside <template> are invisible to the initial
-   * library scan and their semantic attributes (event=, change-event=, etc.)
-   * never produce panel events.
-   *
    * @private
    */
-  async #renderTemplateConsumers() {
+  #renderTemplateConsumers() {
     const consumers = this.#rootEl.querySelectorAll("[zoo-template]");
 
-    for (const consumer of consumers) {
+    consumers.forEach((consumer) => {
       const templateId = consumer.getAttribute("zoo-template");
       const dataPath = consumer.getAttribute("zoo-template-bind");
 
       if (!templateId) {
         console.warn("[Binder] Consumer missing template ID", consumer);
-        continue;
+        return;
       }
 
       // Get template element
       const template = this.#rootEl.querySelector(`#${templateId}`);
       if (!template || template.tagName !== "TEMPLATE") {
         console.error(`[DataBinder] Template not found or invalid: ${templateId}`);
-        continue;
+        return;
       }
 
       // Extract data slice for this consumer
@@ -298,28 +292,23 @@ export class Binder {
         console.warn(
           `[DataBinder] Data slice is undefined. Path: ${dataPath}. Skipping render for this consumer.`,
         );
-        continue;
+        return;
       }
 
       // Validate it's an array
       if (!Array.isArray(dataSlice)) {
         console.error(`[DataBinder] Data slice is not an array. Path: ${dataPath}`, dataSlice);
-        continue;
+        return;
       }
 
       // Clear consumer and render items
-      consumer.replaceChildren();
+      consumer.innerHTML = "";
 
       dataSlice.forEach((item, index) => {
         const clone = this.#renderTemplateItem(template, item, index);
         consumer.appendChild(clone);
       });
-
-      // Wire component libraries on the freshly-materialised subtree. Scoped
-      // to the consumer to avoid re-wiring the surrounding table (toolbar,
-      // pagination, headers) which was already initialised on first render.
-      await this.#panel.parseContent(consumer);
-    }
+    });
   }
 
   /**
