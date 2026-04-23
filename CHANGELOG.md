@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **`src/sass/carbon.scss`** no longer owns the icon-button toggle block. It lives in `buttons.scss` now, and `main.scss` imports both.
+- **`cds-file-uploader-*` `accept` is now tolerant of comma OR space separation.** Carbon documents `accept` as space-separated and uses that string both for its own post-pick filter (`_getFiles`) and for the native `<input type="file">` inside its shadow DOM — but the native input is bound by HTML spec to comma-separation, so a single string can never satisfy both. With the documented space form the OS picker shows zero matching files; with the HTML-spec comma form Carbon silently drops every selection (looks like Cancel). zooy's `file-uploader.js` now monkey-patches `cds-file-uploader-drop-container.prototype._getFiles` and `cds-file-uploader-button.prototype._getFiles` to accept either separator. Consumers can pass natural comma-separated `accept` values and get OS-picker filtering AND Carbon's post-filter working in tandem. Idempotent across mounts; fail-open if Carbon ever renames `_getFiles`. This is an intentional UX improvement over Carbon's silent-drop default, not a bug fix in their code.
 
 ### Fixed
 

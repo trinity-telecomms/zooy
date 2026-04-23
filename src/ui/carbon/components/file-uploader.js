@@ -7,6 +7,63 @@
 import { getSemanticAttributes } from "../../zoo/index.js";
 
 /**
+ * Make Carbon's `cds-file-uploader-*` `accept` tolerant of comma- OR
+ * space-separated values.
+ *
+ * This is an intentional UX override of Carbon's default, not a bug fix.
+ * Carbon's design is: pass `accept` as a space-separated string, the
+ * native OS picker is a permissive "show all", and `_getFiles`
+ * post-filters silently — so picking a non-matching file is
+ * indistinguishable from clicking Cancel. That silent-drop is the
+ * actual UX problem; consumers can't easily get the picker to filter
+ * because the same string is forwarded to a native `<input type="file">`
+ * inside the shadow DOM, whose accept is parsed per the HTML spec
+ * (commas).
+ *
+ * By making Carbon's filter accept either separator, zooy consumers can
+ * pass standard HTML-spec comma-separated values and get OS-picker
+ * filtering AND Carbon's post-filter working in tandem — making "wrong
+ * file type" a state the OS picker prevents in the first place,
+ * instead of one Carbon swallows in silence.
+ *
+ * Idempotent (safe across multiple mounts / HMR) and fail-open: logs
+ * a warning instead of crashing if Carbon ever renames `_getFiles`.
+ *
+ * @param {string} tagName Custom element tag to patch.
+ */
+function _patchCarbonAcceptSplit(tagName) {
+  customElements.whenDefined(tagName).then((Cls) => {
+    if (!Cls || Cls.prototype.__zooyAcceptPatched) return;
+    if (typeof Cls.prototype._getFiles !== "function") {
+      console.warn(
+        `[Zooy] ${tagName}._getFiles missing; accept-split patch skipped (Carbon may have refactored).`,
+      );
+      return;
+    }
+    Cls.prototype._getFiles = function (event, files) {
+      // The drop container calls `_getFiles(event, files)`; the button
+      // calls `_getFiles(event)` and reads files from the event itself.
+      if (files === undefined) {
+        files = (event.type === "drop" ? event.dataTransfer : event.target)?.files;
+      }
+      if (!this.accept || !/^(change|drop)$/.test(event.type)) {
+        return Array.from(files ?? []);
+      }
+      const tokens = new Set(this.accept.split(/[\s,]+/).filter(Boolean));
+      return Array.prototype.filter.call(files ?? [], ({ name, type = "" }) => {
+        const m = name.match(/\.[^.]+$/);
+        const ext = m ? m[0].toLowerCase() : undefined;
+        return tokens.has(type) || (ext && tokens.has(ext));
+      });
+    };
+    Cls.prototype.__zooyAcceptPatched = true;
+  });
+}
+
+_patchCarbonAcceptSplit("cds-file-uploader-drop-container");
+_patchCarbonAcceptSplit("cds-file-uploader-button");
+
+/**
  * Type definitions for Carbon Web Components (for IDE intellisense)
  * @typedef {import('@carbon/web-components/es/components/file-uploader/file-uploader.js').default} CDSFileUploader
  */

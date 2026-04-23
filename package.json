@@ -38,8 +38,8 @@
     "prepare": "vp config"
   },
   "dependencies": {
-    "@carbon/icons": "^11.77.1",
-    "@carbon/web-components": "^2.51.1",
+    "@carbon/icons": "^11.79.0",
+    "@carbon/web-components": "^2.53.0",
     "@ibm/plex": "^6.4.1",
     "badu": "^8.6.0",
     "material-components-web": "^14.0.0"
