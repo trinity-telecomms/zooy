@@ -7,18 +7,23 @@
  *
  *  Kind Options
  *
- *   | Kind       | Output               | Updates? |
- *   |------------|----------------------|----------|
- *   | 'relative' | "5 minutes ago"      | Yes      |
- *   | 'datetime' | "05 Jan 21 14:30:22" | No       |
- *   | 'date'     | "05 Jan 21"          | No       |
- *   | 'both'     | Controlled by concat | Yes      |
+ *   | Kind       | Output                              | Updates? |
+ *   |------------|-------------------------------------|----------|
+ *   | 'relative' | "5 minutes ago"                     | Yes      |
+ *   | 'datetime' | "05 Jan 21 14:30:22"                | No       |
+ *   | 'date'     | "05 Jan 21"                         | No       |
+ *   | 'both'     | Inline, joined by concat template   | Yes      |
+ *   | 'stack'    | Stacked (flex column), order from concat | Yes      |
  *
  *   Concat Placeholders (explicit)
  *
  *   - r = relative time
- *   - s = static datetime
+ *   - s = static datetime (full: "05 Jan 21 14:30:22")
+ *   - d = static date-only (no time: "05 Jan 21")
  *   - Default: "r (s)"
+ *   - In kind="stack", separator characters are discarded; only the
+ *     order of the first 'r' and the first static marker ('s' or 'd',
+ *     whichever appears earlier) is used.
  *
  * Basic Usage:
  *   <zoo-timestamp timestamp="1637251200000"></zoo-timestamp>
@@ -46,6 +51,35 @@
  *
  *   <zoo-timestamp timestamp="1637251200000" kind="both" concat="r - s"></zoo-timestamp>
  *   // Displays: "5 minutes ago - 05 Jan 21 14:30:22"
+ *
+ *   <zoo-timestamp timestamp="1637251200000" kind="both" concat="r (d)"></zoo-timestamp>
+ *   // Displays: "5 minutes ago (05 Jan 21)"
+ *
+ * Stack Mode (kind="stack"):
+ *   Renders relative and static times as two block-level lines.
+ *   `concat` drives order only; separator characters are ignored.
+ *
+ *   <zoo-timestamp timestamp="1637251200000" kind="stack"></zoo-timestamp>
+ *   // "5 minutes ago"
+ *   // "05 Jan 21 14:30:22"
+ *
+ *   <zoo-timestamp timestamp="1637251200000" kind="stack" concat="sr"></zoo-timestamp>
+ *   // "05 Jan 21 14:30:22"
+ *   // "5 minutes ago"
+ *
+ *   Pair relative with date-only instead of datetime:
+ *   <zoo-timestamp timestamp="1637251200000" kind="stack" concat="r d"></zoo-timestamp>
+ *   // "5 minutes ago"
+ *   // "05 Jan 21"
+ *
+ *   Toggle between inline and stacked without changing order:
+ *   <zoo-timestamp kind="both"  concat="s - r"></zoo-timestamp>  // inline: "s - r"
+ *   <zoo-timestamp kind="stack" concat="s - r"></zoo-timestamp>  // stacked: s on top, r below
+ *
+ *   Stack layout CSS custom properties:
+ *   - --zoo-timestamp-stack-gap: Space between the two lines (default: 0)
+ *   - --zoo-timestamp-stack-align: Cross-axis alignment — use start (left),
+ *     center, or end (right). Default: stretch.
  *
  * With Binder:
  *   <zoo-timestamp zoo-bind-attr="timestamp:createdAt" kind="relative"></zoo-timestamp>
@@ -75,13 +109,14 @@
  *
  * Attributes:
  *   - timestamp: Unix timestamp in milliseconds (or seconds if < 946684800000)
- *   - kind: Display mode - 'both' (default), 'relative', 'datetime', 'date'
- *   - concat: Template for combining relative and datetime when kind="both"
- *             Default: "r (s)"
- *             Use 'r' for relative time, 's' for static datetime
+ *   - kind: Display mode - 'both' (default), 'relative', 'datetime', 'date', 'stack'
+ *   - concat: Template for relative + static when kind="both" (inline join)
+ *             or kind="stack" (order only; separators discarded).
+ *             Default: "r (s)". Placeholders: 'r' = relative, 's' = datetime,
+ *             'd' = date-only. In stack mode the first of 's' or 'd' wins.
  *
  * Updates:
- *   - Only listens to 'zoo-tick-60' events when kind is 'relative' or 'both'
+ *   - Listens to 'zoo-tick-60' events when kind is 'relative', 'both', or 'stack'
  *   - Static kinds (datetime, date) never update
  *   - All instances update in sync with a single app-wide timer
  *   - No per-component timers = efficient at scale
@@ -209,6 +244,18 @@ export class ZooTimestamp extends LitElement {
     .separator {
       color: var(--zoo-timestamp-separator-color, inherit);
     }
+
+    :host([kind="stack"]) {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    :host([kind="stack"]) time {
+      display: flex;
+      flex-direction: column;
+      gap: var(--zoo-timestamp-stack-gap, 0);
+      align-items: var(--zoo-timestamp-stack-align, stretch);
+    }
   `;
 
   constructor() {
@@ -225,7 +272,7 @@ export class ZooTimestamp extends LitElement {
    * @returns {boolean}
    */
   _shouldListenToTicks() {
-    return this.kind === "relative" || this.kind === "both";
+    return this.kind === "relative" || this.kind === "both" || this.kind === "stack";
   }
 
   connectedCallback() {
@@ -287,9 +334,10 @@ export class ZooTimestamp extends LitElement {
     while (remaining.length > 0) {
       const rIndex = remaining.indexOf("r");
       const sIndex = remaining.indexOf("s");
+      const dIndex = remaining.indexOf("d");
 
       // Find which placeholder comes first
-      const nextIndex = [rIndex, sIndex].filter((i) => i !== -1).sort((a, b) => a - b)[0];
+      const nextIndex = [rIndex, sIndex, dIndex].filter((i) => i !== -1).sort((a, b) => a - b)[0];
 
       if (nextIndex === undefined) {
         // No more placeholders, add remaining as text
@@ -307,8 +355,10 @@ export class ZooTimestamp extends LitElement {
       // Add placeholder
       if (nextIndex === rIndex) {
         parts.push({ type: "relative", value: "" });
-      } else {
+      } else if (nextIndex === sIndex) {
         parts.push({ type: "static", value: "" });
+      } else {
+        parts.push({ type: "dateOnly", value: "" });
       }
 
       // Move past the placeholder
@@ -316,6 +366,37 @@ export class ZooTimestamp extends LitElement {
     }
 
     return parts;
+  }
+
+  /**
+   * Extracts stack order from a concat template, discarding separators.
+   * Only the first occurrence of 'r' and the first static marker (the
+   * earlier of 's' or 'd') is considered.
+   * @param {string} template - Template string with 'r', 's', 'd' placeholders
+   * @returns {Array<'relative'|'static'|'dateOnly'>} Ordered list of part types
+   */
+  _parseStackOrder(template) {
+    const rIndex = template.indexOf("r");
+    const sIndex = template.indexOf("s");
+    const dIndex = template.indexOf("d");
+
+    // Pick the earlier-appearing static marker, if any
+    let staticIndex = -1;
+    let staticType = null;
+    if (sIndex !== -1 && (dIndex === -1 || sIndex < dIndex)) {
+      staticIndex = sIndex;
+      staticType = "static";
+    } else if (dIndex !== -1) {
+      staticIndex = dIndex;
+      staticType = "dateOnly";
+    }
+
+    if (rIndex !== -1 && staticIndex !== -1) {
+      return rIndex < staticIndex ? ["relative", staticType] : [staticType, "relative"];
+    }
+    if (rIndex !== -1) return ["relative"];
+    if (staticIndex !== -1) return [staticType];
+    return ["relative", "static"];
   }
 
   _getFormattedParts() {
@@ -348,9 +429,20 @@ export class ZooTimestamp extends LitElement {
             return { type: "relative", value: relative };
           } else if (part.type === "static") {
             return { type: "static", value: staticTime };
+          } else if (part.type === "dateOnly") {
+            return { type: "static", value: dateOnly };
           } else {
             return part;
           }
+        });
+      }
+
+      case "stack": {
+        const order = this._parseStackOrder(this.concat);
+        return order.map((type) => {
+          if (type === "relative") return { type: "relative", value: relative };
+          if (type === "dateOnly") return { type: "static", value: dateOnly };
+          return { type: "static", value: staticTime };
         });
       }
 
@@ -362,6 +454,8 @@ export class ZooTimestamp extends LitElement {
             return { type: "relative", value: relative };
           } else if (part.type === "static") {
             return { type: "static", value: staticTime };
+          } else if (part.type === "dateOnly") {
+            return { type: "static", value: dateOnly };
           } else {
             return part;
           }

@@ -1,4 +1,4 @@
-import { isDefAndNotNull } from "badu";
+import { isDefAndNotNull, formatBytes, toInt } from "badu";
 import { both, has, path } from "ramda";
 
 import { ComponentLibraryRegistry } from "./component-library-registry.js";
@@ -8,6 +8,17 @@ import { ComponentLibraryRegistry } from "./component-library-registry.js";
  * @type {Object<string, Function>}
  */
 const DEFAULT_FORMATTERS = {
+  /**
+   * Parse a date string into an epoch integer. Useful for passing to the
+   * <zoo-timestamp> component.
+   */
+  date_parse: (value) => Date.parse(value),
+
+  /**
+   * Given bytes (octets) format it into a human-readable string.
+   */
+  filesize: (value) => formatBytes(5)(toInt(value)),
+
   /**
    * Format as JSON (useful for debugging)
    */

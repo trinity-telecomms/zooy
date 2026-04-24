@@ -7,6 +7,7 @@ import ZooyEventData from "../events/zooyeventdata.js";
 import Evt from "./evt.js";
 import { EV } from "../events/mouseandtouchevents.js";
 import { ComponentLibraryRegistry } from "./component-library-registry.js";
+import { Binder } from "./binder.js";
 import { getPath, getQueryData, objectToUrlParms, queryDataToMap } from "../uri/uri.js";
 
 /**
@@ -587,6 +588,25 @@ class Panel extends Component {
         }
       },
     );
+
+    // Auto-bind: any element with zoo-url-api that contains DataBinder markup
+    // fetches and binds automatically. cds-table has its own richer setup
+    // (skeleton, pagination, server-side sort/search/filter) and is excluded.
+    // Elements using .zoo_async_json are also excluded - they've opted into the
+    // imperative onAsyncJsonReply hook.
+    [...panel.querySelectorAll("[zoo-url-api]")].forEach((el) => {
+      if (el.tagName === "CDS-TABLE") return;
+      if (el.classList.contains("zoo_async_json")) return;
+      if (el.dataBinder) return;
+      const url = el.getAttribute("zoo-url-api");
+      if (!url) return;
+      if (!el.querySelector("[zoo-bind], [zoo-bind-attr], [zoo-template]")) return;
+      const binder = new Binder(this, url, el);
+      el.dataBinder = binder;
+      binder.fetchData().catch((err) => {
+        console.error("[Panel] zoo-url-api auto-bind fetch failed:", err);
+      });
+    });
   }
 
   /**
