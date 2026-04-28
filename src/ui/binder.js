@@ -17,7 +17,7 @@ const DEFAULT_FORMATTERS = {
   /**
    * Given bytes (octets) format it into a human-readable string.
    */
-  filesize: (value) => formatBytes(5)(toInt(value)),
+  filesize: (value) => formatBytes(4)(toInt(value)),
 
   /**
    * Format as JSON (useful for debugging)
