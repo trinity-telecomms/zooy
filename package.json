@@ -1,6 +1,6 @@
 {
   "name": "@trintel/zooy",
-  "version": "1.9.2",
+  "version": "1.10.0",
   "description": "UI Building Blocks",
   "license": "Apache-2.0",
   "author": {
@@ -38,10 +38,10 @@
     "prepare": "vp config"
   },
   "dependencies": {
-    "@carbon/icons": "^11.79.0",
-    "@carbon/web-components": "^2.53.0",
-    "@ibm/plex": "^6.4.1",
-    "badu": "^8.6.0",
+    "@carbon/icons": "latest",
+    "@carbon/web-components": "latest",
+    "@ibm/plex": "latest",
+    "badu": "latest",
     "material-components-web": "^14.0.0"
   },
   "devDependencies": {

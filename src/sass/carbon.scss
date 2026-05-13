@@ -98,3 +98,12 @@ cds-popover {
     }
   }
 }
+
+// For Carbon modals where a drop-down menu may need to
+// overflow the modal body. Add the `overflow_allowed` attribute
+// to the modal element to allow this.
+cds-modal[open][allow_overflow] {
+  cds-modal-body {
+    overflow: visible;
+  }
+}
