@@ -99,11 +99,23 @@ cds-popover {
   }
 }
 
-// For Carbon modals where a drop-down menu may need to
-// overflow the modal body. Add the `overflow_allowed` attribute
-// to the modal element to allow this.
-cds-modal[open][allow_overflow] {
-  cds-modal-body {
-    overflow: visible;
-  }
+// Opt-in escape hatch for Carbon modals that host a dropdown,
+// combo-box, or popover whose menu needs to float over (and outside)
+// the modal. Add the `allow_overflow` attribute to <cds-modal> to enable.
+//
+// Why this is needed:
+//   Carbon's <cds-modal> renders `.cds--modal-container` inside its
+//   shadow DOM with `overflow: hidden;` and `transform: translateZ(0);`.
+//   Either property alone is enough to clip an absolutely-positioned
+//   dropdown menu opened from a form field inside the modal — the
+//   menu gets cut off at the modal's edge instead of floating over
+//   surrounding content.
+//
+//   The container is exposed via `part="dialog"`, so we can pierce
+//   the shadow boundary from outside CSS using `::part(dialog)`.
+//   Long modal content still scrolls correctly because the inner
+//   <cds-modal-body> has its own `overflow-y: auto` on a different
+//   element (`.cds--modal-content`).
+cds-modal[open][allow_overflow]::part(dialog) {
+  overflow: visible;
 }
