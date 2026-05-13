@@ -119,3 +119,9 @@ cds-popover {
 cds-modal[open][allow_overflow]::part(dialog) {
   overflow: visible;
 }
+
+cds-modal[open][allow_overflow] {
+  cds-modal-body {
+    overflow: visible;
+  }
+}
